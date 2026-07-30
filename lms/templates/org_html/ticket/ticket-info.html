@@ -1,0 +1,1127 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Tickets
+          </h1>
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/ticket/ticket-list" class="text-muted text-hover-primary">Tickets</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">Ticket Information</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-xxl">
+        <!--begin::Products-->
+
+        <div class="container">
+          <div class="row">
+            <div class="col-md-3 sidebar">
+              <div class="card card-flush">
+                <!--begin::Card header-->
+                <div class="card-header align-items-center">
+                  <!--begin::Card title-->
+                  <div class="card-title">
+                    <h3>Ticket Information</h3>
+                  </div>
+                </div>
+                <!--end::Card header-->
+                <!--begin::Card body-->
+                <div class="card-body pt-0 pb-0">
+                  <p><strong>Requester:</strong> {{ticket.requestername}}</p>
+                  <!-- <p><strong>Department:</strong> {{ticket.departmentname}}</p> -->
+                  <p><strong>Category:</strong> {{ticket.categoryname}}</p>
+
+                  <p><strong>Submitted:</strong> {{ticket.submited_date_time}}</p>
+                  <p><strong>Last Updated:</strong> {{ticket.last_updated}} ago</p>
+                  <p>
+                    <strong>Status:</strong>
+                    <span class="badge bg-light-success">{{ticket.status}}</span>
+                  </p>
+                  <p>
+                    <strong>Priority:</strong>
+                    <span class="badge bg-light-warning">{{ticket.priority}}</span>
+                  </p>
+                  <div class="mt-3">
+                    
+                    {% if ticket.status == 'Closed' %}
+                    {%else%}
+
+                    <button class="btn btn-primary btn-sm w-100 mb-2 fs-6" data-bs-toggle="modal"
+                      data-bs-target="#kt_modal_1">
+                      Assign Ticket
+                    </button> 
+                    {%endif%}
+                    {% if ticket.raiseby != user_id %}
+                    {% if ticket.is_faq %}
+                    <button class="btn btn-sm btn-primary w-100 mb-2 fs-6" data-bs-toggle="modal"
+                      data-bs-target="#kt_modal_FAQ">
+                      Marked FAQ
+
+                    </button>
+                    {%else%}
+                    <button class="btn btn-sm btn-border-primary w-100 mb-2 fs-6" data-bs-toggle="modal"
+                      data-bs-target="#kt_modal_FAQ">
+                      Mark as FAQ
+
+                    </button>
+                    {%endif%}
+
+                    {% if ticket.isduplicate %}
+                      <button class="btn btn-secondary border border-secondary btn-sm w-100 mb-4 fs-6"
+                     >
+                      Duplicate
+                    </button>
+                    {%else%}
+                    
+                    <button class="btn bg-light-primary border border-primary btn-sm w-100 mb-4 fs-6"
+                      onclick="markasduplicate('{{ticket.id}}')">
+                      Mark as Duplicate
+                    </button>
+                    {%endif%}
+                    
+                    {% if ticket.status == 'Closed' %}
+                    <button class="btn btn-danger border border-danger btn-sm w-100 mb-4 fs-6"
+                      >
+                      Closed
+                    </button>
+                    {%else%}
+
+                    <button class="btn bg-light-danger border border-danger btn-sm w-100 mb-4 fs-6"
+                      onclick="closeticket('{{ticket.id}}')">
+                      Close Ticket
+                    </button>
+                    {%endif%}
+                    {%endif%}
+
+                  </div>
+                </div>
+                <!--end::Card body-->
+              </div>
+            </div>
+            <div class="col-md-9 main-content">
+              <div class="card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div></div>
+                </div>
+                <div class="card-body pb-3">
+                  <h5 class="mb-3">View Ticket {{ticket.ticketid}}</h5>
+                  <h6><strong>Subject:</strong> {{ticket.subject}}</h6>
+                  <p>
+                    {{ticket.description|safe}}
+                  </p>
+                  <p><strong>IP Address:</strong> {{ticket.IPAddress|default:''}}</p>
+                </div>
+                <div class="reply-section">
+                  <div class="">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs tabs gap-3 px-1" id="ticketTab" role="tablist">
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link active  border border-primary rounded" id="details-tab"
+                          data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                          Activity
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link  border border-primary rounded" id="activity-tab" data-bs-toggle="tab"
+                          data-bs-target="#activity" type="button" role="tab">
+                          Assinged
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button onclick="get_ticket_all_attachments()" class="nav-link  border border-primary rounded  "
+                          id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button"
+                          role="tab">
+                          Attachments
+                        </button>
+                      </li>
+                    </ul>
+                    <div class="tab-content" id="ticketTabContent">
+                      <div class="tab-pane fade show active" id="details" role="tabpanel">
+                        <div class="card">
+                          <div class="card-body">
+                            <div class="scroll-y pe-5 h-200px" data-kt-element="messages" id="TicketActivityLog">
+                              <!-- Message 1 -->
+
+
+
+
+                            </div>
+                          </div>
+                          <div class="card-footer pt-1">
+                            <div class="row">
+                              <div class="col-lg-10 mb-5">
+                                <div id="richTextBox"></div>
+                              </div>
+                              <div class="col-lg-2 p-0">
+                                <div class="d-flex align-items-baseline">
+                                  <label for="activityattachment"
+                                    class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-4"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Attach">
+
+                                    <i class="fs-1 h-20px">
+                                      <img src="{% static 'assets/media/svg/action-svg/paperclip.svg' %}" alt="" />
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                    </i>
+
+                                    <input type="file" name="activityattachment" id="activityattachment" class="d-none"
+                                      onchange="show_attachment_name()">
+                                  </label>
+
+                                  <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-4"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Send"
+                                    onclick="add_comment()">
+                                    <i class="ki-duotone ki-send fs-1">
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                    </i>
+                                  </a>
+                                </div>
+                                <div id="activityattachmentname">
+
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="tab-pane fade" id="activity" role="tabpanel">
+                        <div class="card p-1">
+
+                          <div class="card-body">
+                            <!-- Activity 1 -->
+                            {% for assignuser in assignusers %}
+
+                            <div class="d-flex align-items-start mb-3">
+                              <img src="{% static 'assets/media/avatars/blank.png' %}"
+                                class="w-25px border-radius-6px me-3" />
+                              <div>
+                                <div class="fw-bold">
+                                  {{assignuser.username}}
+                                  {% if assignuser.active %}
+                                  <span class="badge bg-light-success ms-3">Assigned</span>
+                                  {%endif%}
+                                </div>
+                                <small class="text-muted">{{assignuser.createdAt_formatted}}</small>
+                                <p class="mt-1">{{assignuser.comment|default:''}}</p>
+                              </div>
+                            </div>
+
+
+                            {% endfor%}
+
+
+                          </div>
+                        </div>
+
+
+                      </div>
+                      <div class="tab-pane fade" id="attachments" role="tabpanel">
+                        <div class="card p-4">
+                          <h5 class="card-title fw-bold">Attachments</h5>
+                          <div class="card-body" id="TicketAttachments">
+
+
+
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Reply Section -->
+                </div>
+              </div>
+            </div>
+
+            <!--end::Products-->
+          </div>
+          <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+      </div>
+      <!--end::Content wrapper-->
+      <!--begin::Footer-->
+      <div id="kt_app_footer" class="app-footer">
+        <!--begin::Footer container-->
+        <div class="app-container container-fluid d-flex justify-content-center py-3">
+          <!--begin::Copyright-->
+          <div class="text-gray-900">
+            <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+          </div>
+          <!--end::Copyright-->
+        </div>
+        <!--end::Footer container-->
+      </div>
+      <!--end::Footer-->
+    </div>
+    <!--end:::Main-->
+  </div>
+  <!--end::Wrapper-->
+</div>
+<!--end::Page-->
+</div>
+<!--end::App-->
+
+<!--begin::Modal-->
+<div class="modal fade" tabindex="-1" id="kt_modal_1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Assign</h5>
+        <!--begin::Close-->
+        <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+          <i class="ki-duotone ki-cross fs-1">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+        </div>
+        <!--end::Close-->
+      </div>
+      <div class="modal-body">
+        <div class="row justify-content-center">
+          <div class="col-lg-10">
+            <label for="" class="form-label">Name</label>
+            <select class="form-select" data-control="select2" data-placeholder="Select Name" data-hide-search="true"
+              id="assign_user{{ticket.id}}">
+              <option></option>
+              {% for user in userlist %}
+              {% if user.id|stringformat:'s' == ticket.assign_user|stringformat:'s' %}
+              <option value="{{user.id}}" selected>{{user.name}}</option>
+              {%else%}
+              <option value="{{user.id}}">{{user.name}}</option>
+
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-btns text-center pt-5">
+          <button type="button" class="btn btn-sm btn-light me-4" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" onclick="change_assign_to('{{ticket.id}}')">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--end::Modal-->
+
+<!--begin::Modal-->
+<div class="modal fade" tabindex="-1" id="kt_modal_FAQ">
+  <div class="modal-dialog ">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <div>
+            <p><strong>Subject:</strong>{{ticket.subject}}</p>
+
+          </div>
+          <div>
+            <P>
+              <strong>Description:</strong>
+              {{ticket.description|safe}}
+            </P>
+          </div>
+        </div>
+
+
+        <!--begin::Close-->
+        <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+          <i class="ki-duotone ki-cross fs-1">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+        </div>
+        <!--end::Close-->
+      </div>
+      <div class="modal-body">
+        <div class="row row-cols-2 justify-content-start gy-3">
+          <div class="col">
+            <label for="category" class="form-label">Category</label>
+            <select id="category" class="form-select" data-control="select2" data-placeholder="Select Category"
+              data-hide-search="true" required {% if ticket.is_faq %}disabled{%endif%}>
+              <option></option>
+              {% for category in categories %}
+              {% if category.id|stringformat:'s' == ticket.categoryId|stringformat:'s' %}
+              <option value="{{category.id}}" selected>{{category.name}}</option>
+              {%else%}
+              <option value="{{category.id}}">{{category.name}}</option>
+              {% endif %}
+              {%endfor%}
+
+            </select>
+          </div>
+          <div class="col">
+            <label for="department" class="form-label">Department</label>
+            <select id="department" class="form-select" data-control="select2" data-placeholder="Select Department"
+              data-hide-search="true" required {% if ticket.is_faq %}disabled{%endif%}>
+              <option></option>
+              {% for department in departments %}
+              {% if department.id|stringformat:'s' == ticket.departmentId|stringformat:'s' %}
+              <option value="{{department.id}}" selected>{{department.department_name}}</option>
+              {%else%}
+              <option value="{{department.id}}">{{department.department_name}}</option>
+
+              {% endif %}
+              {%endfor%}
+            </select>
+          </div>
+          <div class="col">
+            <label for="tags" class="form-label">Tags</label>
+            <input type="text" id="tags" name="tags" class="form-control mb-2" placeholder="Please enter tag name"
+              value="{{ticket.tags}}" {% if ticket.is_faq %}disabled{%endif%}/>
+          </div>
+          <div class="col">
+            <label for="faqattachment" class="form-label">Attachments</label>
+            <input type="file" class="form-control" id="faqattachment" accept=".png, .jpg, .jpeg, .pdf, .docx, .xls" {% if ticket.is_faq %}disabled{%endif%}/>
+          </div>
+
+        </div>
+
+        <div class="modal-btns text-center pt-5">
+          <button type="button" class="btn btn-sm btn-light me-4" data-bs-dismiss="modal">
+            Close
+          </button>
+          {% if ticket.is_faq == False%}
+          <button type="button" class="btn btn-sm btn-primary" onclick="makr_as_faq()">Submit</button>
+          {%endif%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--end::Modal-->
+
+{%endblock%}
+{% block script %}{{block.super}}
+
+
+
+
+<script type="text/javascript">
+  $("#course_table").DataTable({
+    columnDefs: [
+      { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+    ],
+  });
+  $("#kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function () {
+    $("#filter").click(function () {
+      $(".filter-card").slideToggle("slow");
+    });
+  });
+  // The DOM elements you wish to replace with Tagify
+  var input1 = document.querySelector("#kt_tagify_1");
+
+  // Initialize Tagify components on the above inputs
+  new Tagify(input1);
+</script>
+<script>
+  $(document).ready(function () {
+    // $('#kt_daterangepicker_1').val(' ')
+    get_ticket_activity()
+  })
+  function convertToDateRange(range) {
+    // Split the string into start and end dates
+
+    const [startDate, endDate] = range.split(" - ");
+
+    // Helper function to convert MM/DD/YYYY to YYYY-MM-DD
+    const formatDate = (date) => {
+      const [month, day, year] = date.split("/");
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    };
+
+    return {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate)
+    };
+  }
+
+  function show_attachment_name() {
+    let fileInput = document.getElementById("activityattachment");
+
+    if (fileInput.files.length > 0) {
+      $('#activityattachmentname').html(
+        fileInput.files[0].name +
+        ` <span onclick="remove_attachment()" style="cursor:pointer;">
+          <i class="ki-duotone ki-cross fs-1 text-danger">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+        </span>`
+      );
+    }
+  }
+
+  function remove_attachment() {
+    let fileInput = document.getElementById("activityattachment");
+    fileInput.value = ""; // Proper way to clear file input
+    $('#activityattachmentname').html(""); // Clear file name display
+  }
+
+
+  function closeticket(id) {
+    tok = 'Bearer {{og_token}}'
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to close ?</h5></div>',
+      //icon: 'question',
+      position: 'top',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Close',
+      cancelButtonText: 'No',
+      customClass: {
+        confirmButton: 'swal-button',
+        cancelButton: 'swal-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: backendurl + "/api/ticket/close-ticket",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          data: { ticket_id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            if (json_resposne.n == 1) {
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                icon: 'success',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+
+
+  function markasduplicate(id) {
+    debugger;
+    tok = 'Bearer {{og_token}}'
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to mark duplicate ?</h5></div>',
+      //icon: 'question',
+      position: 'top',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      customClass: {
+        confirmButton: 'swal-button',
+        cancelButton: 'swal-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: backendurl + "/api/ticket/mark-duplicate-ticket",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+
+          data: { ticket_id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            if (json_resposne.n == 1) {
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                icon: 'success',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+
+  function get_ticket_activity() {
+
+
+    tok = 'Bearer {{og_token}}'
+
+
+    $.ajax({
+      url: backendurl + "/api/ticket/get-ticket-activity",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+
+      data: { ticket: '{{ticket.id}}', csrfmiddlewaretoken: "{{csrf_token}}" },
+      success: function (data) {
+        console.log('data', data);
+
+        var decrypt_response = decryptData(data)
+        var json_resposne = $.parseJSON(decrypt_response)
+
+        if (json_resposne.n == 1) {
+          var logined_userid = json_resposne.logined_userid;
+          var messages = ''
+          $.each(json_resposne.data, function (i, o) {
+              var extension = o.file_extension.substring(1);
+              if (['jpg', 'png', 'jpeg', 'webp'].includes(extension)) {
+                extension = 'image';
+              } else if (['pdf', 'docs', 'video'].includes(extension)) {
+                // extension remains unchanged
+              } else {
+                extension = 'link';
+              }
+            if (o.userid == logined_userid) {
+
+              messages += `
+                  
+                            <div class="d-flex justify-content-end mb-2">
+                              <div class="d-flex flex-column align-items-end">
+                                <div class="d-flex align-items-center mb-2">
+                                  <div class="me-3">
+                                    <span class="text-muted fs-7 mb-1">`+ o.time_difference + `</span>
+                                    <a href="#"
+                                      class="fs-5 fw-bold text-gray-900 text-hover-primary ms-1">You</a>
+                                  </div>
+                                  <div class="symbol symbol-35px symbol-circle">
+                                    <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                                  </div>
+                                </div>
+                                <div
+                                  class="p-5 rounded bg-light-primary text-gray-900 fw-semibold mw-lg-400px text-end"
+                                  data-kt-element="message-text">
+                                  `+ o.comment + `
+
+
+                                  ${o.attachment != null ? `<div class="d-flex align-items-start mb-3">
+                                    <a href="`+ backendurl + o.attachment+`" target="_blank" class="text-black">
+                                    <img src="`+ backendurl + `/static/assets/media/svg/action-svg/` + extension + `.png" alt="` + o.file_extension + ` Icon" class="me-3"
+                                      width="30" height="30" />
+                                    <div>
+                                      <div class="fw-bold">`+ o.file_name + `</div>
+                                    </div>  
+                                      
+                                    </a>
+                                  </div>`: ``}
+
+                                </div>
+                              </div>
+                            </div>
+                  `
+            } else {
+
+
+              messages += `
+                  
+                          <div class="d-flex justify-content-start mb-2">
+                            <div class="d-flex flex-column align-items-start">
+                              <div class="d-flex align-items-center mb-2">
+                                <div class="symbol symbol-35px symbol-circle">
+                                  <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                                </div>
+                                <div class="ms-3">
+                                  <a href="#"
+                                    class="fs-5 fw-bold text-gray-900 text-hover-primary me-1">`+ o.username + `</a>
+                                  <span class="text-muted fs-7 mb-1">`+ o.time_difference + `</span>
+                                </div>
+                              </div>
+                              <div
+                                class="p-5 rounded bg-light-info text-gray-900 fw-semibold mw-lg-400px text-start"
+                                data-kt-element="message-text">
+                                `+ o.comment + `
+
+                                  ${o.attachment != null ? `<div class="d-flex align-items-start mb-3">
+                                    <a href="`+ backendurl + o.attachment+`" target="_blank" class="text-black">
+                                    <img src="`+ backendurl + `/static/assets/media/svg/action-svg/` + extension + `.png" alt="` + o.file_extension + ` Icon" class="me-3"
+                                      width="30" height="30" />
+                                    <div>
+                                      <div class="fw-bold">`+ o.file_name + `</div>
+                                    </div>  
+                                      
+                                    </a>
+                                  </div>`: ``}
+                              </div>
+                            </div>
+                          </div>
+                  
+                  `
+
+            }
+
+          })
+          $('#TicketActivityLog').html(messages)
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+  function get_ticket_all_attachments() {
+
+
+    tok = 'Bearer {{og_token}}'
+
+
+    $.ajax({
+      url: backendurl + "/api/ticket/get-ticket-all-attachments",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+
+      data: { ticket: '{{ticket.id}}', csrfmiddlewaretoken: "{{csrf_token}}" },
+      success: function (data) {
+        console.log('data', data);
+
+        var decrypt_response = decryptData(data)
+        var json_resposne = $.parseJSON(decrypt_response)
+        console.log('acti', json_resposne);
+
+        if (json_resposne.n == 1) {
+          var logined_userid = json_resposne.logined_userid;
+          var attachments = ''
+          $.each(json_resposne.data, function (i, o) {
+              var extension = o.file_extension.substring(1);
+              if (['jpg', 'png', 'jpeg', 'webp'].includes(extension)) {
+                extension = 'image';
+              } else if (['pdf', 'docs', 'video'].includes(extension)) {
+                // extension remains unchanged
+              } else {
+                extension = 'link';
+              }
+            attachments += `
+                            <div class="d-flex align-items-start mb-3">
+                              <img src="`+ backendurl + `/static/assets/media/svg/action-svg/` +extension+ `.png" alt="` + o.file_extension + ` Icon" class="me-3"
+                                width="30" height="30" />
+                              <div>
+                                <div class="fw-bold">`+ o.filename + `</div>
+                                <small class="text-muted">Uploaded: `+ o.createdAt_formatted + `</small>
+                                <p class="mt-1">`+ o.comment + `</p>
+                              </div>
+                            </div>
+                        
+              `
+
+
+          })
+          $('#TicketAttachments').html(attachments)
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+
+  function add_comment() {
+    debugger
+    var fd = new FormData();
+
+    var comment = quill.root.innerHTML;
+    var attachment = $('#activityattachment')[0].files[0];
+    if (IsValid(comment) && IsValid(attachment)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter valid comment.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    } if (comment == '<p><br></p>' && IsValid(attachment)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter valid comment.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+
+
+    tok = 'Bearer {{og_token}}'
+    fd.append("ticket", '{{ticket.id}}');
+    fd.append("comment", comment);
+    if (attachment != '' && attachment != null) {
+      fd.append("attachment", attachment);
+    }
+
+    $.ajax({
+      url: backendurl + "/api/ticket/add-ticket-activity",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        // "encrypted": '1'
+      },
+
+      data: fd,
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        console.log('add data', data);
+
+
+
+        if (data.n == 1) {
+          get_ticket_activity()
+          quill.root.innerHTML = "";
+          remove_attachment()
+        } else {
+
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + data.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+  function change_assign_to(id) {
+    tok = 'Bearer {{og_token}}'
+    var userid = $('#assign_user' + id).val();
+    if (IsValid(userid)) {
+      var toast = bootstrap.showToast({
+        body: "Please select assign user.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    } else {
+
+
+
+
+      $.ajax({
+        url: backendurl + "/api/ticket/assign-user-to-ticket",
+        type: "POST",
+        headers: {
+          "Authorization": tok,
+          "encrypted": '1'
+        },
+        data: { 'userid': userid, 'ticket': id, csrfmiddlewaretoken: "{{csrf_token}}" },
+
+        success: function (data) {
+          var decrypt_response = decryptData(data)
+          var json_resposne = $.parseJSON(decrypt_response)
+          if (json_resposne.n == 1) {
+
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            }).then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          Swal.fire({
+            title: 'Error',
+            text: jqXHR.responseJSON.Message,
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      });
+    }
+  }
+
+  const quill = new Quill("#richTextBox", {
+    theme: "snow",
+    modules: {
+      toolbar: [
+        ["bold", "italic", "underline"], // Formatting buttons
+        [{ header: 1 }, { header: 2 }], // Header sizes
+        [{ list: "ordered" }, { list: "bullet" }], // Lists
+        [{ color: [] }, { background: [] }], // Text color/background
+        ["clean"], // Remove formatting
+      ],
+    },
+  });
+
+
+  function makr_as_faq() {
+    debugger
+    var fd = new FormData();
+
+    var category = $('#category').val()
+    var department = $('#department').val()
+    var tags = $('#tags').val()
+    var attachment = $('#faqattachment')[0].files[0];
+    if (IsValid(category)) {
+      var toast = bootstrap.showToast({
+        body: "Please select category.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(department)) {
+      var toast = bootstrap.showToast({
+        body: "Please select department.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(tags)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter tags name.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    // if (IsValid(attachment)) {
+    //   var toast = bootstrap.showToast({
+    //     body: "Please add valid attachment.",
+    //     closeButton: true,
+    //     toastClass: "alert-danger",
+    //     delay: 2000,
+    //   })
+    //   $("html, body").animate({ scrollTop: 0 }, "slow");
+    //   return false;
+    // }
+    tok = 'Bearer {{og_token}}'
+    fd.append("ticket", '{{ticket.id}}');
+    fd.append("categoryId", category);
+    fd.append("departmentId", department);
+    fd.append("tags", tags);
+
+    if (attachment != '' && attachment != null) {
+      fd.append("attachment", attachment);
+    }
+
+
+    $.ajax({
+      url: backendurl + "/api/ticket/mark-ticket-as-faq",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        // "encrypted": '1'
+      },
+
+      data: fd,
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        console.log('add data', data);
+
+
+
+        if (data.n == 1) {
+
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h4>' + data.msg + '</h4></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          })
+
+
+
+        } else {
+
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + data.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+
+</script>
+{%endblock%}

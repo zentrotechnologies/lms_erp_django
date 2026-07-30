@@ -1,0 +1,724 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<style>
+  .truncate-text {
+    white-space: nowrap;
+    /* Prevents text from wrapping */
+    overflow: hidden;
+    /* Hides overflowing text */
+    text-overflow: ellipsis;
+    /* Displays "..." for truncated text */
+    width: 150px;
+    /* Adjust based on your layout */
+    display: block;
+    /* Works best with block or inline-block */
+  }
+</style>
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Study
+            Material</h1>
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+
+            <li class="breadcrumb-item text-muted">
+              <a href="courses-add-course.html" class="text-muted text-hover-primary">Courses</a>
+            </li>
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+
+            <li class="breadcrumb-item text-gray-700">Study Material</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container">
+        <!--begin::Row-->
+        <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+          <!--begin::Col-->
+          <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+            <!--begin::Card widget 20-->
+            <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+              <!--begin::Header-->
+              <div class="card-body py-5">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="mb-5 fv-row fv-plugins-icon-container row">
+                      <div class="mb-5 row row-cols-2 align-items-end">
+                        <div class="col-md-4">
+                          <!--begin::Label-->
+                          <label class="form-label ms-4">Course</label>
+                          <!--end::Label-->
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-hide-search="true" id="course"
+                            onchange="getcoursedetail()">
+                            <option value="">Select Course</option>
+                            {%for i in course_list %}
+                            <option value="{{i.id}}">{{i.course_name}}</option>
+                            {%endfor%}
+                          </select>
+
+                          <!--end::Input-->
+                        </div>
+                        <div class="col-md-4">
+                          <!--begin::Label-->
+                          <label class="form-label ms-4">Module</label>
+                          <!--end::Label-->
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-placeholder="Module"
+                            data-hide-search="true" id="module" onchange="getmaterial();">
+
+
+                          </select>
+
+                          <!--end::Input-->
+                        </div>
+
+                        <!--begin::Modal-->
+
+                      </div>
+
+
+                      <div class="col-12" id="language_div">
+                        <!--begin::accordian-course-->
+
+                        <div class="accordion" id="accordion-languages">
+
+                        </div>
+                      </div>
+
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-center m-5">
+              <!--begin::Button-->
+              <!-- <a href="list-of-course.html" class="btn btn-sm btn-light me-5">Cancel</a> -->
+              <!--end::Button-->
+              <!--begin::Button-->
+
+              <!--end::Button-->
+            </div>
+          </div>
+          <!--end::Header-->
+        </div>
+        <!--end::Card widget 20-->
+      </div>
+      <!--end::Col-->
+    </div>
+    <!--end::Content container-->
+  </div>
+  <!--end::Content-->
+</div>
+{%endblock%} {% block script %}{{block.super}}
+<!--end::Javascript-->
+<script type="text/javascript">
+
+  $('iframe').on("load", function () {
+    $(this).css({
+      width: '100%',
+      height: '400px'
+    });
+  });
+
+  $("#course_table").DataTable({
+    columnDefs: [
+      { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+    ],
+  });
+
+  $("#kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function () {
+    $("#filter").click(function () {
+      $(".filter-card").slideToggle("slow");
+    });
+  });
+
+  $(".kt_docs_repeater_basic").repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      "text-input": "foo",
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    },
+  });
+
+  function moduleCheck() {
+    modulecheckbox = document.querySelector(".module-check");
+    modules = document.querySelectorAll(".moduleLink");
+    if (modulecheckbox.checked == true) {
+      for (i of modules) {
+        moduleId = document.getElementById(i.id);
+        moduleId.disabled = true;
+        moduleId.classList.remove("active");
+        moduleId.style = "background-color:#f1f1f1!important";
+        moduleId.style = "color:#c7c7c7!important";
+      }
+    } else {
+      for (i of modules) {
+        moduleId = document.getElementById(i.id);
+        moduleId.disabled = false;
+        moduleId.style = "background-color:#ececec!important";
+      }
+    }
+  }
+
+
+  function toggleInput(id) {
+
+    var selection = document.getElementById("FileTypeSelector" + id).value;
+
+    if (selection === "file" || selection === "image" || selection === "video") {
+      document.querySelector("#fileInput" + id).style.display = "block";
+      document.querySelector("#linkInput" + id).style.display = "none";
+
+    } else if (selection === "link") {
+      document.querySelector("#fileInput" + id).style.display = "none";
+      document.querySelector("#linkInput" + id).style.display = "block";
+
+    }
+
+
+
+  }
+
+
+  let rowCounter = 0;
+  function fileUpload(accBody) {
+
+    newRow = document.createElement("div");
+    newRow.setAttribute("class", "row align-items-center");
+    const uniqueRowId = `acc-row-${rowCounter++}` + accBody;
+    newRow.setAttribute("id", uniqueRowId);
+    accordBodyId = "acc_body_" + accBody;
+    console.log(accordBodyId)
+    accordBody = document.getElementById(accordBodyId);
+    accordBody.append(newRow);
+    accordBody.setAttribute("class", "show");
+    newRow.innerHTML = ` <div class="col-2 my-2">
+                                            <select id="FileTypeSelector`+ uniqueRowId + `" class="form-select"
+                                              data-placeholder="file select"
+                                               onchange="toggleInput('`+ uniqueRowId + `')">
+                                               <option selected disabled>Select File Type</option>
+                                                <option value="file" id="file">File</option>
+                                                <option value="link" id="link">Link</option>
+                                                <option value="image" id="image">Image</option>
+                                                <option value="video" id="video">Video</option>
+                                            </select>
+                                            </div>
+                                            <div class=col-3 fs-6">
+                                               <input type="text" id="filematerialname`+ uniqueRowId + `" class="form-control" placeholder="Name">
+                                            </div>
+                                            <div class="col-3 fs-6">
+                                              <div class="fileInput fileUpload" id="fileInput`+ uniqueRowId + `">
+                                                <input type="file" class="form-control" id="filemat`+ uniqueRowId + `" onchange="validate_file('` + uniqueRowId + `');">
+                                              </div>
+                                              <div class="linkInput fileUpload" id="linkInput`+ uniqueRowId + `">
+                                                <input type="text" placeholder="Enter link"  class="form-control" id="linkmat`+ uniqueRowId + `">
+                                              </div>
+                                            </div>
+                                            <div class="col text-end">
+                                               <button class="btn btn-sm btn-primary me-3" onclick=savematerial(`+ accBody + `,'` + uniqueRowId + `');>Save</button>
+                                              <a href="javascript:void(0);" data-repeater-delete class="btn btn-sm btn-light-danger">
+                                                <i class="ki-duotone ki-trash fs-4 pe-0"
+                                                  ><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span
+                                                ></i>
+                                              </a>
+                                            </div>
+                                            
+                                            `;
+  }
+
+  function getcoursedetail() {
+    var course = $("#course").val();
+    var langhtml = ""
+    var modhtml = ''
+
+
+    var en_data = {
+      'id': course,
+
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/course/get-course-details",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("success", json_resposne);
+        if (json_resposne.n == 1) {
+
+          $.each(json_resposne.data.modules_list, function (i, o) {
+            modhtml += `<option value="` + o.id + `">` + o.module_name + `</option>`
+          })
+          $("#module").html(modhtml)
+
+          getmaterial();
+
+
+
+
+        } else {
+
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+  }
+
+
+  function getmaterial() {
+    var course = $("#course").val();
+    var module = $("#module").val();
+    var langhtml = ""
+    var modhtml = ''
+
+
+    var en_data = {
+      'courseid': course,
+      'moduleid': module
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/course/get-course-material",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("success222", json_resposne);
+        var langhtml = ''
+        if (json_resposne.n == 1) {
+
+          $.each(json_resposne.data, function (i, o) {
+
+            langhtml += `
+                        <div class="accordion-item mb-0 mt-0">
+                            <h2 class="accordion-header">
+                              <div class="accord-button">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                  data-bs-target="#collapse_language_`+ o.id + `" aria-expanded="false"
+                                  aria-controls="collapse_language_`+ o.id + `">
+                                  `+ o.languages_name + `
+                                </button>
+                                <span class="fs-7 text-nowrap text-center upload-button"
+                                  onclick="fileUpload(`+ o.id + `)"> UPLOAD </span>
+                              </div>
+                            </h2>
+                            <div id="collapse_language_`+ o.id + `" class="accordion-collapse collapse"
+                              data-bs-parent="#accordion`+ o.id + `">
+                               
+                              <div class="accordion-body" id="acc_body_`+ o.id + `">
+                                ${o.material_list.length==0? `<div class="text-center">No Study Material</div>`: `
+
+                                 ${o.material_list.map(l => `
+                                <div class="row align-items-center mb-3">
+                                  <div class="col">${l.material_type}</div>
+                                  <div class="col fs-6">
+                                    <span class="fw-bold"> ${l.material_label}</span>
+                                  </div>
+                           
+                                  <div class="col d-flex align-items-center">
+                                    ${l.material_type == 'link' ? `
+                                      <a class="btn btn-sm btn-primary truncate-text" href="${l.material_link}" target="_blank">Website/Link</a>
+                                    ` : l.material_type == 'file' ? `
+                                      ${l.material_file.endsWith('.pdf') ? `
+
+                                        <embed class="multipleimages" 
+                                            src="${l.material_file}#toolbar=0&navpanes=0" 
+                                            type="application/pdf" 
+                                            width="100%" 
+                                            height="400px">
+                                      `: `
+                                       <a href="${l.material_file}" class="btn btn-sm btn-primary truncate-text" download>Download DOCX</a>
+                                      `}
+                                    ` : l.material_type == 'video' ? `
+                                      <video width="100%" height="100" controls muted style="border-radius: 8px; object-fit: cover;" class="multipleimages">
+                                        <source src="${l.material_file}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                      </video>
+                                    ` : `
+                                      <a href="${l.material_file}" target="_blank"><img src="${l.material_file}" height="100" /></a>
+                                      
+                                    `}
+                                  </div>
+                                  <div class="col">${l.createdBy}</div>
+                                  <div class="col">${l.createdAt}</div>
+                                  <div class="col text-end">
+                                  
+                                  
+                                     
+                                    
+                                    <a href="javascript:void(0);" onclick=deletematerial(${l.id}) class="btn btn-sm btn-light-danger">
+                                      <i class="ki-duotone ki-trash fs-4 pe-0"><span class="path1"></span><span
+                                          class="path2"></span><span class="path3"></span><span
+                                          class="path4"></span><span class="path5"></span></i>
+                                    </a>
+                                  </div>
+                                </div>
+                                  `).join("\n")}
+                                  ` }
+                              </div>
+                             
+                            </div>
+                          </div>
+                        
+          
+          `
+          })
+
+
+
+
+          $("#accordion-languages").html(langhtml)
+
+        } else {
+          $("#accordion-languages").html(langhtml)
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+  }
+
+  function handleValidationFailure(message, selector) {
+    showErrorToast(message);
+    scrollToElement(selector);
+
+    // Remove the stepper if it exists
+    if (stepper) {
+      stepper.destroy();
+      stepper = null;
+    }
+  }
+
+  function showErrorToast(message) {
+    bootstrap.showToast({
+      body: message,
+      closeButton: true,
+      toastClass: "alert-danger",
+      delay: 2000,
+    });
+  }
+
+  function scrollToElement(selector) {
+    $("html, body").animate(
+      {
+        scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+      },
+      "slow"
+    );
+  }
+
+
+  function savematerial(langid, uniqueid) {
+    var course = $("#course").val();
+    var module = $("#module").val();
+    var languageid = langid
+
+    var filetype = $("#FileTypeSelector" + uniqueid).val();
+    var filematerialname = $("#filematerialname" + uniqueid).val();
+    var fileInput = $("#filemat" + uniqueid)[0].files[0];
+    var linkInput = $("#linkmat" + uniqueid).val();
+
+
+    if (IsValid(course)) {
+      handleValidationFailure("course is required.", "#course");
+      return false;
+    }
+
+    if (IsValid(filetype)) {
+      handleValidationFailure("file type is required.", "#filetype");
+      return false;
+    }
+    if (IsValid(filematerialname)) {
+      handleValidationFailure("Material name is required.", "#filematerialname");
+      return false;
+    }
+
+    if (filetype == 'link') {
+      if (IsValid(linkInput)) {
+        handleValidationFailure("link is required.", "#linkInput");
+        return false;
+      }
+    } else {
+      if (IsValid(fileInput)) {
+        handleValidationFailure("file is required.", "#fileInput");
+        return false;
+      }
+    }
+
+
+
+    var fd = new FormData();
+    fd.append("courseid", course);
+    fd.append("moduleid", module);
+    fd.append("languageid", languageid);
+    fd.append("filetype", filetype);
+    fd.append("filematerialname", filematerialname);
+    fd.append("linkInput", linkInput);
+    fd.append("fileInput", fileInput);
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/course/add-course-material",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: fd,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("aa", json_resposne);
+        var langhtml = ''
+        if (json_resposne.n == 1) {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          getmaterial();
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+
+
+
+
+
+  }
+
+  function deletematerial(materialid) {
+    debugger
+    swal({
+      title: "Are you sure?",
+      text: "you want to delete  ?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true
+    })
+
+      .then((isConfirm) => {
+        if (isConfirm) {
+
+
+
+          var en_data = {
+            'materialid': materialid,
+          };
+          var check_encryptData = encryptData(JSON.stringify(en_data));
+
+          tok = 'Bearer {{og_token}}'
+          $.ajax({
+            url: backendurl + "/api/course/delete-course-material",
+            headers: {
+              Authorization: tok,
+              encrypted: "1",
+            },
+            dataType: "json",
+            data: check_encryptData,
+            type: "POST",
+            processData: false,
+            contentType: false,
+            success: function (response) {
+              var decrypt_response = decryptData(response);
+              var json_resposne = $.parseJSON(decrypt_response);
+              console.log("aa", json_resposne);
+              var langhtml = ''
+              if (json_resposne.n == 1) {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+                  icon: 'success',
+                  position: 'top',
+                  backdrop: true,
+                })
+                getmaterial();
+              } else {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                  icon: 'error',
+                  position: 'top',
+                  backdrop: true,
+                })
+                $("html").scrollTop(0);
+              }
+            },
+          });
+
+        }
+      });
+  }
+  function validate_file(uniqueRowId) {
+    var input_field = $('#filemat' + uniqueRowId);
+    var file = input_field[0].files[0]; // Get the selected file
+    var file_type = $('#FileTypeSelector' + uniqueRowId).val();
+
+    if (!file) {
+
+      Swal.fire({
+        html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Please select a file</h5></div>',
+        icon: 'error',
+        position: 'top',
+        backdrop: true,
+
+      })
+      return false;
+    }
+
+    if (file_type == 'image') {
+      // Validate image
+      var validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validImageTypes.includes(file.type)) {
+
+        Swal.fire({
+          html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Invalid image file type. Please upload a JPEG, PNG, GIF, or WEBP image.</h5></div>',
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+
+        })
+        input_field.val(''); // Clear the input
+        return false;
+      }
+
+      // Optional: Validate image size (e.g., 5MB limit)
+      var maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+
+        Swal.fire({
+          html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Image is too large. Maximum size allowed is 5MB.</h5></div>',
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+        })
+
+
+        input_field.val('');
+        return false;
+      }
+
+      return true;
+
+    } else if (file_type == 'video') {
+      // Validate video
+      var validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+      if (!validVideoTypes.includes(file.type)) {
+
+        Swal.fire({
+          html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Invalid video file type. Please upload an MP4, WEBM, or OGG video.</h5></div>',
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+        })
+
+        input_field.val('');
+        return false;
+      }
+
+      // Optional: Validate video size (e.g., 50MB limit)
+      var maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        Swal.fire({
+          html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Video is too large. Maximum size allowed is 50MB.</h5></div>',
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+        })
+        input_field.val('');
+        return false;
+      }
+
+      return true;
+    }
+  }
+</script>
+
+{%endblock%}

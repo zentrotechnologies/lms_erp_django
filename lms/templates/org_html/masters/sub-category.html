@@ -1,0 +1,676 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                        Sub Category
+                    </h1>
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-gray-700">
+                            Sub Category
+                        </li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Title-->
+                    <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-xxl">
+                <!--begin::Products-->
+                <div class="card card-flush mb-4">
+                    <div class="card-body py-4">
+                        <div class="filter">
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <label class="form-label">Category</label>
+                                    <!--begin::Input-->
+                                    <select class="form-select" data-control="select2"
+                                        data-placeholder="Select Category" data-hide-search="true" id="category_name"
+                                        name="category_name">
+                                        <option></option>
+                                        {% for c in category %}
+                                            {% if c.status %}
+                                                <option value="{{c.id}}">{{c.category_name}}</option>
+                                            {%endif%}
+                                        {% endfor %}
+                                    </select>
+                                    <span class="text-danger" id="category_name_required"></span>
+                                    <!--end::Input-->
+                                </div>
+                                <div class="col-lg-3">
+                                    <label class="form-label">Sub Category Name</label>
+                                    <!--begin::Input-->
+                                    <input type="text" name="sub_name" id="sub_name" class="form-control mb-2"
+                                        placeholder="Sub Category Name" />
+                                    <span class="text-danger" id="sub_name_required"></span>
+                                    <!--end::Input-->
+                                </div>
+                                <div class="col-lg-4">
+                                    <label class="form-label">Tags</label>
+                                    <!--begin::Input-->
+                                    <input class="form-control" placeholder="Tags" id="tags" name="tags" />
+                                    <span class="text-danger" id="tags_required"></span>
+                                    <!--end::Input-->
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="pt-9">
+                                        <button id="addbtn" onclick="return addsubcategory();"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="ki-outline ki-plus fs-2"></i>Add
+                                        </button>
+                                        <button id="updatebtn" onclick="return updatesubcategory();"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="ki-outline ki-plus fs-2"></i>Update
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-flush">
+                    <!--begin::Card header-->
+                    <div class="card-header align-items-center gap-2 gap-md-5">
+                        <!--begin::Card title-->
+                        <div class="card-title">
+                            <!--begin::Search-->
+                            <div class="d-flex align-items-center position-relative my-1">
+                                <i class="ki-duotone ki-magnifier fs-2 position-absolute ms-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <input type="text" data-kt-ecommerce-order-filter="search"
+                                    class="form-control form-control-solid w-250px ps-12" placeholder="Search" />
+                            </div>
+                            <!--end::Search-->
+                            <!--begin::Export buttons-->
+                            <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+                            <!--end::Export buttons-->
+                        </div>
+                        <!--end::Card title-->
+                        <!--begin::Card toolbar-->
+
+                        <!--end::Card toolbar-->
+                    </div>
+                    <!--end::Card header-->
+                    <!--begin::Card body-->
+                    <div class="card-body pt-0 pb-0">
+                        <!--begin::Table-->
+                        <table class="table align-middle table-row-dashed fs-6 gy-3 checkbox-table" id="course_table">
+                            <thead>
+                                <tr class="text-start fw-600 fs-6 gs-0">
+                                    <th class="min-w-60px">Sr. No.</th>
+                                    <th class="min-w-125px">Category Name</th>
+                                    <th class="min-w-175px">Sub Category Name</th>
+                                    <th class="min-w-100px">Tags</th>
+                                    <th class="min-w-80px">Status</th>
+                                    <th class="min-w-60px">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-800">
+                                {% for s in sub_category %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td id="category_name{{s.id}}" category_name="{{s.category_name}}">
+                                        {{s.category_name_str}}</td>
+                                    <td id="sub_name{{s.id}}">{{s.sub_name}}</td>
+                                    <td>
+                                        <span id="tags_text{{s.id}}" class="d-none">
+                                            {% if s.tags %}
+                                            {% if s.tags|length > 0 %}
+                                            {% for t in s.tags %} {{t.value}} {%endfor%}
+                                            {% endif %}
+                                            {% endif %}
+                                        </span>
+
+
+                                        <div data-bs-title="Tags" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                                            {% if s.tags %}
+                                            <span class="tagsCount  p-2 text-primary rounded-start">
+                                                {{ s.tags.0.value }}
+                                            </span>
+                                            {% if s.tags|length > 1 %}
+                                            <span class=" text-light-primary  bg-primary p-2 rounded-end ">
+                                                <span class="fs-2">
+                                                    +
+                                                </span>
+                                                {{ s.tags|length|add:"-1" }}
+                                            </span>
+
+
+                                            {% endif %}
+                                            {% endif %}
+
+
+
+                                        </div>
+
+                                    </td>
+                                    <td>
+                                        <label class="form-check form-switch form-check-custom form-check-solid">
+                                            <input class="form-check-input" type="checkbox" value="1" 
+                                            {% if s.status %}checked{% endif %} id="status{{s.id}}"
+                                                onchange="change_category_status('{{s.id}}')" />
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a onclick="getdetails('{{s.id}}');"
+                                                class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 mb-2">
+                                                <i class="ki-duotone ki-pencil fs-1">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                </i>
+                                            </a>
+                                            <a onclick="Delete('{{s.id}}');"
+                                                class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 mb-2">
+                                                <i class="ki-duotone ki-trash fs-1">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                    <span class="path4"></span>
+                                                    <span class="path5"></span>
+                                                </i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                        <!--end::Table-->
+                    </div>
+                    <!--end::Card body-->
+                </div>
+                <!--end::Products-->
+            </div>
+            <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+        <!--begin::Footer container-->
+        <div class="app-container container-fluid d-flex justify-content-center py-3">
+            <!--begin::Copyright-->
+            <div class="text-gray-900">
+                <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+            </div>
+            <!--end::Copyright-->
+        </div>
+        <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+</div>
+<!--end:::Main-->
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    $("#course_table").DataTable({
+        columnDefs: [
+            { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+        ],
+    });
+    $("#kt_daterangepicker_1").daterangepicker();
+
+    $(document).ready(function () {
+        $("#filter").click(function () {
+            $(".filter-card").slideToggle("slow");
+        });
+    });
+    // The DOM elements you wish to replace with Tagify
+    var input1 = document.querySelector("#kt_tagify_1");
+
+    // Initialize Tagify components on the above inputs
+    new Tagify(input1);
+</script>
+<script>
+
+    $(document).ready(function () {
+        $('#updatebtn').hide();
+        var input_tag = document.querySelector("#tags");
+        new Tagify(input_tag);
+    })
+
+    var updateid;
+    function getdetails(id) {
+        debugger;
+        updateid = id
+        var category_name = $('#category_name' + id).attr('category_name')
+        var sub_name = $('#sub_name' + id).text().trim()
+        var tagsText = $('#tags_text' + id).text().trim();
+        var tags = tagsText.includes(' ') ? tagsText.split(' ') : [tagsText];
+        $('#category_name').val(category_name).trigger('change'); // trigger select2 to update
+
+        // $('#category_name').val(category_name);
+        $('#sub_name').val(sub_name);
+        $('#tags').val(tags);
+        $('#addbtn').hide();
+        $('#updatebtn').show();
+        var input_tag = document.querySelector("#tags");
+        new Tagify(input_tag);
+    }
+
+    function formvalidation() {
+
+        var category_name = $('#category_name').val();
+        var sub_name = $('#sub_name').val();
+        var tags = $('#tags').val();
+
+        if (IsValid(category_name)) {
+            $("#category_name").html();
+            $("#category_name_required").show().delay(3000).slideUp();
+            $("#category_name_required").html("Parent category is required");
+            $("#category_name").focus();
+            return false;
+        }
+        if (IsValid(sub_name)) {
+            $("#sub_name").html();
+            $("#sub_name_required").show().delay(3000).slideUp();
+            $("#sub_name_required").html("Sub category name is required");
+            $("#sub_name").focus();
+            return false;
+        }
+        if (IsValid(tags)) {
+            $("#tags").html();
+            $("#tags_required").show().delay(3000).slideUp();
+            $("#tags_required").html("Tag is required");
+            $("#tags").focus();
+            return false;
+        }
+
+    }
+
+    function IsValid(value) {
+
+        if (value == "" || value == null || value == undefined) {
+
+            return true;
+
+        } else {
+
+            return false;
+
+        }
+
+    }
+
+    function addsubcategory() {
+
+        var category_name = $('#category_name').val();
+        var sub_name = $('#sub_name').val();
+        var tags = $('#tags').val();
+        if (IsValid(category_name)) {
+            var toast = bootstrap.showToast({
+                body: "Please select parent category.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(sub_name)) {
+            var toast = bootstrap.showToast({
+                body: "Sub category name is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(tags)) {
+            var toast = bootstrap.showToast({
+                body: "Tags is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        } else {
+            var en_data = {
+                'category_name': category_name,
+                'sub_name': sub_name,
+                'tags': tags
+            }
+            var check_encryptData = encryptData(JSON.stringify(en_data))
+
+            //var fd = new FormData();
+            //fd.append('id', updateid);
+            //fd.append('category_name', category_name);
+            //fd.append('sub_name', sub_name);
+            //fd.append('tags', tags);
+
+            //fd.append('csrfmiddlewaretoken', '{{csrf_token}}')
+            tok = 'Bearer {{og_token}}'
+            $.ajax({
+                url: backendurl + '/api/master/add-sub-category',
+                headers: {
+                    "Authorization": tok,
+                    "encrypted": '1'
+                },
+                dataType: "json",
+                data: check_encryptData,
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    var decrypt_response = decryptData(response)
+                    var json_resposne = $.parseJSON(decrypt_response)
+
+                    if (json_resposne.n == 1) {
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+                            icon: 'success',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        })
+                        setTimeout(
+                            function () {
+                                window.location.href = backendurl + "/masters/sub-category-list";
+                            }, 2000);
+
+                    } else {
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                            icon: 'error',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        })
+                        $("html").scrollTop(0);
+                    }
+                }
+            })
+        }
+    }
+
+
+    function updatesubcategory() {
+        debugger;
+        var category_name = $('#category_name').val();
+        var sub_name = $('#sub_name').val();
+        var tags = $('#tags').val();
+
+        if (IsValid(category_name)) {
+            var toast = bootstrap.showToast({
+                body: "Please select parent category.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(sub_name)) {
+            var toast = bootstrap.showToast({
+                body: "Sub category name is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(tags)) {
+            var toast = bootstrap.showToast({
+                body: "Tags is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        } else {
+            var fd = new FormData();
+            var en_data = {
+                'id': updateid,
+                'category_name': category_name,
+                'sub_name': sub_name,
+                'tags': tags
+            }
+            var check_encryptData = encryptData(JSON.stringify(en_data))
+
+            //fd.append('id', updateid);
+            //fd.append('category_name', category_name);
+            //fd.append('sub_name', sub_name);
+            //fd.append('tags', tags);
+            //fd.append('csrfmiddlewaretoken', '{{csrf_token}}')
+            tok = 'Bearer {{og_token}}'
+            $.ajax({
+                url: backendurl + '/api/master/update-sub-category',
+                headers: {
+                    "Authorization": tok,
+                    "encrypted": '1'
+                },
+                dataType: "json",
+                data: check_encryptData,
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    var decrypt_response = decryptData(response)
+                    var json_resposne = $.parseJSON(decrypt_response)
+                    if (json_resposne.n == 1) {
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+                            icon: 'success',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        })
+                        setTimeout(
+                            function () {
+                                window.location.href = backendurl + "/masters/sub-category-list";
+                            }, 2000);
+
+                    } else {
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                            icon: 'error',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        })
+                        $("html").scrollTop(0);
+                    }
+                }
+            })
+        }
+    }
+    function Delete(id) {
+        tok = 'Bearer {{og_token}}'
+        Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to delete this data?</h5></div>',
+            //icon: 'question',
+            position: 'top',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'No',
+            customClass: {
+                confirmButton: 'swal-button',
+                cancelButton: 'swal-button'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: backendurl + "/api/master/delete-sub-category",
+                    type: "POST",
+                    headers: {
+                        "Authorization": tok,
+                        //"encrypted": '1'
+                    },
+                    data: { id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+
+                    success: function (data) {
+                        if (data.n == 1) {
+                            console.log('Success');
+                            Swal.fire({
+                                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + data.msg + '</h4></div>',
+                                icon: 'success',
+                                position: 'top',
+                                backdrop: true,
+                                customClass: {
+                                    confirmButton: 'swal-button'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            console.log('Success-Error');
+                            Swal.fire({
+                                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + data.msg + '</h5></div>',
+                                icon: 'error',
+                                position: 'top',
+                                backdrop: true,
+                                customClass: {
+                                    confirmButton: 'swal-button'
+                                }
+                            });
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus, errorThrown);
+                        Swal.fire({
+                            title: 'Error',
+                            text: jqXHR.responseJSON.Message,
+                            icon: 'error',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+    function change_category_status(id) {
+
+        var current_status = $('#status' + id).prop("checked")
+
+        tok = 'Bearer {{og_token}}'
+        Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to change status?</h5></div>',
+            //icon: 'question',
+            position: 'top',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Change',
+            cancelButtonText: 'No',
+            customClass: {
+                confirmButton: 'swal-button',
+                cancelButton: 'swal-button'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: backendurl + "/api/master/change-sub-category-status",
+                    type: "POST",
+                    headers: {
+                        "Authorization": tok,
+                        //"encrypted": '1'
+                    },
+                    data: { id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+
+                    success: function (data) {
+                        console.log("data", data)
+                        if (data.n == 1) {
+                            console.log('Success');
+                            Swal.fire({
+                                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + data.msg + '</h4></div>',
+                                icon: 'success',
+                                position: 'top',
+                                backdrop: true,
+                                customClass: {
+                                    confirmButton: 'swal-button'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            console.log('Success-Error');
+                            Swal.fire({
+                                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + data.msg + '</h5></div>',
+                                icon: 'error',
+                                position: 'top',
+                                backdrop: true,
+                                customClass: {
+                                    confirmButton: 'swal-button'
+                                }
+                            });
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus, errorThrown);
+                        Swal.fire({
+                            title: 'Error',
+                            text: jqXHR.responseJSON.Message,
+                            icon: 'error',
+                            position: 'top',
+                            backdrop: true,
+                            customClass: {
+                                confirmButton: 'swal-button'
+                            }
+                        });
+                    }
+                });
+            } else {
+                if (current_status) {
+                    console.log("checked", current_status)
+                    $('#status' + id).prop("checked", false)
+                } else {
+                    console.log("unck", current_status)
+                    $('#status' + id).prop("checked", true)
+
+                }
+            }
+        });
+    }
+
+
+</script>
+{%endblock%}

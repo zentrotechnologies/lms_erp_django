@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAVLEARN Exam Notification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .greeting {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .card {
+            background: #f8f9fc;
+            border-left: 4px solid #4e73df;
+            border-radius: 0 8px 8px 0;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card h2 {
+            color: #4e73df;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .exam-info {
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .info-icon {
+            background: #e8f0fe;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #4e73df;
+            font-size: 18px;
+        }
+        
+        .info-content h3 {
+            font-size: 16px;
+            margin-bottom: 3px;
+            color: #555;
+        }
+        
+        .info-content p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .exam-link {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            display: inline-block;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .exam-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .instructions {
+            margin: 30px 0;
+        }
+        
+        .instructions h2 {
+            color: #4e73df;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .instructions li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 10px;
+            color: #36b9cc;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background: #f8f9fc;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #eaecf4;
+        }
+        
+        .footer a {
+            color: #4e73df;
+            text-decoration: none;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .support {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eaecf4;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        @media (max-width: 480px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .info-icon {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>NAVLEARN EXAM NOTIFICATION</h1>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                <p>Hello {{candidate_name}},</p>
+                <p>You are scheduled to take your upcoming NAVLEARN exam. Please review the important details and instructions below.</p>
+            </div>
+            
+            <div class="card">
+                <h2>Your Exam Details</h2>
+                <div class="exam-info">
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <h3>Exam Date & Time</h3>
+                            <p>{{exam_date_time|default:'October 15, 2023 at 10:00 AM (GMT)'}}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⏱️</div>
+                        <div class="info-content">
+                            <h3>Duration</h3>
+                            <p>{{exam_duration|default:'0'}} Minutes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">🔑</div>
+                        <div class="info-content">
+                            <h3>Exam Access</h3>
+                            <p>Login with your NAVLEARN credentials</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <a style="text-decoration: none;color: white;" href="{{exam_link}}" class="exam-link">ACCESS YOUR EXAM PORTAL</a>
+                
+                <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">
+                    The exam link will be active 30 minutes before the scheduled time.
+                </p>
+            </div>
+            
+            <div class="highlight">
+                <h3 style="color: #e0a800; margin-bottom: 10px;">Important Notice</h3>
+                <p>You must complete the exam in one sitting. Once started, the timer cannot be paused. Ensure you have a stable internet connection throughout the exam.</p>
+            </div>
+            
+            <div class="instructions">
+                <h2>Exam Instructions</h2>
+                <ul>
+                    <li>Log in to your account at least 15 minutes before the exam start time</li>
+                    <li>Ensure you have a reliable internet connection throughout the exam</li>
+                    <li>Use a desktop or laptop computer - mobile devices are not supported</li>
+                    <li>Close all other applications and browser tabs before starting</li>
+                    <li>Do not refresh the page or navigate away during the exam</li>
+                    <li>Have your identification ready for verification if required</li>
+                    <li>The exam must be completed in one sitting - you cannot pause the timer</li>
+                </ul>
+            </div>
+            
+            <div class="support">
+                <p>Need assistance? Contact our support team at <a href="mailto:support@navlearn.com">support@navlearn.com</a> or call +1 (555) 123-4567</p>
+                <p>Operating Hours: Monday-Friday, 8:00 AM - 6:00 PM GMT</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 NAVLEARN. All rights reserved.</p>
+            <p>123 Education Street, Learning City, LC 12345</p>
+            <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            <p>This email was sent to {{candidate_email}}. <a href="#">Unsubscribe</a></p>
+        </div>
+    </div>
+</body>
+</html>

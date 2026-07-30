@@ -1,0 +1,821 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<!--begin::Main-->
+<style>
+    .citywrapper{
+        position: relative;
+      }
+      
+      .citywrapper .citysearch {
+        background: #fff;
+        width: 100%;
+        border-radius: 5px;
+        position: absolute;
+        z-index: 10;
+        box-shadow: none;
+      }
+     
+      .citysearch input {
+        height: 40px;
+        width: 100%;
+        outline: none;
+        border: 1px solid #d1d3e2;
+        border-radius: 5px;
+        padding: 0 8px 0 8px;
+        font-size: 12px;
+        box-shadow: none;
+      }
+      form.user .form-control-user {
+        padding: 1rem 0.4rem;
+      }
+      
+      .citysearch.active input {
+        border-radius: 5px;
+      }
+      .table td, .table th {
+        padding:0.3rem 0.4rem;
+      }
+      .table-bordered td{
+          font-size: 12px;
+      }
+      form.user.cust-details{
+        padding-top: 25px;
+      }
+      .citysearch .autocomp-box {
+        padding: 0 !important;
+        opacity: 0 ;
+        pointer-events: none;
+        max-height: 280px;
+        overflow-y: auto;
+        border:none  !important;
+      }
+      .citysearch.active .autocomp-box {
+        padding: 10px 8px;
+        opacity: 1;
+        pointer-events: auto;
+        width: 375px;
+        background: white;
+        border: 1px solid #d1d3e2;
+        border-radius: 5px;
+      }
+      .autocomp-box li {
+        list-style: none;
+        padding: 3px 6px;
+        font-size: 12px;
+        display: none;
+        width: 100%;
+        cursor: default;
+        border-radius: 3px;
+      }
+      .citysearch.active .autocomp-box li {
+        display: block;
+      }
+      .autocomp-box li:hover {
+        background: #efefef;
+        cursor: pointer;
+      }
+</style>
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                        Update Member
+                    </h1>
+                    <!--end::Title-->
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="member-list.html" class="text-muted text-hover-primary">Member List</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-gray-700">Update Member</li>
+                        <!--end::Item-->
+                    </ul>
+                </div>
+                <!--end::Page title-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-fluid">
+                <!--begin::Row-->
+                <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+                    <!--begin::Col-->
+                    <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+                        <!--begin::Card widget 20-->
+                        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+                            <!--begin::Header-->
+                            <div class="card-body py-5">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-5 fv-row fv-plugins-icon-container row gy-3">
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="first_name" id="first_name" class="form-control mb-2"
+                                                    placeholder="Enter your First Name" value="{{singledetails.first_name}}" />
+                                                <span class="text-danger" id="first_name_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Middle Name <span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="middle_name" id="middle_name" class="form-control mb-2"
+                                                    placeholder="Enter your Middle Name" value="{{singledetails.middle_name}}" />
+                                                <span class="text-danger" id="middle_name_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="sku" id="last_name" class="form-control mb-2"
+                                                    placeholder="Enter your Last Name" value="{{singledetails.last_name}}" />
+                                                <span class="text-danger" id="last_name_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Designation<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="designation" id="designation" class="form-control mb-2"
+                                                    placeholder="Designation" value="{{singledetails.designation}}" />
+                                                <span class="text-danger" id="designation_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="email" id="email" class="form-control mb-2"
+                                                    placeholder="Enter your Email" value="{{singledetails.email}}" />
+                                                <span class="text-danger" id="email_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Contact No.<span class="text-danger">*</span> </label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="mobilenumber" id="mobilenumber" class="form-control mb-2"
+                                                    placeholder="Enter your Contact No." value="{{singledetails.mobilenumber}}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                <span class="text-danger" id="mobilenumber_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                           
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Role<span class="text-danger">*</span></label>
+                                                <select class="form-select" data-control="select2"
+                                                    data-placeholder="Select Role" data-hide-search="true" id="role" name="role">
+                                                    <option></option>
+                                                    {% for c in userrole %}
+                                                    {% if  c.id == singledetails.role %}
+                                                    <option value="{{c.id}}" selected>{{c.name}}</option>
+                                                    {% else %}
+                                                    <option value="{{c.id}}">{{c.name}}</option>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                                <span class="text-danger" id="role_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">
+                                                    Reporting To</label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <select class="form-select" data-control="select2" id="reporting_to"
+                                                    data-close-on-select="false" data-placeholder="Reporting To"
+                                                    data-allow-clear="true">
+                                                    <option></option>
+                                                    {%for m in member%}
+                                                    {% if m.id == singledetails.reporting_to %}
+                                                    <option value="{{m.id}}" selected>{{m.username}}</option>
+                                                    {%else%}
+                                                    <option value="{{m.id}}">{{m.username}}</option>
+                                                    {% endif %}
+                                                    {%endfor%}
+                                                </select>
+                                                <span class="text-danger" id="reporting_to_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Gender<span class="text-danger">*</span></label>
+                                                <!--begin::Input-->
+                                                <select class="form-select" data-control="select2" id="gender" name="gender"
+                                                    data-placeholder="Enter Gender" data-hide-search="true">
+                                                    <option></option>
+                                                    {% if singledetails.gender == "Male" %}
+                                                    <option value="Male" selected>Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other">Other</option>
+                                                    {% elif singledetails.gender == "Female" %}
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female" selected>Female</option>
+                                                    <option value="Other">Other</option>
+                                                    {% elif singledetails.gender == "Other" %}
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other" selected>Other</option>
+                                                    {% endif %}
+                                                </select>
+                                                <span class="text-danger" id="gender_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Date of Birth<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="date" name="dob" id="dob" class="form-control mb-3"
+                                                    placeholder="31 July , 2003" value="{{singledetails.dob}}" />
+                                                <span class="text-danger" id="dob_required"></span>
+                                            </div>
+                                            <div class="col-lg-4">                                          
+                                                <label class="form-label">City <span class="text-danger">*</span></label> 
+                                                <div class="citywrapper">
+                                                    <div class="citysearch" id="citysearchdiv">                                                    
+                                                        <input type="text" name="city" class="form-control mb-2" placeholder="City" id="city" value="{{singledetails.city}}" oninput="search_cities();">  
+                                                        <div class="autocomp-box" id="searchcitylist">
+                                                        
+                                                        </div>
+                                                        <span class="text-danger" id="city_required"></span>         
+                                                    </div>
+                                                </div>                                    
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Country<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <select id="country" class="form-select" data-control="select2"
+                                                    data-placeholder="Select your Country"
+                                                    data-hide-search="true" >
+                                                   
+                                                </select>
+                                                <span class="text-danger" id="country_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">State<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <select id="state" class="form-select" data-control="select2"
+                                                    data-placeholder="Select your State"
+                                                    data-hide-search="true">
+                                                    
+                                                </select>
+                                                <span class="text-danger" id="state_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Pin Code<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="text" name="pincode" id="pincode" class="form-control mb-2"
+                                                    placeholder="Pin Code" value="{{singledetails.pincode}}"  oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                <span class="text-danger" id="pincode_required"></span>
+                                                <!--end::Input-->
+                                            </div>
+                                            <div class="col-md-4">
+                                                <!--begin::Label-->
+                                                <label class="form-label">Joining Date<span class="text-danger">*</span></label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <input type="date" name="joining_date" id="joining_date" class="form-control mb-3"
+                                                    placeholder="31 July , 2003" value="{{singledetails.joining_date}}" />
+                                                <span class="text-danger" id="joining_date_required"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-center">
+                                    <!--begin::Button-->
+                                    <a href="/usermanagement/member" class="btn btn-sm btn-light me-5">Cancel</a>
+                                    <!--end::Button-->
+                                    <!--begin::Button-->
+                                    <button onclick="return updatemember('{{singledetails.id}}');" class="btn btn-sm btn-primary">
+                                        <span class="indicator-label">Update</span>
+                                        <span class="indicator-progress">Please wait...
+                                            <span
+                                                class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                    </button>
+                                    <!--end::Button-->
+                                </div>
+                            </div>
+                            <!--end::Header-->
+                        </div>
+                        <!--end::Card widget 20-->
+                    </div>
+                    <!--end::Col-->
+                    <!--end::Col-->
+                </div>
+                <!--end::Row-->
+            </div>
+            <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+        <!--begin::Footer container-->
+        <div class="app-container container-fluid d-flex justify-content-center py-3">
+            <!--begin::Copyright-->
+            <div class="text-gray-900">
+                <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+            </div>
+            <!--end::Copyright-->
+        </div>
+        <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+</div>
+<!--end:::Main-->
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    $("#kt_daterangepicker_1").daterangepicker();
+</script>
+<script>
+
+    //dob
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const formattedDate = maxDate.toISOString().split('T')[0];
+    document.getElementById('dob').max = formattedDate;
+    // Format to DD-MM-YYYY for display
+   
+
+    
+    //joining date
+    const jjtoday = new Date();
+    const formattedToday = jjtoday.toISOString().split('T')[0];
+    document.getElementById('joining_date').max = formattedToday;
+
+
+    $(document).ready(function(){
+        debugger;
+
+        var city = '{{singledetails.city}}'
+        var trhtml = "";
+        
+        var fd = new FormData();    
+        fd.append("city",city);
+        
+        var en_data = {
+            'city':city
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            type: "POST",
+            url: backendurl+"/api/adminauth/search-cities",
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+ 
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            
+            success: function(response) {
+                
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                
+                if(json_resposne.data.length > 0){
+                    $("#citysearchdiv").addClass('active');
+                    //$.each(json_resposne.data,function(i,o){
+                    //  trhtml += `
+                    //  <li class="searchlistli" value="`+o.id+`" onclick="selectedcityli(`+o.id+`,'`+o.name+`',`+o.state+`,'`+o.statename+`',`+o.country+`,'`+o.countryname+`');">
+                    //    <span style="color:black">`+o.name+`</span> <br>
+                    //   
+                    //  </li>
+                    //  `
+                    //})
+                    var state_html = `
+                    <option value="`+json_resposne.data[0].state+`">`+json_resposne.data[0].statename+`</option>
+                    `
+                    $("#state").html(state_html);
+
+                    var country_html = `
+                    <option value="`+json_resposne.data[0].country+`">`+json_resposne.data[0].countryname+`</option>
+                    `
+                    $("#country").html(country_html); 
+
+        
+                }else{
+        
+                    $("#citysearchdiv").removeClass('active');
+                    trhtml += `
+                      
+                      <li class="searchlistli" value="">No data found</li>
+                      `
+                }
+                           
+                  
+                  $("#searchcitylist").html(trhtml);
+
+             
+            },
+        });
+      
+    })
+
+    function search_cities(){
+
+        $("#searchcitylist").show();
+
+        var city = $("#city").val().trim();
+        var trhtml = "";
+        
+        var fd = new FormData();    
+        fd.append("city",city);
+        
+        var en_data = {
+            'city':city
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            type: "POST",
+            url: backendurl+"/api/adminauth/search-cities",
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+ 
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            
+            success: function(response) {
+                
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                
+                if(json_resposne.data.length > 0){
+                    $("#citysearchdiv").addClass('active');
+                    $.each(json_resposne.data,function(i,o){
+                    
+                      
+                      trhtml += `
+                      
+                      <li class="searchlistli" value="`+o.id+`" onclick="selectedcityli(`+o.id+`,'`+o.name+`',`+o.state+`,'`+o.statename+`',`+o.country+`,'`+o.countryname+`');">
+                        <span style="color:black">`+o.name+`</span> <br>
+                       
+                      </li>
+                      `
+                    })
+        
+                }else{
+        
+                    $("#citysearchdiv").removeClass('active');
+                    trhtml += `
+                      
+                      <li class="searchlistli" value="">No data found</li>
+                      `
+                }
+                           
+                  
+                  $("#searchcitylist").html(trhtml);
+
+             
+            },
+        });
+      
+    }
+
+    function selectedcityli(id,cityname,state_id,state_name,country_id,country_name) {
+        debugger;
+        $("#city").val(cityname); 
+
+        var state_html = `
+        <option value="`+state_id+`">`+state_name+`</option>
+        `
+        $("#state").html(state_html);
+
+        var country_html = `
+        <option value="`+country_id+`">`+country_name+`</option>
+        `
+
+        $("#country").html(country_html); 
+
+        $("#searchcitylist").html('');
+        $("#searchcitylist").hide();
+
+    }
+    //
+
+    function IsValid(value) {
+        if (value == "" || value == null || value == undefined) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+      
+    function updatemember(updateid){
+        var first_name = $('#first_name').val();
+        var middle_name = $('#middle_name').val();
+        var last_name = $('#last_name').val();
+        var designation = $('#designation').val();
+        var email = $('#email').val();
+        var mobilenumber = $('#mobilenumber').val();
+        var role = $('#role').val();
+        var reporting_to = $('#reporting_to').val();
+        var gender = $('#gender').val();
+        var dob = $('#dob').val();
+        var city = $('#city').val();
+        var country = $('#country').val();
+        var state = $('#state').val();
+        var pincode = $('#pincode').val();
+        var joining_date = $('#joining_date').val();
+            var emailregex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+        if (IsValid(first_name)) {
+            var toast = bootstrap.showToast({			
+                body: "First name is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(middle_name)) {
+            var toast = bootstrap.showToast({			
+                body: "Middle name is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(last_name)) {
+            var toast = bootstrap.showToast({			
+                body: "Last name is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(designation)) {
+            var toast = bootstrap.showToast({			
+                body: "Designation is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(email)) {
+            var toast = bootstrap.showToast({			
+                body: "Email is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+                 else if (!emailregex.test(email)) {
+            var toast = bootstrap.showToast({			
+                body: "Please enter valid email.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+
+        } 
+        if (IsValid(mobilenumber)) {
+            var toast = bootstrap.showToast({			
+                body: "Mobile Number is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        
+        if (IsValid(role)) {
+            var toast = bootstrap.showToast({			
+                body: "Role is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+    
+        // if (IsValid(reporting_to)) {
+        //     var toast = bootstrap.showToast({			
+        //         body: "Reporting to is required.", 
+        //         closeButton: true, 
+        //         toastClass: "alert-danger",
+        //         delay: 2000,
+        //     })
+        //     $("html, body").animate({ scrollTop: 0 }, "slow");
+        //     return false;
+        // }
+
+        
+        if (IsValid(gender)) {
+            var toast = bootstrap.showToast({			
+                body: "Gender is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(dob)) {
+            var toast = bootstrap.showToast({			
+                body: "Date of birth is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(city)) {
+            var toast = bootstrap.showToast({			
+                body: "City is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(country)) {
+            var toast = bootstrap.showToast({			
+                body: "Country is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(state)) {
+            var toast = bootstrap.showToast({			
+                body: "State is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(pincode)) {
+            var toast = bootstrap.showToast({			
+                body: "Pincode is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        if (IsValid(joining_date)) {
+            var toast = bootstrap.showToast({			
+                body: "Joining Date is required.", 
+                closeButton: true, 
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        }
+        
+        else{
+    
+            var en_data = {
+            'id':updateid,
+            'first_name':first_name,
+            'middle_name':middle_name,
+            'last_name':last_name,
+            'designation':designation,
+            'email':email,
+            'mobilenumber':mobilenumber,
+            //'password':password,
+            //'confirm_password':confirm_password,
+            'role':role,
+            'reporting_to':reporting_to,
+            'gender':gender,
+            'dob':dob,
+            'city':city,
+            'country':country,
+            'state':state,
+            'pincode':pincode,
+            'joining_date':joining_date
+            }
+            var check_encryptData = encryptData(JSON.stringify(en_data))
+    
+            tok = 'Bearer {{og_token}}'
+            $.ajax({
+                url: backendurl + '/api/usermanagement/update-member',
+                headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+                },
+                dataType: "json",
+                data: check_encryptData,
+                type: 'POST',
+                processData: false,
+                contentType: false, 
+                success: function(response) {  
+                    
+                    var decrypt_response = decryptData(response)
+                    var json_resposne = $.parseJSON(decrypt_response)
+    
+                    if (json_resposne.n == 1){
+                    Swal.fire({
+                        html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+                        icon: 'success',
+                        position: 'top',
+                        backdrop: true,
+                        customClass: {
+                        confirmButton: 'swal-button'
+                        }
+                    })
+                    setTimeout(
+                        function() 
+                        {
+                            window.location.href = backendurl + "/usermanagement/member";
+                        }, 2000);
+                
+                }else{
+                    Swal.fire({
+                        html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                        icon: 'success',
+                        position: 'top',
+                        backdrop: true,
+                        customClass: {
+                        confirmButton: 'swal-button'
+                        }
+                    })
+                    $("html").scrollTop(0);
+                }
+            }
+        })
+    }
+    }
+</script>
+{%endblock%}

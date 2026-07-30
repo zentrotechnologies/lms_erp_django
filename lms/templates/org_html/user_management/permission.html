@@ -1,0 +1,282 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+  <!--begin::Main-->
+  <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+      <!--begin::Toolbar-->
+      <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+        <!--begin::Toolbar container-->
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+          <!--begin::Page title-->
+          <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+            <!--begin::Title-->
+            <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+              Permission
+            </h1>
+            <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+              <!--begin::Item-->
+              <li class="breadcrumb-item text-muted">
+                <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+              </li>
+              <li class="breadcrumb-item">
+                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+              </li>
+              <li class="breadcrumb-item text-gray-700">User Management</li>
+              <!--end::Item-->
+              <li class="breadcrumb-item">
+                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+              </li>
+              <li class="breadcrumb-item text-gray-700">Permission</li>
+            </ul>
+            <!--end::Title-->
+            <!--end::Title-->
+          </div>
+          <!--end::Page title-->
+        </div>
+        <!--end::Toolbar container-->
+      </div>
+      <!--end::Toolbar-->
+      <!--begin::Content-->
+      <div id="kt_app_content" class="app-content flex-column-fluid">
+        <!--begin::Content container-->
+        <div id="kt_app_content_container" class="app-container container-fluid">
+          <!--begin::Row-->
+          <form method="POST" id="permissionForm">
+        {% csrf_token %}
+        
+          <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+            <!--begin::Col-->
+            <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+              <!--begin::Card widget 20-->
+              <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+                <!--begin::Header-->
+                <div class="card-body py-5">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="mb-5 fv-row fv-plugins-icon-container row ">
+                        <div class="col-md-4 mb-5">
+                          <!--begin::Label-->
+                          <label class="form-label">Role</label>
+
+                          <select class="form-select" data-control="select2" data-close-on-select="true" id="roleID"
+                            data-placeholder="Select Role" data-allow-clear="true" onchange="getpermissionbyrole()" name="role">
+                            <option></option>
+                            {% for r in role %}
+                              <option value="{{r.id}}">{{r.name}}</option>
+                            {% endfor %}
+                          </select>
+
+                          <!--end::Input-->
+                        </div>
+                       
+                        {%for i in menulist %}
+                        {%if i.parent_id == 555 %}
+                            
+                        <div class="px-3">
+                          <div class="p-6  custom-card">
+                            
+                            <div class="row align-items-center ">
+                              <div class="col-md-6">
+                                <input class="form-check-input check{{i.id}}"  type="checkbox" id="faculty" name="menuItemCheck" value="{{i.id}}"/>
+                                <label for="faculty" class="mx-1" style="font-weight: 500;">{{i.menu_name}}</label>
+                              </div>
+                              <!-- <div class="col-md-6 d-flex justify-content-end">
+                                <div class="form-check me-3">
+                                  <input class="form-check-input" type="checkbox" id="Faculty-editAccess" />
+                                  <label class="form-check-label" for="Faculty-editAccess">
+                                    Edit
+                                  </label>
+                                </div>
+                                <div class="form-check me-3">
+                                  <input class="form-check-input" type="checkbox" id="Faculty-deleteAccess" />
+                                  <label class="form-check-label" for="Faculty-deleteAccess">
+                                    Delete
+                                  </label>
+                                </div>
+                                <div class="form-check me-3">
+                                  <input class="form-check-input" type="checkbox" id="Faculty-approveAccess" />
+                                  <label class="form-check-label" for="Faculty-approveAccess">
+                                    Approve
+                                  </label>
+                                </div>
+                              </div> -->
+
+                            </div>
+                            
+                          </div>
+                        </div>
+                        {% elif i.parent_id == 0 %}
+                        <!--begin::accordian-course-->
+                        <div class="accordion" id="accordionCourse{{i.id}}">
+                          <div class="accordion-item mb-0 mt-0">
+                            <h2 class="accordion-header">
+                              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseCourse{{i.id}}" aria-expanded="false"
+                                aria-controls="collapseCourse" style="background-color:#d7d1e35c">
+                                <input class="form-check-input check{{i.id}}" type="checkbox" id="course" name="menuItemCheck"  value="{{i.id}}"/>
+                                <label for="course" class="mx-1" style="font-weight: 500;">{{i.menu_name}}
+                                </label>
+                              </button>
+                            </h2>
+                            <div id="collapseCourse{{i.id}}" class="accordion-collapse collapse show"
+                              data-bs-parent="#accordionCourse{{i.id}}">
+                              <div class="accordion-body">
+                                {% for j in menulist %}
+                                
+                                {% if j.parent_id|stringformat:"s" == i.id|stringformat:"s" %}
+                                <div class="row mb-3 align-items-center">
+                                  <div class="col-md-6">
+                                     <input class="form-check-input check{{j.id}}"  type="checkbox" id="course" name="menuItemCheck"  value="{{j.id}}"/>
+                                    <span>{{j.menu_name}}</span>
+                                  </div>
+                                  
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                               
+
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                  <!--begin::Button-->
+                  <!-- <a href="" class="btn btn-sm btn-light">Cancel</a> -->
+                  <button type="submit" class="btn btn-sm btn-primary" onclick="return permissionValidate();">
+                    <span class="indicator-label">Save</span>
+                    <span class="indicator-progress">Please wait...
+                      <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                  </button>
+                  <!--end::Button-->
+                </div>
+              </div>
+              <!--end::Header-->
+            </div>
+            <!--end::Card widget 20-->
+          </div>
+          </form>
+          <!--end::Col-->
+          <!--end::Col-->
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    $("#course_table").DataTable();
+ 
+    $("#kt_daterangepicker_1").daterangepicker();
+  
+    
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Function for Accordion Sections
+      document.querySelectorAll(".accordion-button input[type='checkbox']").forEach((mainCheckbox) => {
+        mainCheckbox.addEventListener("change", function () {
+          let sectionContainer = this.closest(".accordion-item"); // Find the correct accordion section
+          if (sectionContainer) {
+            let innerCheckboxes = sectionContainer.querySelectorAll(".accordion-body .form-check-input");
+            innerCheckboxes.forEach((checkbox) => {
+              checkbox.checked = this.checked;
+            });
+          }
+        });
+      });
+
+      // Monitor individual checkboxes inside the accordion
+      document.querySelectorAll(".accordion-body .form-check-input").forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+          let sectionContainer = this.closest(".accordion-item"); // Find the correct section
+          let mainCheckbox = sectionContainer.querySelector(".accordion-button input[type='checkbox']"); // Main select all checkbox
+          let allCheckboxes = sectionContainer.querySelectorAll(".accordion-body .form-check-input");
+
+          // Check if all checkboxes are checked
+          let allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+          mainCheckbox.checked = allChecked; // Update the main checkbox
+        });
+      });
+
+      // Function for Faculty Section
+      let facultyCheckbox = document.querySelector("#faculty");
+      if (facultyCheckbox) {
+        facultyCheckbox.addEventListener("change", function () {
+          let facultySection = this.closest(".custom-card"); // Find the Faculty section
+          if (facultySection) {
+            let innerCheckboxes = facultySection.querySelectorAll(".form-check-input:not(#faculty)");
+            innerCheckboxes.forEach((checkbox) => {
+              checkbox.checked = this.checked;
+            });
+          }
+        });
+
+        // Monitor individual checkboxes inside Faculty Section
+        document.querySelectorAll(".custom-card .form-check-input:not(#faculty)").forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            let facultySection = this.closest(".custom-card");
+            let facultyMainCheckbox = facultySection.querySelector("#faculty");
+            let allFacultyCheckboxes = facultySection.querySelectorAll(".form-check-input:not(#faculty)");
+
+            // Check if all checkboxes inside Faculty are checked
+            let allChecked = Array.from(allFacultyCheckboxes).every(cb => cb.checked);
+            facultyMainCheckbox.checked = allChecked; // Update Faculty checkbox
+          });
+        });
+      }
+    });
+
+function getpermissionbyrole() {
+  debugger;
+    $('.form-check-input').prop('checked', false)
+    var roleID = $('#roleID').val();
+    var html = '';
+    tok = 'Bearer {{og_token}}'
+      $.ajax({
+          type: "POST",
+          url: backendurl + "/usermanagement/getpermissionbyrole",
+          data: {
+              'roleID': roleID,
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+          },
+        success: function (response) {  
+          console.log("repss",response)          
+                $(response.data).each(function (i, o) {
+                    $('.check' + o.menu_id).prop('checked', true)
+                   
+                })
+        }
+    });
+}
+
+function permissionValidate(){
+    if (!IsValid(role)) {
+    var toast = bootstrap.showToast({			
+        body: "Role is required.", 
+        closeButton: true, 
+        toastClass: "alert-danger",
+        delay: 2000,
+    })
+    $("html, body").animate({ scrollTop: 0 },"slow");
+    return false;   
+  }
+  return true;
+  }
+
+
+
+
+</script>
+
+{%endblock%}

@@ -1,0 +1,616 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Archive Questions
+          </h1>
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+
+            <li class="breadcrumb-item text-muted">
+              <a href="question-bank.html" class="text-muted text-hover-primary">Question Bank</a>
+            </li>
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+
+            <li class="breadcrumb-item text-gray-700">Archive Question</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+        <div>
+          <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold me-2" id="filter" data-bs-title="Filter"
+            data-bs-toggle="tooltip">
+            <i class="ki-duotone ki-filter fs-4 me-1 p-0">
+              <span class="path1"></span>
+              <span class="path2"></span> </i></a>
+
+        </div>
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-xxl">
+        <!--begin::Products-->
+        <div class="card card-flush mb-4 filter-card">
+          <div class="card-body py-4">
+            <div class="filter">
+              <div class="row row-cols-4 justify-content-between">
+                <div class="col">
+                  <label class="form-label">Course Name</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Course"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Course 1</option>
+                    <option value="2">Course 2</option>
+                    <option value="3">Course 3</option>
+                    <option value="4">Course 4</option>
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Modules</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Module"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Module 1</option>
+                    <option value="2">Module 2</option>
+                    <option value="3">Module 3</option>
+                    <option value="4">Module 4</option>
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Severity Level</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Severity Level"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3">Hard</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Type</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Type"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Subjective</option>
+                    <option value="2">Objective</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Validated</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Validated"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Yes</option>
+                    <option value="2">No</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+
+                <div class="col-6">
+                  <div class="pt-4 text-end">
+                    <button type="button" class="btn btn-sm btn-border-primary">
+                      Apply Filter
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-flush">
+          <!--begin::Card header-->
+          <div class="card-header align-items-center gap-2 gap-md-5">
+            <!--begin::Card title-->
+            <div class="card-title">
+              <!--begin::Search-->
+              <div class="d-flex align-items-center position-relative my-1">
+                <i class="ki-duotone ki-magnifier fs-2 position-absolute ms-4">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                <input type="text" data-kt-ecommerce-order-filter="search"
+                  class="form-control form-control-solid w-250px ps-12" placeholder="Search" />
+              </div>
+              <!--end::Search-->
+
+
+              <!--begin::Export buttons-->
+              <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+              <!--end::Export buttons-->
+            </div>
+            <!--end::Card title-->
+            <!--begin::Card toolbar-->
+            <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+
+              <!--begin::Export dropdown-->
+              <button type="button" class="btn btn-sm btn-light-primary" role="button">
+                <i class="ki-duotone ki-exit-up fs-2">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                Export
+              </button>
+              <!--end::Export dropdown-->
+            </div>
+            <!--end::Card toolbar-->
+          </div>
+          
+          <div id="questiontbody">
+
+        
+         
+          </div>
+
+
+
+
+
+        </div>
+        <!--end::Content container-->
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="d-flex align-items-center">
+              <div>
+                <!--begin::Input-->
+                <select class="form-select py-1" data-control="select2" data-hide-search="true">
+                  <option value="1">10</option>
+                  <option value="2">25</option>
+                  <option value="4">50</option>
+                  <option value="5">100</option>
+                </select>
+                <!--end::Input-->
+              </div>
+              <span class="text-muted fs-7 mx-3">
+                Showing 1 to 10 of 50 questions
+              </span>
+            </div>
+
+          </div>
+
+
+          <div class="dt-paging paging_simple_numbers">
+            <ul class="pagination p-0">
+              <li class="dt-paging-button page-item disabled"><a class="page-link previous" aria-disabled="true"
+                  aria-label="Previous" tabindex="-1"><i class="previous"></i></a></li>
+              <li class="dt-paging-button page-item active"><a href="#" class="page-link " aria-current="page"
+                  tabindex="0">1</a></li>
+              <li class="dt-paging-button page-item disabled"><a class="page-link next" aria-disabled="true"
+                  aria-label="Next" tabindex="-1"><i class="next"></i></a></li>
+            </ul>
+          </div>
+
+
+        </div>
+
+
+
+
+      </div>
+      <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+      <!--begin::Footer container-->
+      <div class="app-container container-fluid d-flex justify-content-center py-3">
+        <!--begin::Copyright-->
+        <div class="text-gray-900">
+          <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+        </div>
+        <!--end::Copyright-->
+      </div>
+      <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+  </div>
+  <!--end:::Main-->
+</div>
+
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+  $("#course_table").DataTable({
+    columnDefs: [
+      { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+    ],
+  });
+
+  $("#kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function () {
+
+    $("#filter").click(function () {
+      $(".filter-card").slideToggle("slow");
+    });
+
+    pagination();
+
+  });
+
+
+  function get_page_data(p) {
+    
+
+    var en_data = {
+
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+        type: 'POST',
+        url: backendurl + '/api/questionbank/archive-question-list',
+        headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+        },
+        dataType: "json",
+        data: check_encryptData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+
+
+            var decrypt_response = decryptData(response)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("res", json_resposne,)
+            if (json_resposne.n == 1) {
+                var trHTML = "";
+                counter = parseInt(p + "1") - parseInt(10)
+                $.each(json_resposne.data, function (a, b) {
+                  
+                    trHTML += `
+
+                      <div class="accordion " id="accordion-question`+b.id+`">
+                        <div class="accordion-item mb-0 mt-0 question-acc-item">
+                          <h2 class="accordion-header">
+                            <div class="accord-button ">
+                              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse-question`+b.id+`" aria-expanded="false" aria-controls="collapse-question`+b.id+`">
+                                <div class="row row-cols-4 align-items-center QuestionRow">
+                                  <div class="col-1 Question-info ">
+                                    <div class="d-flex flex-column text-nowrap">
+                                      <h4 class="fw-bold align-self-center">
+                                        Q.1
+                                      </h4>
+                                      <span class="badge badge-danger  mb-1 ">
+                                        <span>
+                                          HARD
+                                        </span>
+                                      </span>
+                                      <span class="badge badge-light-primary mt-1  ">
+                                        SUBJ
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div class="col-9 ">
+                                    <span>
+                                      `+b.question_text+` ?
+                                    </span>
+                                  </div>
+
+                                </div>
+                              </button>
+                              <div class="d-flex RemoveDelete ">
+                                <div>
+                                  <img src="{% static 'assets/media/svg/action-svg/file-remove-3.svg' %}" height="23" alt="" onclick="removearchive(`+b.id+`)"
+                                    class="remove-button" data-bs-title="Remove from Archive" data-bs-toggle="tooltip">
+
+                                </div>
+                                <span class="mx-2">
+                                  |
+                                </span>
+                                <div>
+                                  <img src="{% static 'assets/media/svg/action-svg/dustbin-delete.svg' %}" height="23" alt="" onclick = "deletequestion(`+b.id+`)"
+                                    class="delete-button" data-bs-title="Delete" data-bs-toggle="tooltip">
+                                </div>
+                              </div>
+                            </div>
+                          </h2>
+                          <div id="collapse-question`+b.id+`" class="accordion-collapse collapse" data-bs-parent="#accordion-question`+b.id+`">
+                            <div class="accordion-body question-acc-body">
+                              <div class="row row-cols-2 my-2 fw-bold ">
+                                <div class="col ">
+                                  <div class="highlightCard p-2">
+                                    Courses: `+b.course_name+`
+                                  </div>
+                                </div>
+                                <div class="col ">
+                                  <div class="highlightCard p-2">
+                                    Module: `+b.module_name+`
+                                  </div>
+                                </div>
+
+                              </div>
+                              <div class="row row-cols-4 my-1  pb-4 br-sep gy-2 ">
+                                ${b.question_option_data.map(s => `
+                                  <div class="col">
+                                    <div class="highlightCard p-2">
+                                      <span class="fw-bold">
+                                        Option `+s.option+` :
+                                      </span>
+                                      <p>
+                                        `+s.option_answer+`.
+                                      </p>
+                                    </div>
+                                  </div>
+                                `).join("\n")}
+
+                              </div>
+                              <div class="row row-cols-2  mt-4">
+                                <div class="col">
+                                  <div class="row row-cols-2  gy-2 gx-2">
+                                    <div class="col ">
+                                      <div class="highlightCard p-2">
+
+                                        <div class="">
+                                          <span class="fw-bold">
+                                            Added By
+                                          </span>
+                                          :  `+b.added_by+`
+                                        </div>
+                                        <div class="">
+                                          <span class="fw-bold">
+                                            Added On :
+                                          </span>
+                                            `+b.added_on+`
+                                        </div>
+
+                                      </div>
+                                    </div>
+
+                                    <div class="col ">
+                                      <div class="highlightCard p-2">
+
+                                        <div class="">
+                                          <span class="fw-bold">
+                                            No. of Attempts :
+                                          </span>
+                                          5+
+                                        </div>
+                                        <div class="">
+                                          <span class="fw-bold">
+                                            Used in Question Paper :
+                                          </span>
+                                          8+
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div class="col ">
+                                      <div class="highlightCard p-2">
+
+                                        <div class="">
+                                          <span class="fw-bold">
+                                            Time to Solve :
+                                          </span>
+                                          `+b.time_to_solve+` Mins
+                                        </div>
+
+                                      </div>
+                                    </div>
+
+                                  </div>
+                                </div>
+
+                                <div class="col  ">
+                                  <div class="highlightCard p-4 py-2">
+                                    <label class="fw-bold">Tags :</label>
+                                    <div class="row row-cols-6 ">
+                                      ${b.tags_list.map(s => `
+                                      <div>
+                                        <p class="badge badge-light-primary px-7">`+s.value+`</p>
+                                      </div>
+                                       `).join("\n")}
+
+                                    </div>
+                                  </div>
+
+                                </div>
+
+
+
+
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                              
+                    `
+                    counter += 1
+
+                });
+
+                $('#questiontbody').html(trHTML);
+
+                var totalpagesfilter = Math.ceil(parseInt(json_resposne.count) / 10);
+                $('#pagination-demo').twbsPagination({
+                    totalPages: totalpagesfilter,
+                    visiblePages: 3,
+                    next: 'Next',
+                    prev: 'Prev',
+                    onPageClick: function (event, page) {
+                        var testflag = true;
+                        filternamepageno = page
+                        if (testflag == true) {
+                            testflag = false;
+                            get_page_data(page)
+                        }
+                    }
+                });
+
+                KTMenu.createInstances(); // Reinitialize menus
+            } else {
+                var trHTML = "";
+                $('#questiontbody').html(trHTML);
+                // Swal.fire({
+                //     html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                //     icon: 'error',
+                //     position: 'top',
+                //     backdrop: true,
+                //     customClass: {
+                //         confirmButton: 'swal-button'
+                //     }
+                // })
+                $("html").scrollTop(0);
+
+
+            }
+
+        },
+
+        error: function (error) {
+            console.log('error; ' + JSON.stringify(error));
+        }
+    });
+}
+
+function pagination() {
+  $('#firstpagination-demo').html('<ul id="pagination-demo" class="pagination-sm"></ul>');
+  var testflag = true;
+  get_page_data(1);
+}
+
+
+function removearchive(id){
+  debugger;
+  var questionid = id;
+
+  var en_data = {
+      'questionid':questionid,
+      
+    };
+  var check_encryptData = encryptData(JSON.stringify(en_data));
+  tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/remove-archive-question",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+          location.reload();
+         pagination();
+        
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+}
+
+function deletequestion(id){
+  debugger;
+  var questionid = id;
+
+  var en_data = {
+      'questionid':questionid,
+      
+    };
+  var check_encryptData = encryptData(JSON.stringify(en_data));
+  tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/delete-question",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+          location.reload();
+          pagination();
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+}
+
+
+</script>
+
+{%endblock%}

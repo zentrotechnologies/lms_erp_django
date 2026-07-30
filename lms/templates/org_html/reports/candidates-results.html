@@ -1,0 +1,513 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+        <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+          <!--begin::Content wrapper-->
+          <div class="d-flex flex-column flex-column-fluid">
+            <!--begin::Toolbar-->
+            <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+              <!--begin::Toolbar container-->
+              <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                  <!--begin::Title-->
+                  <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Candidate Results
+                  </h1>
+                  <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <!--begin::Item-->
+                    <li class="breadcrumb-item text-muted">
+                      <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+                    </li>
+                    <!--end::Item-->
+                    <!--begin::Item-->
+                    <li class="breadcrumb-item">
+                      <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                    </li>
+                    <!--end::Item-->
+                    <!--begin::Item-->
+                    <li class="breadcrumb-item text-muted">Results</li>
+                    <!--end::Item-->
+                    <!--begin::Item-->
+                    <li class="breadcrumb-item">
+                      <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                    </li>
+                    <!--end::Item-->
+                    <!--begin::Item-->
+                    <li class="breadcrumb-item text-gray-700">
+                      Candidate Results
+                    </li>
+                    <!--end::Item-->
+                  </ul>
+                  <!--end::Title-->
+                  <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+                <div>
+                  <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold me-2" id="filter" title="Filter">
+                    <i class="ki-duotone ki-filter fs-4  me-1 p-0">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i></a>
+
+                </div>
+              </div>
+              <!--end::Toolbar container-->
+            </div>
+            <!--end::Toolbar-->
+            <!--begin::Content-->
+            <div id="kt_app_content" class="app-content flex-column-fluid">
+              <!--begin::Content container-->
+              <div id="kt_app_content_container" class="app-container container-fluid">
+                <!--begin::Products-->
+                <div class="card card-flush mb-4 filter-card">
+                  <div class="card-body py-4">
+                    <div class="filter">
+                      <div class="row gy-2">
+                        <div class="col-3">
+                          <label class="form-label">Date Range</label>
+                          <!--begin::Input-->
+                          <input class="form-control kt_daterangepicker_1" placeholder="PO Date" id="kt_daterangepicker_1"/>
+                          <!--end::Input-->
+                        </div>
+                        <div class="col-3">
+                          <label class="form-label">Training Center</label>
+                          <select class="form-select" data-control="select2" data-placeholder="Training Center"
+                            data-hide-search="true">
+                            <option></option>
+                            {% for t in training_centers %}
+                                <option value="{{t.id}}">{{t.name}}</option>
+                            {%endfor%}
+                          </select>
+                        </div>
+                        <div class="col-3">
+                          <label class="form-label">Course</label>
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-placeholder="Course"
+                            data-hide-search="true">
+                            <option></option>
+                            {% for t in courses %}
+                                <option value="{{t.id}}">{{t.course_name}}</option>
+                            {%endfor%}
+                          </select>
+                          <!--end::Input-->
+                        </div>
+                        <div class="col-3">
+                          <label class="form-label">Country</label>
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-placeholder="Country"
+                            data-hide-search="true">
+                            <option></option>
+                            {% for t in countries %}
+                                <option value="{{t.id}}">{{t.name}}</option>
+                            {%endfor%}
+                          </select>
+                          <!--end::Input-->
+                        </div>
+
+                        <div class="col-3">
+                          <label class="form-label">Department</label>
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-placeholder="Department"
+                            data-hide-search="true">
+                            <option></option>
+                            {% for t in departments %}
+                                <option value="{{t.id}}">{{t.name}}</option>
+                            {%endfor%}
+                          </select>
+                          <!--end::Input-->
+                        </div>
+                        <div class="col-3">
+                          <label class="form-label">Rank</label>
+                          <!--begin::Input-->
+                          <select class="form-select" data-control="select2" data-placeholder="Rank"
+                            data-hide-search="true">
+                            <option></option>
+                            {% for t in ranks %}
+                                <option value="{{t.id}}">{{t.rank}}</option>
+                            {%endfor%}
+                          </select>
+                          <!--end::Input-->
+                        </div>
+
+
+
+
+                        <div class="col-6">
+                          <div class="d-flex align-items-end h-100 justify-content-end gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-border-primary" onclick="pagination()">
+                              Apply Filter
+                            </button>
+                            <!-- <button type="button" class="btn btn-sm btn-primary">
+                              Reset
+                            </button> -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="question-statistics pb-3">
+                  <div class="row">
+                    <div class="col">
+                      <div class="statistic bg-light-primary border border-primary">
+                        <div class="d-flex align-items-start justify-content-center flex-column">
+                          <h6 class="fw-bold">
+                            Total Candidates
+                          </h6>
+                          <h5 id="total_candidates">
+                            500K
+                          </h5>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="statistic bg-light-info border border-info">
+                        <div class="d-flex align-items-start justify-content-center flex-column">
+                          <h6 class="fw-bold">
+                            Passed Candidates
+                          </h6>
+                          <h5 id="pass_candidates">
+                            203.29K
+                          </h5>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="col">
+                      <div class="statistic bg-light-danger border border-danger">
+                        <div class="d-flex align-items-start justify-content-center flex-column">
+                          <h6 class="fw-bold">
+                            Failed Candidates
+                          </h6>
+                          <h5 id="failed_candidates">
+                            0.00
+                          </h5>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+
+
+                <div class="card card-flush">
+                  <!--begin::Card header-->
+                  <div class="card-header align-items-center gap-2 gap-md-5">
+                    <!--begin::Card title-->
+                    <div class="card-title">
+                      <!--begin::Search-->
+                      <div class="d-flex align-items-center position-relative my-1">
+                        <i class="ki-duotone ki-magnifier fs-2 end-0 position-absolute me-4">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <input type="text" data-kt-ecommerce-order-filter="search"
+                          class="form-control form-control-solid w-250px pe-12" placeholder="Search" id="search"/>
+                      </div>
+                      <!--end::Search-->
+                      <!--begin::Export buttons-->
+                      <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+                      <!--end::Export buttons-->
+                    </div>
+                    <!--end::Card title-->
+                    <!--begin::Card toolbar-->
+
+                    <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+                      <div class="">
+                        <!--begin::Input-->
+                        <select class="form-select" data-control="select2" data-placeholder="Sort By"
+                          data-hide-search="true" id="sort_by">
+                          <option></option>
+
+                          <option value="1">No. of Certificates</option>
+
+
+                        </select>
+                        <!--end::Input-->
+                      </div>
+
+                      <!--begin::Export dropdown-->
+                      <button type="button" class="btn btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-exit-up fs-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span> </i>Export
+                      </button>
+
+                      <!--end::Export dropdown-->
+                    </div>
+                    <!--end::Card toolbar-->
+                  </div>
+                  <!--end::Card header-->
+                  <!--begin::Card body-->
+                  <div class="card-body pt-0 pb-0 w-100 overflow-auto">
+                    <!--begin::Table-->
+                    <table class="table align-middle table-row-dashed fs-6 gy-3" id="course_table">
+                      <thead>
+                        <tr class="text-start fw-600 fs-6 gs-0">
+                          <th class="min-w-40px">Sr. No.</th>
+                          <th class="min-w-150px">Name</th>
+                          <th class="min-w-150px">Course</th>
+                          <th class="min-w-100px">Exam Date</th>
+                          <th class="min-w-50px">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="text-gray-800" id="table_body">
+
+                      </tbody>
+                    </table>
+                        <div class="row d-felx justify-content-center mb-3" id="firstpagination-demo">
+                            <ul id="pagination-demo" class="pagination-sm"></ul>
+                        </div>
+                    <!--end::Table-->
+                  </div>
+                  <!--end::Card body-->
+                </div>
+
+                <!--end::Content container-->
+              </div>
+              <!--end::Content-->
+            </div>
+            <!--end::Content wrapper-->
+            <!--begin::Footer-->
+            <div id="kt_app_footer" class="app-footer">
+              <!--begin::Footer container-->
+              <div class="app-container container-fluid d-flex justify-content-center py-3">
+                <!--begin::Copyright-->
+                <div class="text-gray-900">
+                  <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+                </div>
+                <!--end::Copyright-->
+              </div>
+              <!--end::Footer container-->
+            </div>
+            <!--end::Footer-->
+          </div>
+          <!--end:::Main-->
+        </div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    // $("#course_table").DataTable();
+
+</script>
+<script type="text/javascript">
+    $("#kt_daterangepicker_1").daterangepicker();
+</script>
+<script type="text/javascript">
+
+</script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // $('#kt_daterangepicker_1').val(' ')
+        pagination();
+    })
+
+
+    function convertToDateRange(range) {
+        // Split the string into start and end dates
+
+        const [startDate, endDate] = range.split(" - ");
+
+        // Helper function to convert MM/DD/YYYY to YYYY-MM-DD
+        const formatDate = (date) => {
+            const [month, day, year] = date.split("/");
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+
+
+        return {
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate)
+        };
+
+        
+    }
+
+    function pagination() {
+        $('#firstpagination-demo').html('<ul id="pagination-demo" class="pagination-sm"></ul>');
+        var testflag = true;
+        get_page_data(1);
+    }
+
+    function get_page_data(p) {
+        var sort_by = $('#sort_by').val()
+        var search = $('#search').val()
+        var country_id = $('#country_id').val()
+        var daterange = $('#kt_daterangepicker_1').val()
+        var result = convertToDateRange(daterange);
+        var startdate = result.startDate;
+        var enddate = result.endDate;
+
+        var en_data = {
+            'country_id': country_id,
+            'startdate': startdate,
+            'enddate': enddate,
+            'sort_by': sort_by,
+            'search': search,
+            'csrfmiddlewaretoken': "{{csrf_token}}"
+
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+        tok = 'Bearer {{og_token}}'
+
+        $.ajax({
+            type: 'POST',
+            url: backendurl + '/api/exam/get-candidates-results?p=' + p,
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                get_candidate_counts()
+
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                console.log("res", json_resposne,)
+
+
+                if (json_resposne.n == 1) {
+                    var trHTML = "";
+                    counter = parseInt(p + "1") - parseInt(10)
+                    $.each(json_resposne.data, function (i, o) {
+
+                        trHTML += `
+                        <tr>
+                          <td>${counter}</td>
+                          <td>
+
+                            <div class="d-flex flex-column">
+                              <span>
+                                ${o.candidate_data.first_name|| ''} ${o.candidate_data.middle_name|| ''} ${o.candidate_data.last_name|| ''} 
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>${o.exam_data.course_name|| ''}</td>
+                          <td>${o.exam_schedule_data.schedule_exam_date|| ''}</td>
+                          <td>
+                            ${o.status|| ''}
+                          </td>
+
+
+                        </tr>
+                    `
+                        counter += 1
+
+                    });
+
+                    $('#table_body').html(trHTML);
+
+                    var totalpagesfilter = Math.ceil(parseInt(json_resposne.count) / 10);
+                    $('#pagination-demo').twbsPagination({
+                        totalPages: totalpagesfilter,
+                        visiblePages: 3,
+                        next: 'Next',
+                        prev: 'Prev',
+                        onPageClick: function (event, page) {
+                            var testflag = true;
+                            filternamepageno = page
+                            if (testflag == true) {
+                                testflag = false;
+                                get_page_data(page)
+                            }
+                        }
+                    });
+
+                    KTMenu.createInstances(); // Reinitialize menus
+                } else {
+                    var trHTML = "<tr><td class='text-center' colspan='11'>No data found</td></tr>";
+                    $('#table_body').html(trHTML);
+                    Swal.fire({
+                        html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                        icon: 'error',
+                        position: 'top',
+                        backdrop: true,
+                        customClass: {
+                            confirmButton: 'swal-button'
+                        }
+                    })
+                    $("html").scrollTop(0);
+
+
+                }
+
+            },
+
+            error: function (error) {
+                console.log('error; ' + JSON.stringify(error));
+            }
+        });
+    }
+
+    function get_candidate_counts() {
+        var sort_by = $('#sort_by').val()
+        var search = $('#search').val()
+        var country_id = $('#country_id').val()
+        var daterange = $('#kt_daterangepicker_1').val()
+        var result = convertToDateRange(daterange);
+        var startdate = result.startDate;
+        var enddate = result.endDate;
+
+        var en_data = {
+            'country_id': country_id,
+            'startdate': startdate,
+            'enddate': enddate,
+            'sort_by': sort_by,
+            'search': search,
+        }
+
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            type: 'POST',
+            url: backendurl + '/api/exam/get-candidates-results-counts',
+            headers: {
+                "Authorization": tok,
+                // "encrypted": '1'
+            },
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log("respon1se",response)
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                console.log("json_resposne",response)
+                $('#total_candidates').html(response.data.total_candidates)
+                $('#pass_candidates').html(response.data.pass_candidates)
+                $('#failed_candidates').html(response.data.failed_candidates)
+
+
+
+            },
+
+
+            error: function (jqXHR, textStatus, errorThrown) {
+                Swal.fire({
+                    title: 'Error',
+                    text: jqXHR.responseJSON.Message,
+                    icon: 'error',
+                    position: 'top',
+                    backdrop: true,
+                    customClass: {
+                        confirmButton: 'swal-button'
+                    }
+                });
+            }
+        });
+    }
+
+</script>
+{%endblock%}

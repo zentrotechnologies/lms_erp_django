@@ -1,0 +1,1187 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<style>
+    .citywrapper{
+        position: relative;
+      }
+      
+      .citywrapper .citysearch {
+        background: #fff;
+        width: 100%;
+        border-radius: 5px;
+        position: absolute;
+        z-index: 10;
+        box-shadow: none;
+      }
+     
+      .citysearch input {
+        height: 40px;
+        width: 100%;
+        outline: none;
+        border: 1px solid #d1d3e2;
+        border-radius: 5px;
+        padding: 0 8px 0 8px;
+        font-size: 12px;
+        box-shadow: none;
+      }
+      form.user .form-control-user {
+        padding: 1rem 0.4rem;
+      }
+      
+      .citysearch.active input {
+        border-radius: 5px;
+      }
+      .table td, .table th {
+        padding:0.3rem 0.4rem;
+      }
+      .table-bordered td{
+          font-size: 12px;
+      }
+      form.user.cust-details{
+        padding-top: 25px;
+      }
+      .citysearch .autocomp-box {
+        padding: 0;
+        opacity: 0;
+        pointer-events: none;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+      .citysearch.active .autocomp-box {
+        padding: 10px 8px;
+        opacity: 1;
+        pointer-events: auto;
+        width: 375px;
+        background: white;
+        border: 1px solid #d1d3e2;
+        border-radius: 5px;
+      }
+      .autocomp-box li {
+        list-style: none;
+        padding: 3px 6px;
+        font-size: 12px;
+        display: none;
+        width: 100%;
+        cursor: default;
+        border-radius: 3px;
+      }
+      .citysearch.active .autocomp-box li {
+        display: block;
+      }
+      .autocomp-box li:hover {
+        background: #efefef;
+        cursor: pointer;
+      }
+</style>
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                        Update Sub Training Center Details
+                    </h1>
+                    <!--end::Title-->
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">Resources</li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-gray-700">
+                            Training Center
+                        </li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-fluid">
+                <!--begin::Row-->
+                <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+                    <!--begin::Col-->
+                    <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+                        <!--begin::Card widget 20-->
+                        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+                            <!--begin::Header-->
+                            <div class="card-body py-5">
+                                <!--begin::Stepper-->
+                                <div class="stepper stepper-pills" id="kt_stepper_example_clickable">
+                                    <!--begin::Nav-->
+                                    <div class="stepper-nav flex-center flex-wrap mb-6">
+                                        <!--begin::Step 1-->
+                                        <div class="stepper-item my-4 current" data-kt-stepper-element="nav"
+                                            data-kt-stepper-action="step">
+                                            <!--begin::Wrapper-->
+                                            <div class="stepper-wrapper d-flex align-items-center">
+                                                <!--begin::Icon-->
+                                                <div class="stepper-icon w-40px h-40px">
+                                                    <i class="stepper-check fas fa-check"></i>
+                                                    <span class="stepper-number">1</span>
+                                                </div>
+                                                <!--end::Icon-->
+
+                                                <!--begin::Label-->
+                                                <div class="stepper-label">
+                                                    <div class="stepper-desc">
+                                                        Training Center
+                                                    </div>
+                                                </div>
+                                                <!--end::Label-->
+                                            </div>
+                                            <!--end::Wrapper-->
+
+                                            <!--begin::Line-->
+                                            <div class="stepper-line w-100px"></div>
+                                            <!--end::Line-->
+                                        </div>
+                                        <!--end::Step 1-->
+
+                                        <!--begin::Step 2-->
+                                        <div class="stepper-item my-4" data-kt-stepper-element="nav"
+                                            data-kt-stepper-action="step">
+                                            <!--begin::Wrapper-->
+                                            <div class="stepper-wrapper d-flex align-items-center">
+                                                <!--begin::Icon-->
+                                                <div class="stepper-icon w-40px h-40px">
+                                                    <i class="stepper-check fas fa-check"></i>
+                                                    <span class="stepper-number">2</span>
+                                                </div>
+                                                <!--begin::Icon-->
+
+                                                <!--begin::Label-->
+                                                <div class="stepper-label">
+                                                    <div class="stepper-desc">Documents</div>
+                                                </div>
+                                                <!--end::Label-->
+                                            </div>
+                                            <!--end::Wrapper-->
+
+                                            <!--begin::Line-->
+                                            <div class="stepper-line w-100px"></div>
+                                            <!--end::Line-->
+                                        </div>
+                                        <!--end::Step 2-->
+
+                                        <!--begin::Step 3-->
+                                    </div>
+                                    <!--end::Nav-->
+
+                                    <!--begin::Form-->
+                                    <form class="form mx-auto" novalidate="novalidate"
+                                        id="kt_stepper_example_basic_form" enctype="multipart/form-data" method="post">
+
+                                        {%csrf_token%}
+                                        <!--begin::Group-->
+                                        <div class="">
+                                            <!--begin::Step 1-->
+                                            <div class="flex-column current" data-kt-stepper-element="content">
+                                                <div class="mb-5 fv-row fv-plugins-icon-container row gy-3">
+                                                    <div>
+                                                        <h3>Details</h3>
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Name</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <input type="text" name="name" class="form-control mb-2"
+                                                            placeholder="Enter your Name" value="{{user_data.name|default_if_none:''}}" id="name"/>
+                                                        <input type="hidden" id="user_id" value="{{user_data.id}}" name="user_id">
+                                                        <!--end::Input-->
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                      
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Accreditation Number</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+
+                                                        <input type="text" name="Number" class="form-control mb-2"
+                                                            placeholder="Enter your Accreditation Number" value="{{user_data.accreditation_number|default_if_none:''}}" id="accreditation_number"/>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <!-- <div class="col-lg-4">
+                                                        
+                                                        <label class="form-label">Parent Training Center</label>
+                                                        
+                                                        <select class="form-select" data-control="select2" data-hide-search="true">
+                                               
+                                                            <option value="1">Parent TC 1</option>
+                                                            <option value="2">Parent TC 2</option>
+                                                            <option value="3">Parent TC 3</option>
+                                                        </select>
+                                                        
+                                                    </div> -->
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">No. of Classrooms</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+
+                                                        <input type="number" name="classrooms" class="form-control mb-2"
+                                                            placeholder="Number of Classrooms" value="{{user_data.no_of_classroom|default_if_none:''}}" id="no_of_classroom"/>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Address Line 1</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <input type="textarea" name="address" class="form-control mb-2"
+                                                            placeholder="Address Line 1" value="{{user_data.address_line_one|default_if_none:''}}" id="address_line_one" />
+                                                        <!--end::Input-->
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Address Line 2</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <input type="textarea" name="address" class="form-control mb-2"
+                                                            placeholder="Address Line 2" value="{{user_data.address_line_two|default_if_none:''}}" id="address_line_two"/>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="col-lg-4">                                          
+                                                        <label class="form-label">City <span class="text-danger">*</span></label> 
+                                                        <div class="citywrapper">
+                                                            <div class="citysearch" id="citysearchdiv">                                                    
+                                                                <input type="text" name="city" class="form-control mb-2" placeholder="City" id="city" value="{{user_data.city|default_if_none:''}}" oninput="search_cities();">  
+                                                                <div class="autocomp-box" id="searchcitylist">
+  
+                                                                </div>         
+                                                            </div>
+                                                        </div>                                    
+                                                    </div>
+
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Country</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <select id="country" class="form-select" data-control="select2"
+                                                            data-placeholder="Select your Country"
+                                                            data-hide-search="true">
+                                                        <option value="{{user_data.country}}">{{user_data.country_name}}</option>
+                                                        </select>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">State</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <select id="state" class="form-select" data-control="select2"
+                                                            data-placeholder="Select your State"
+                                                            data-hide-search="true">
+                                                        <option value="{{user_data.state}}">{{user_data.state_name}}</option>
+                                                        </select>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                   
+
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Pincode</label><span class="text-danger">*</span>
+                                              
+
+                                                        <input type="text" name="pincode" class="form-control mb-2"
+                                                            placeholder="Enter your Pincode" value="{{user_data.pincode|default_if_none:''}}" id="pincode"  oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                        <!--end::Input-->
+                                                    </div>
+                                                    <div>
+                                                        <h3 class="mt-4">Contact Details</h3>
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Number</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+
+                                                        <input type="text" name="Number" class="form-control mb-2"
+                                                            placeholder="Enter your Phone Number" value="{{user_data.mobilenumber|default_if_none:''}}" id="mobilenumber"/>
+                                                        <!--end::Input-->
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Alternate Number</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+
+                                                        <input type="text" name="Number" class="form-control mb-2"
+                                                            placeholder="Enter your Alternate Number" value="{{user_data.alternate_mobilenumber|default_if_none:''}}" id="alternate_mobilenumber" />
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="col-lg-4">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Email</label><span class="text-danger">*</span>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <input type="email" name="email" class="form-control mb-3"
+                                                            placeholder="Enter your Email Id" value="{{user_data.email|default_if_none:''}}" id="email" />
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div>
+                                                        <h4>Concerned Authority</h4>
+                                                    </div>
+                                                    <div class="row kt_docs_repeater_basic"></div>
+
+                                                    <div class="kt_docs_repeater_basic">
+                                                       
+                                                        <div class="form-group">
+                                                            
+                                                            <div data-repeater-list="kt_docs_repeater_basic">
+                                                                {% for i in user_data.authority_data%}
+                                                                <div data-repeater-item>
+                                                                    <div class="form-group row authority_row">
+                                                                        <div class="col-lg-2">
+                                                                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                                                                         
+                                                                            <input type="text" name="name"
+                                                                                class="form-control mb-2 authority_name"
+                                                                                placeholder="Enter your Name"
+                                                                                value="{{i.authority_name|default_if_none:''}}" />
+                                                                       
+                                                                        </div>
+                                                                        <div class="col-lg-3">
+                                                                       
+                                                                            <label
+                                                                                class="form-label">Designation<span class="text-danger">*</span></label>
+                                                                      
+                                                                            <input type="text" name="name"
+                                                                                class="form-control mb-2 authority_designation" 
+                                                                                placeholder="Enter your Designation"
+                                                                                value="{{i.authority_designation|default_if_none:''}}" />
+                                                                  
+                                                                        </div>
+
+                                                                        <div class="col-lg-3">
+                                                                       
+                                                                            <label class="form-label">Email<span class="text-danger">*</span></label>
+                                                                           
+                                                                            <input type="email" name="email"
+                                                                                class="form-control mb-3 authority_email"
+                                                                                placeholder="Enter your Email Id"
+                                                                                value="{{i.authority_email|default_if_none:''}}" />
+                                                                       
+                                                                          
+                                                                        </div>
+                                                                        <div class="col-lg-3">
+                                                                     
+                                                                            <label class="form-label">Number<span class="text-danger">*</span></label>
+                                                                       
+
+                                                                            <input type="text" name="Number"
+                                                                                class="form-control mb-2 authority_number"
+                                                                                placeholder="Enter your Phone Number" maxlength="10"
+                                                                                value="{{i.authority_number|default_if_none:''}}" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                                      
+                                                                        </div>
+
+                                                                        <div class="col-md-1">
+                                                                            <a href="javascript:;" data-repeater-delete
+                                                                                class="btn btn-sm btn-light-danger mt-3 mt-md-8">
+                                                                                <i class="ki-duotone ki-trash fs-4 pe-0"><span
+                                                                                        class="path1"></span><span
+                                                                                        class="path2"></span><span
+                                                                                        class="path3"></span><span
+                                                                                        class="path4"></span><span
+                                                                                        class="path5"></span></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {%endfor%}
+                                                            </div>
+                                                        </div>
+                                                        <!--end::Form group-->
+
+                                                        <!--begin::Form group-->
+                                                        <div class="form-group mt-2 mb-5">
+                                                            <a href="javascript:;" data-repeater-create
+                                                                class="btn btn-sm btn-light-primary">
+                                                                <i class="ki-duotone ki-plus fs-3"></i>
+                                                                Add
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h4>Assign Courses</h4>
+                                                    </div>
+                                                    <div class="col-lg-6">
+
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Parent Training Center<span
+                                                                class="text-danger">*</span></label>
+                                                        <!--end::Label-->
+
+                                                        <!--begin::Input-->
+                                                        <select class="form-select" data-control="select2"
+                                                            id="parent_training_center"
+                                                            data-placeholder="Select parent training center"
+                                                            onchange="get_courses()">
+                                                            <option value="">Select Parent Training Center</option>
+                                                            {%for i in parent_training_centers %}
+                                                            {% if i.id == user_data.parent_training_center %}
+                                                            <option value="{{i.id}}" selected>{{i.name}}</option>
+                                                            {%else%}
+                                                            <option value="{{i.id}}">{{i.name}}</option>
+                                                            {%endif%}
+
+                                                            {%endfor%}
+                                                        </select>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="col-lg-6">
+                                                        <!--begin::Label-->
+                                                        <label class="form-label">Courses</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                  
+                                                        <select class="form-select" data-control="select2" id="course" multiple data-placeholder="Select Course">
+                                                    
+                                                            {%for i in courses %}
+                                                            {% if i.id in user_data.course_ids %}
+                                                            <option value="{{i.id}}" selected>{{i.course_name}}</option>
+                                                            {%else%}
+                                                            <option value="{{i.id}}">{{i.course_name}}</option>
+                                                            {%endif%}
+                                                            {%endfor%}
+                                                        </select>
+                                                        <!--end::Input-->
+                                                    </div>
+
+                                                    <div class="row kt_docs_repeater_basic">
+                                                        <div class="d-flex justify-content-center">
+                                                            <button type="button" class="btn btn-sm btn-primary" onclick="update_training_center();">
+                                                                Submit
+                                                            </button>
+                                                        </div>
+                                                  
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!--begin::Step 1-->
+
+                                            <!--begin::Step 2-->
+                                            <div class="row" data-kt-stepper-element="content">
+                                                <!--begin::Repeater-->
+                                                <!--begin::Repeater-->
+                                                <div class="kt_docs_repeater_basic">
+                                                  <!--begin::Form group-->
+                                                  <div class="form-group">
+                                                    <div >
+                                                        <div data-repeater-item>
+                                                            <div class="row col-md-12">
+                                                             
+                                                                    {% for i in user_data.proof_data %}
+                                                                    <div class="col-md-4" data-repeater-item class="kt_docs_delete_basic">
+                                                                    
+                                                                            <div >
+                                                                                <div class="row docName card p-3 m-3">
+                                                                                    <div class="col">
+                                                                                        <div class="form-group docName documnet_row">
+                                                                                            <label class="form-label my-3">{{i.document_name}}</label>
+                                                                                            <input type="hidden" name="doc_id" value="{{i.id}}">
+                                                                                            <input type="hidden" name="doc_name" value="{{i.document_name}}">
+                                                                                            <input type="hidden" class="documnet_file" value="{{i.uploaded_proof}}">
+                                                                                            <sup>
+                                                                                                <img
+                                                                                                    src="{% static 'assets/media/svg/action-svg/Info_button.svg' %}"
+                                                                                                    data-bs-title="Valid file types are: xls, csv, pdf"
+                                                                                                    height="15"
+                                                                                                    width="15"
+                                                                                                    data-bs-toggle="tooltip"
+                                                                                                />
+                                                                                            </sup>
+                                                                                            <input
+                                                                                                class="docs-button form-control mb-3"
+                                                                                                type="file"
+                                                                                                name="docsUpload"
+                                                                                            />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col">
+                                                                                        <div class="previewDoc" style="position: relative">
+                                                                                            <div class="img-div">
+                                                                                                {%if i.uploaded_proof is not None and i.uploaded_proof != "" %}
+                                                                                                <img
+                                                                                                    src="{{i.uploaded_proof}}"
+                                                                                                    alt="document preview"
+                                                                                                    width="100"
+                                                                                                    height="100"
+                                                                                                />
+                                                                                                {%else%}
+                                                                                                <img
+                                                                                                    src="https://img.freepik.com/free-vector/accept-terms-law-illustration-concept_114360-912.jpg"
+                                                                                                    alt="document preview"
+                                                                                                    width="100"
+                                                                                                    height="100"
+                                                                                                />
+                                                                                                {%endif%}
+                                                                                                <div class="img-trash-button">
+                                                                                                    <a class="btn btn-light-danger p-2">
+                                                                                                        <i class="ki-duotone ki-trash fs-5 pe-0">
+                                                                                                            <span class="path1"></span
+                                                                                                            ><span class="path2"></span
+                                                                                                            ><span class="path3"></span>
+                                                                                                            <span class="path4"></span
+                                                                                                            ><span class="path5"></span>
+                                                                                                        </i>
+                                                                                                    </a>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                              
+                                                                    </div>
+                                                                    {% endfor %}
+                                                          
+                                                                
+                                                            </div>
+                                                        </div>
+                                                        
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                            </div>
+                                            <!--end::Repeater-->
+                                       
+                                        <!--begin::Step 2-->
+
+                                        <!--begin::Actions-->
+                                        <div class="d-flex flex-stack pb-4">
+                                            <!--begin::Wrapper-->
+                                            <div class="me-2">
+                                                <button type="button" class="btn btn-sm btn-secondary"
+                                                    data-kt-stepper-action="previous">
+                                                    Back
+                                                </button>
+                                            </div>
+                                            <!--end::Wrapper-->
+
+                                            <!--begin::Wrapper-->
+                                            <div>
+                                                <button type="submit" onclick="return documentvalidation();" class="btn btn-sm btn-primary" data-kt-stepper-action="submit">
+                                                    <span class="indicator-label">
+                                                        Submit
+                                                    </span>
+                                                    <span class="indicator-progress">
+                                                        Please wait...
+                                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                    </span>
+                                                </button>
+
+                                               
+                                                <button type="button" class="btn btn-sm btn-secondary" data-kt-stepper-action="next" onclick="update_training_center()">
+                                                    Next
+                                                </button>
+                                            </div>
+                                            <!--end::Wrapper-->
+                                        </div>
+                                    </form>
+                                    <!--end::Actions-->
+                                    <!--end::Form-->
+                                </div>
+                                <!--end::Stepper-->
+                            </div>
+                            <!--end::Header-->
+                        </div>
+                        <!--end::Card widget 20-->
+                    </div>
+                    <!--end::Col-->
+                    <!--end::Col-->
+                </div>
+                <!--end::Row-->
+            </div>
+            <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+        <!--begin::Footer container-->
+        <div class="app-container container-fluid d-flex justify-content-center py-3">
+            <!--begin::Copyright-->
+            <div class="text-gray-900">
+                <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+            </div>
+            <!--end::Copyright-->
+        </div>
+        <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+</div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+
+    $(document).mouseup(function(e) {
+        var container = $("#searchcitylist");
+
+        // if the target of the click isn't the container nor a descendant of the container
+        if (!container.is(e.target) && container.has(e.target).length === 0) 
+        {
+            container.hide();
+        }
+    });
+
+    $(document).ready(function(e) {
+        initializeStepper();
+    });
+
+    
+
+    $(".kt_docs_repeater_basic").repeater({
+        initEmpty: false,
+  
+        defaultValues: {
+          "text-input": "foo",
+        },
+  
+        show: function () {
+          $(this).slideDown();
+        },
+  
+        hide: function (deleteElement) {
+          $(this).slideUp(deleteElement);
+        },
+    });    
+  
+    let stepper; // Declare a global variable for the stepper instance
+
+    function update_training_center() {
+        var user_id = $("#user_id").val().trim();
+        var name = $("#name").val().trim();
+        var accreditation_number = $("#accreditation_number").val().trim();
+        var no_of_classroom = $("#no_of_classroom").val().trim();
+        var address_line_one = $("#address_line_one").val().trim();
+        var address_line_two = $("#address_line_two").val().trim();
+        var country = $("#country").val();
+        var state = $("#state").val();
+        var city = $("#city").val().trim();
+        var pincode = $("#pincode").val().trim();
+        var mobilenumber = $("#mobilenumber").val().trim();
+        var alternate_mobilenumber = $("#alternate_mobilenumber").val().trim();
+        var email = $("#email").val().trim();
+        var course = $("#course").val()
+        var parent_training_center = $("#parent_training_center").val()
+    
+        var emailregex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    
+        if (IsValid(name)) {
+            handleValidationFailure("Name is required.", "#name");
+            return false;
+        } else if (IsValid(accreditation_number)) {
+            handleValidationFailure("Accreditation number is required.", "#accreditation_number");
+            return false;
+        }  else if (IsValid(address_line_one)) {
+            handleValidationFailure("Address line 1 is required.", "#address_line_one");
+            return false;
+        }  else if (IsValid(city)) {
+            handleValidationFailure("City is required.", "#city");
+            return false;
+        }else if (IsValid(country)) {
+            handleValidationFailure("Country is required.", "#country");
+            return false;
+        } else if (IsValid(pincode)) {
+            handleValidationFailure("Pincode is required.", "#pincode");
+            return false;
+        } else if (IsValid(mobilenumber)) {
+            handleValidationFailure("Mobilenumber is required.", "#mobilenumber");
+            return false;
+        } else if (IsValid(email)) {
+            handleValidationFailure("Email is required.", "#email");
+            return false;
+        } else if (!emailregex.test(email)) {
+            handleValidationFailure("Email is Invalid.", "#email");
+            return false;
+        } else if (!validate_authority()) {
+            return false; // Stop execution if authority validation fails
+        }else if (IsValid(parent_training_center)) {
+            handleValidationFailure("Please select parent training center.", "#parent_training_center");
+            return false; // Stop execution if authority validation fails
+        } else {
+            console.log("ellsleelle uesss")
+            //initializeStepper();
+            var authority_list = []
+
+            $(".authority_row").each(function () {
+                var authority_name = $(this).find("div .authority_name").val().trim();
+                var authority_number = $(this).find("div .authority_number").val().trim();
+                var authority_email = $(this).find("div .authority_email").val().trim();
+                var authority_designation = $(this).find("div .authority_designation").val().trim();
+
+                authority_list.push({
+                    "authority_name":authority_name,
+                    "authority_number":authority_number,
+                    "authority_email":authority_email,
+                    "authority_designation":authority_designation,
+                })
+        
+            
+            });
+
+
+            var en_data = {
+                'id':user_id,
+                'name':name,
+                'accreditation_number':accreditation_number,
+                'no_of_classroom':no_of_classroom,
+                'address_line_one':address_line_one,
+                'address_line_two':address_line_two,
+                'country':country,
+                'state':state,
+                'city':city,
+                'pincode':pincode,
+                'mobilenumber':mobilenumber,
+                'alternate_mobilenumber':alternate_mobilenumber,
+                'email':email,
+                'source':'admin',
+                'authority_list':authority_list,
+                'courses':course,
+                'parent_training_center':parent_training_center,
+            }
+            var check_encryptData = encryptData(JSON.stringify(en_data))
+    
+            tok = 'Bearer {{og_token}}'
+            $.ajax({
+                type: "POST",
+                url: backendurl+"/api/adminauth/update-sub-training-center",
+                headers: {
+                    "Authorization": tok,
+                    "encrypted": '1'
+                },
+     
+                dataType: "json",
+                data: check_encryptData,
+                processData: false,
+                contentType: false,
+                
+                success: function(response) {
+                    
+                    var decrypt_response = decryptData(response)
+                    var json_resposne = $.parseJSON(decrypt_response)
+                    
+                    console.log("json_resposne",json_resposne)
+                    if(json_resposne.n == 1){
+
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+                            icon: 'success',
+                            position: 'top',
+                            backdrop: true,
+                          
+                        })
+
+
+                    }else{
+                        Swal.fire({
+                            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                            icon: 'error',
+                            position: 'top',
+                            backdrop: true,
+                            
+                          })
+                        $("html").scrollTop(0);
+                    }
+    
+                 
+                },
+            });
+
+
+            
+        }
+    }
+    
+    function validate_authority() {
+        var authority_length = $(".authority_row").length;
+        var emailregex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    
+        if (authority_length === 0) {
+            return true; // No authorities to validate
+        }
+    
+        var isValid = true;
+    
+        $(".authority_row").each(function () {
+            var authority_name = $(this).find("div .authority_name").val().trim();
+            var authority_number = $(this).find("div .authority_number").val().trim();
+            var authority_email = $(this).find("div .authority_email").val().trim();
+            var authority_designation = $(this).find("div .authority_designation").val().trim();
+    
+            if (IsValid(authority_name)) {
+                handleValidationFailure("Authority name is required.", $(this).find(".authority_name"));
+                isValid = false;
+                return false;
+            }
+            if (IsValid(authority_designation)) {
+                handleValidationFailure("Authority designation is required.", $(this).find(".authority_designation"));
+                isValid = false;
+                return false;
+            }
+            if (IsValid(authority_email)) {
+                handleValidationFailure("Authority email is required.", $(this).find(".authority_email"));
+                isValid = false;
+                return false;
+            }
+            if (!emailregex.test(authority_email)) {
+                handleValidationFailure("Authority email is invalid.", $(this).find(".authority_email"));
+                isValid = false;
+                return false;
+            }
+            if (IsValid(authority_number)) {
+                handleValidationFailure("Authority number is required.", $(this).find(".authority_number"));
+                isValid = false;
+                return false;
+            }
+            if (authority_number.length != 10) {
+                handleValidationFailure("Authority number must be 10 digit.", $(this).find(".authority_number"));
+                isValid = false;
+                return false;
+            }
+        });
+    
+        return isValid;
+    }
+    
+    function initializeStepper() {
+        var element = document.querySelector("#kt_stepper_example_clickable");
+    
+        // Destroy the existing stepper if it exists
+        if (stepper) {
+            console.log("Destroying existing stepper");
+            stepper.destroy();
+            stepper = null;
+        }
+    
+        // Check if element exists
+        if (!element) {
+            console.error("Stepper element not found!");
+            return;
+        }
+    
+        console.log("Initializing stepper...");
+        stepper = new KTStepper(element);
+    
+        // Handle navigation click
+        stepper.on("kt.stepper.click", function (stepper) {
+            console.log("Clicked step index:", stepper.getClickedStepIndex());
+            stepper.goTo(stepper.getClickedStepIndex()); // Go to clicked step
+        });
+    
+        // Handle next step
+        stepper.on("kt.stepper.next", function (stepper) {
+            console.log("Proceeding to the next step");
+            stepper.goNext(); // Go next step
+        });
+    
+        // Handle previous step
+        stepper.on("kt.stepper.previous", function (stepper) {
+            console.log("Returning to the previous step");
+            stepper.goPrevious(); // Go previous step
+        });
+    
+        console.log("Stepper initialized:", stepper);
+    }
+    
+    
+    function handleValidationFailure(message, selector) {
+        showErrorToast(message);
+        scrollToElement(selector);
+    
+        // Remove the stepper if it exists
+        if (stepper) {
+            stepper.destroy();
+            stepper = null;
+        }
+    }
+    
+ 
+    
+    function showErrorToast(message) {
+        bootstrap.showToast({
+            body: message,
+            closeButton: true,
+            toastClass: "alert-danger",
+            delay: 2000,
+        });
+    }
+    
+    function scrollToElement(selector) {
+        $("html, body").animate(
+            {
+                scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+            },
+            "slow"
+        );
+    }
+
+    function documentvalidation(){
+
+        var document_length = $(".documnet_row").length;
+
+        var isValid = true;
+    
+        $(".documnet_row").each(function () {
+            var documnet_file = $(this).find("div .documnet_file").val().trim();
+
+    
+            if (IsValid(documnet_file)) {
+                handleValidationFailure("Document is required.", $(this).find(".authority_name"));
+             
+                return false;
+            }
+           
+        });
+
+
+    }
+    
+
+    function search_cities(){
+
+        $("#searchcitylist").show();
+
+        var city = $("#city").val().trim();
+        var trhtml = "";
+        
+        var fd = new FormData();    
+        fd.append("city",city);
+        
+        var en_data = {
+            'city':city
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            type: "POST",
+            url: backendurl+"/api/adminauth/search-cities",
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+ 
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            
+            success: function(response) {
+                
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                
+                if(json_resposne.data.length > 0){
+                    $("#citysearchdiv").addClass('active');
+                    $.each(json_resposne.data,function(i,o){
+                    
+                      
+                      trhtml += `
+                      
+                      <li class="searchlistli" value="`+o.id+`" onclick="selectedcityli(`+o.id+`,'`+o.name+`',`+o.state+`,'`+o.statename+`',`+o.country+`,'`+o.countryname+`');">
+                        <span style="color:black">`+o.name+`</span> <br>
+                       
+                      </li>
+                      `
+                    })
+        
+                }else{
+        
+                    $("#citysearchdiv").removeClass('active');
+                    trhtml += `
+                      
+                      <li class="searchlistli" value="{{user_data.name|default_if_none:''}}">No data found</li>
+                      `
+                }
+                           
+                  
+                  $("#searchcitylist").html(trhtml);
+
+             
+            },
+        });
+      
+    }
+
+    function selectedcityli(id,cityname,state_id,state_name,country_id,country_name) {
+        debugger;
+        $("#city").val(cityname); 
+
+        var state_html = `
+        <option value="`+state_id+`">`+state_name+`</option>
+        `
+        $("#state").html(state_html);
+
+        var country_html = `
+        <option value="`+country_id+`">`+country_name+`</option>
+        `
+
+        $("#country").html(country_html); 
+
+        $("#searchcitylist").html('');
+        $("#searchcitylist").hide();
+       
+      
+    }
+
+    function get_courses() {
+
+        var parent_training_center = $("#parent_training_center").val();
+        $('#course').val(' ').trigger('change')
+        var trhtml = "";
+
+        var fd = new FormData();
+
+        fd.append("parent_training_center", parent_training_center);
+
+        var en_data = {
+            'training_center_id': parent_training_center
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            type: "POST",
+            url: backendurl + "/api/adminauth/get-training-center-courses",
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                console.log("json_resposne", json_resposne)
+
+                if (json_resposne.data.length > 0) {
+                    $.each(json_resposne.data, function (i, o) {
+                        trhtml += `
+                      <option value="${o.id}">${o.course_name}</option>
+                      `
+                    })
+
+                } else {
+                    trhtml += `
+                      <option value="">No Courses Found</option>
+                    `
+                }
+
+
+                $("#course").html(trhtml);
+
+
+            },
+        });
+
+    }
+    function validateImageFile(input) {
+        // Check if any file is selected
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const fileName = file.name;
+            const fileSize = file.size; // in bytes
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+
+            // Allowed image file types
+            const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.svg)$/i;
+
+            // Check file extension
+            if (!allowedExtensions.exec(fileName)) {
+                Swal.fire({
+                    html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Please upload only image files (JPG, JPEG, PNG, GIF, WEBP, SVG).</h5></div>',
+                    icon: 'error',
+                    position: 'top',
+                    backdrop: true,
+                })
+
+
+                input.value = ''; // Clear the input
+                return false;
+            }
+
+            // Check file size
+            if (fileSize > maxSize) {
+                Swal.fire({
+                    html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">File size exceeds 5MB limit.</h5></div>',
+                    icon: 'error',
+                    position: 'top',
+                    backdrop: true,
+                })
+
+                input.value = ''; // Clear the input
+                return false;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    // Add event listeners to all file inputs
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInputs = document.querySelectorAll('input[type="file"][name="docsUpload"]');
+
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function () {
+                validateImageFile(this);
+
+                // Preview the image if valid
+                if (this.files && this.files[0] && validateImageFile(this)) {
+                    const previewDiv = this.closest('.docName').nextElementSibling.querySelector('.previewDoc img');
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        previewDiv.src = e.target.result;
+                    };
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    });
+
+</script>
+{%endblock%}

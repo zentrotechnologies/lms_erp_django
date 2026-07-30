@@ -1,0 +1,771 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<link rel="stylesheet" href="{% static 'assets/css/reports.css' %}">
+
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar pb-3">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3 mt-5">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                        Training Center Profile</h1>
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">Training Center Report</li>
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <li class="breadcrumb-item text-gray-700">Training Center Profile</li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Title-->
+                    <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div class="container-fluid pb-5 d-flex justify-content-center">
+            <div class="profile-page p-5 pt-0">
+                <!-- Profile Header -->
+                <div
+                    class="profile-header profile-div align-items-center card-div-1  row justify-content-evenly me-0 ms-0 p-5">
+                    <div class="col-auto">
+                        <div class="mt-1">
+                            <!--begin::Image placeholder-->
+                            <style>
+                                .image-input-placeholder {
+                                    background-image: url("{% static 'assets/media/svg/files/blank-image.svg' %}");
+                                }
+
+                                [data-bs-theme="dark"] .image-input-placeholder {
+                                    background-image: url("{% static 'assets/media/svg/files/blank-image-dark.svg' %}");
+                                }
+                            </style>
+
+                            <!--end::Image placeholder-->
+                            <!--begin::Image input-->
+
+                            <div class="image-input image-upload-1 image-input-1 image-input-outline image-input-placeholder image-input-empty image-input-empty"
+                                data-kt-image-input="true">
+                                <!--begin::Preview existing avatar-->
+                                <div class="image-input-wrapper image-input-wrapper-1" style="
+                                                                  background-image: url(&quot;&quot;);
+                                                                "></div>
+                                <!--end::Preview existing avatar-->
+                                <!--begin::Edit-->
+                                <label
+                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                    data-kt-image-input-action="change" data-bs-toggle="tooltip"
+                                    aria-label="Update Photo" data-bs-original-title="Update Photo"
+                                    data-kt-initialized="1">
+                                    <i class="ki-duotone ki-pencil fs-7">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <!--begin::Inputs-->
+                                    <input type="file" name="avatar" accept=".png, .jpg, .jpeg">
+                                    <input type="hidden" name="avatar_remove">
+                                    <!--end::Inputs-->
+                                </label>
+                                <!--end::Edit-->
+                                <!--begin::Cancel-->
+                                <span
+                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                    data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
+                                    aria-label="Cancel Photo" data-bs-original-title="Cancel Photo"
+                                    data-kt-initialized="1">
+                                    <i class="ki-duotone ki-cross fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </span>
+                                <!--end::Cancel-->
+                                <!--begin::Remove-->
+                                <span
+                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                    data-kt-image-input-action="remove" data-bs-toggle="tooltip"
+                                    aria-label="Remove avatar" data-bs-original-title="Remove avatar"
+                                    data-kt-initialized="1">
+                                    <i class="ki-duotone ki-cross fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </span>
+                                <!--end::Remove-->
+                            </div>
+                            <!--end::Image input-->
+                        </div>
+                    </div>
+                    <div class="col-10 d-flex pe-0 flex-column">
+
+                        <div class="text-heading py-5">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h2 class="mb-0">{{training_center.name}}</h2>
+                                </div>
+                                <div class="col-6 d-flex justify-content-end">
+                                    <a href="#" class="btn btn-icon  btn-active-color-primary btn-sm me-1 "
+                                        data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                        <i class="ki-duotone ki-pencil fs-1" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-bs-title="Edit" data-kt-initialized="1">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </a>
+                                </div>
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header pt-3">
+          <h4 class="modal-title">Profile</h4>
+          <!--begin::Close-->
+          <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+            <i class="ki-duotone ki-cross fs-1">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+          </div>
+          <!--end::Close-->
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="ProfileName" class="form-label">Name :</label>
+              <input type="text" class="form-control" id="ProfileName" placeholder="Enter Full Name" value="{{training_center.name}}">
+            </div>
+            <div class="mb-3">
+              <label for="ProfilePhone" class="form-label">Phone :</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="ProfilePhone" placeholder="Enter Contact No." value="{{training_center.mobilenumber}}">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="ProfileEmail" class="form-label">Email :</label>
+              <div class="input-group">
+                <input type="email" class="form-control" id="ProfileEmail" placeholder="Enter Email" value="{{training_center.email}}">
+                </button>
+              </div>
+
+            </div>
+
+            <div class="mb-3">
+              <label for="No_of_classroom" class="form-label">No of Classrooms :</label>
+              <input type="number" class="form-control" id="No_of_classroom" placeholder="Classrooms" value="{{training_center.no_of_classroom}}">
+            </div>
+          </form>
+        </div>
+        <div class=" m-0 modal-footer-1 d-flex justify-content-center gap-2 border-top-0">
+          <button type="button" data-bs-dismiss="modal" class="btn btn-sm btn-secondary">Close</button>
+          <button type="button" class="btn btn-sm btn-primary" onclick="update_profile()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+                            </div>
+                            <div class="content d-flex flex-column">
+                                <div class=" row">
+                                    <div class="col-6 profile-label-group ">
+                                        <label class="main-label">Email :</label>
+                                        <span class="sub-label mb-0 ">{{training_center.email}}</span>
+                                    </div>
+                                    <div class="col-6 profile-label-group ">
+                                        <label class="main-label">Active From :</label>
+                                        <span class="sub-label mb-0 ">{{training_center.createdAt}}</span>
+                                    </div>
+                                    <div class="col-6 profile-label-group ">
+                                        <label class="main-label">Contact :</label>
+                                        <span class="sub-label mb-0 ">{{training_center.mobilenumber}}</span>
+                                    </div>
+                                    <div class="col-6 profile-label-group ">
+                                        <label class="main-label">No. Of ClassRooms :</label>
+                                        <span class="sub-label mb-0 ">{{training_center.no_of_classroom}}</span>
+                                    </div>
+                                    <div class="col-6 profile-label-group ">
+                                        <label class="main-label">Address :</label>
+                                        <span class="sub-label mb-0 ">{{training_center.address_line_one|default:''}},{{training_center.address_line_two|default:''}},{{training_center.country_name|default:''}},{{training_center.pincode|default:''}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- {{training_center}} -->
+                <div class="personal-details mb-4">
+                    {% for a in training_center.authority_data %}
+
+                    <div class="personal-details-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-2">Concerned Person {{forloop.counter}} Details :</h3>
+                        <!-- Edit Profile Icon -->
+                        <div>
+                            <a href="#" class="btn btn-icon  btn-active-color-primary btn-sm me-1 mb-2"
+                                data-bs-toggle="modal" data-bs-target="#edit-Concerned-Modal">
+                                <i class="ki-duotone ki-pencil fs-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Edit">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <hr class="my-2 bg-light-secondary">
+                    <div class="row mt-3">
+                        <div class="col-4 profile-label-group ">
+                            <label for="birthdate" class="main-label mb-1"> Name
+                                :</label>
+                            <p class="sub-label">{{a.authority_name}} </p>
+                        </div>
+                        <div class="col-4 profile-label-group ">
+                            <label for="Country" class="main-label mb-1"> Designation
+                                :</label>
+                            <p class="sub-label">{{a.authority_designation}}</p>
+                        </div>
+
+                        <div class="col-4 profile-label-group ">
+                            <label for="gender" class="main-label mb-1"> Email
+                                :</label>
+                            <p class="sub-label">{{a.authority_email}}</p>
+                        </div>
+
+                        <div class="col-4 profile-label-group">
+                            <label for="city-state" class="main-label mb-1">Phone No
+                                :</label>
+                            <P class="sub-label">{{a.authority_number}}</P>
+                        </div>
+                    </div>
+                    {% empty %}
+
+                    {%endfor%}
+                </div>
+
+
+                <div class="document-details mb-3">
+                    <div class="document-details-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-3">Documents :</h3>
+                        <div>
+                            <a href="#" class="btn btn-icon  btn-active-color-primary btn-sm me-1 mb-2"
+                                data-bs-toggle="modal" data-bs-target="#edit-Documents-Modal">
+                                <i class="ki-duotone ki-pencil fs-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Edit">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </a>
+                        </div>
+                    </div>
+                    <hr class="my-2 bg-light-secondary">
+                    <div class="row mt-4">
+
+                        {% for d in training_center.document_data %}
+
+                        <div class="col-6">
+                            <div
+                                class="birth-certificate py-3 px-4 d-flex justify-content-between align-items-center border rounded-3 mb-3">
+                                <div class="img-label d-flex align-items-center">
+                                    <div class="doc-img me-3">
+                                        <img src="{% static 'assets/media/svg/action-svg/document.png' %}" alt="">
+                                    </div>
+                                    <label for="birth-certificate" class="sub-label">{{d.document_name}}</label>
+                                </div>
+                                <div>
+                                    <a href="#" class="btn btn-icon btn-active-color-primary btn-sm me-1" data-bs-toggle="modal"
+                            data-bs-target="#view_document{{d.id}}">
+                                        <i class="ki-duotone ki-eye fs-1" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" aria-label="View Details"
+                                            data-bs-original-title="View Details" data-kt-initialized="1">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                    </a>
+
+
+
+                                    <div class="modal fade" id="view_document{{d.id}}" tabindex="-1" aria-labelledby="view_document{{d.id}}"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header pt-3">
+                                            <h4 class="modal-title">Document</h4>
+                                            <!--begin::Close-->
+                                            <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                                                <i class="ki-duotone ki-cross fs-1">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Close-->
+                                            </div>
+                                            <div class="modal-body">
+                                                <img src="{{d.document_url}}" alt="" height="300" style="width: 100%;">
+                                            </div>
+                                            <div class=" m-0 modal-footer-1 d-flex justify-content-center gap-2 border-top-0">
+                                            <button type="button" data-bs-dismiss="modal" class="btn btn-sm btn-secondary">Close</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    <a href="#" class="btn btn-icon btn-active-color-danger btn-sm me-1" onclick="delete_document('{{d.id}}')">
+
+                                        <i class="ki-duotone ki-trash fs-1">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                            <span class="path4"></span>
+                                            <span class="path5"></span>
+                                        </i>
+
+                                    </a>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        {%endfor%}
+
+
+
+                    </div>
+                </div>
+
+                <div class="document-details mb-3">
+                    <label class="main-title"> Branch</label>
+                    <div class="row mt-4">
+                        {%for b in training_center.branches%}
+                        <div class="col-12">
+                            <!--begin::accordian-TrainingCenter Branch 2-->
+                            <div class="accordion accordion-shadow" id="accordionTrainingCenter-Branch-1">
+                                <div class="accordion-item mb-0">
+                                    <h3 class="accordion-header">
+                                        <button class="accordion-button collapsed accordion-btn fs-3 fw-semibold"
+                                            type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapseTrainingCenter-branch-2" aria-expanded="false"
+                                            aria-controls="collapseTrainingCenter-branch-2">
+                                            Branch {{forloop.counter}}
+                                        </button>
+                                    </h3>
+                                    <div id="collapseTrainingCenter-branch-2" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionTrainingCenter-Branch-1">
+                                        <div class="accordion-body accordion-card">
+                                            <div class="card-body px-0 d-flex flex-column gap-5  pt-5 pb-5">
+                                                <div class="card-div-1 mb-3">
+                                                    <div class=" d-flex justify-content-between align-items-center">
+                                                        <h3 class="mb-2">Details :</h3>
+                                                        <!-- Edit Profile Icon -->
+                                                        <div>
+                                                            <a href="#"
+                                                                class="btn btn-icon  btn-active-color-primary btn-sm me-1 mb-2"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#edit-Branch-Modal">
+                                                                <i class="ki-duotone ki-pencil fs-1"
+                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                    data-bs-title="Edit">
+                                                                    <span class="path1"></span>
+                                                                    <span class="path2"></span>
+                                                                </i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <hr class="my-2 bg-light-secondary">
+                                                    <div class="row mt-4">
+                                                        <div class="col-4 profile-label-group  mb-2">
+                                                            <label for="passport-no" class="main-label">
+                                                                Name :</label>
+                                                            <p class="sub-label mb-0 ">{{b.name}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group mb-2">
+                                                            <label for="" class="main-label">Phone No
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">{{b.mobilenumber}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group mb-2`">
+                                                            <label for="" class="main-label">Email
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">
+                                                                {{b.email}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">City
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">{{b.city}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">State
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">{{b.state_name}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">Country
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">{{b.country_name}}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-div-1">
+                                                    <div class=" d-flex justify-content-between align-items-center">
+                                                        <h3 class="mb-2">Co-ordinator Details :</h3>
+                                                        <!-- Edit Profile Icon -->
+                                                        <div>
+                                                            <a href="#"
+                                                                class="btn btn-icon  btn-active-color-primary btn-sm me-1 mb-2"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#edit-Co-ordinate-Modal">
+                                                                <i class="ki-duotone ki-pencil fs-1"
+                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                    data-bs-title="Edit">
+                                                                    <span class="path1"></span>
+                                                                    <span class="path2"></span>
+                                                                </i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <hr class="my-2 bg-light-secondary">
+                                                    <div class="row mt-4">
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">
+                                                                Name :</label>
+                                                            <p class="sub-label mb-0  profile-span">{{b.coordinators.coordinator_name}}
+                                                                </p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">Designation
+                                                                :</label>
+                                                            <p class="sub-label mb-0  ">{{b.coordinators.coordinator_designation}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">Email
+                                                                :</label>
+                                                            <p class="sub-label mb-0  profile-span">
+                                                                {{b.coordinators.coordinator_email}}</p>
+                                                        </div>
+                                                        <div class="col-4 profile-label-group ">
+                                                            <label for="" class="main-label">Phone No
+                                                                :</label>
+                                                            <p class="sub-label mb-0 ">{{b.coordinators.coordinator_number}}</p>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {%empty%}
+                        {%endfor%}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+        <!--begin::Footer container-->
+        <div class="app-container container-fluid d-flex justify-content-center py-3">
+            <!--begin::Copyright-->
+            <div class="text-gray-900">
+                <span class="text-gray-800 text-hover-primary">All Right Reserved |
+                    Copyright © LMS</span>
+            </div>
+            <!--end::Copyright-->
+        </div>
+        <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+</div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    // $("#course_table").DataTable();
+
+</script>
+<script type="text/javascript">
+    $("#kt_daterangepicker_1").daterangepicker();
+</script>
+<script type="text/javascript">
+
+  function delete_document(document_id) {
+
+    tok = 'Bearer {{og_token}}'
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to delete this?</h5></div>',
+      position: 'top',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'No',
+      customClass: {
+        confirmButton: 'swal-button',
+        cancelButton: 'swal-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+
+
+
+          $.ajax({
+            url: backendurl + "/api/adminauth/delete-document",
+            type: "POST",
+            headers: {
+              "Authorization": tok,
+              "encrypted": '1'
+            },
+            data: { document_id: document_id,csrfmiddlewaretoken: "{{csrf_token}}" },
+
+            success: function (data) {
+              var decrypt_response = decryptData(data)
+              var json_resposne = $.parseJSON(decrypt_response)
+              if (json_resposne.n == 1) {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                  icon: 'success',
+                  position: 'top',
+                  backdrop: true,
+                  customClass: {
+                    confirmButton: 'swal-button'
+                  }
+                }).then(() => {
+                                  location.reload();
+
+                });
+              } else {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                  icon: 'error',
+                  position: 'top',
+                  backdrop: true,
+                  customClass: {
+                    confirmButton: 'swal-button'
+                  }
+                });
+              }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+              Swal.fire({
+                title: 'Error',
+                text: jqXHR.responseJSON.Message,
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          });
+
+        
+      }
+    });
+  }
+
+    function handleValidationFailure(message, selector) {
+        showErrorToast(message);
+        scrollToElement(selector);
+    
+        // Remove the stepper if it exists
+        if (stepper) {
+            stepper.destroy();
+            stepper = null;
+        }
+    }
+    
+ 
+    
+    function showErrorToast(message) {
+        bootstrap.showToast({
+            body: message,
+            closeButton: true,
+            toastClass: "alert-danger",
+            delay: 2000,
+        });
+    }
+    
+    function scrollToElement(selector) {
+        $("html, body").animate(
+            {
+                scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+            },
+            "slow"
+        );
+    }
+    
+
+  function update_profile() {
+        var name = $("#ProfileName").val().trim();
+        var mobilenumber = $("#ProfilePhone").val().trim();
+        var email = $("#ProfileEmail").val().trim();
+        var no_of_classroom = $("#No_of_classroom").val().trim();
+        // var accreditation_number = $("#accreditation_number").val().trim();
+        // var address_line_one = $("#address_line_one").val().trim();
+        // var address_line_two = $("#address_line_two").val().trim();
+        // var country = $("#country").val();
+
+        // var state = $("#state").val();
+        // var city = $("#city").val().trim();
+        // var pincode = $("#pincode").val().trim();
+        // var alternate_mobilenumber = $("#alternate_mobilenumber").val().trim();
+        // var courses = $("#course").val()
+    
+        var emailregex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        if (IsValid(name)) {
+            handleValidationFailure("Name is required.", "#ProfileName");
+            return false;
+        } else if (IsValid(mobilenumber)) {
+            handleValidationFailure("Phone number is required.", "#ProfilePhone");
+            return false;
+        }else if (mobilenumber.length != 10) {
+            handleValidationFailure("Phone number must me 10 digit.", "#ProfilePhone");
+            return false;
+        } else if (IsValid(email)) {
+            handleValidationFailure("Email is required.", "#ProfileEmail");
+            return false;
+        } else if (!emailregex.test(email)) {
+            handleValidationFailure("Email is Invalid.", "#ProfileEmail");
+            return false;
+
+        }else if (IsValid(no_of_classroom)) {
+            handleValidationFailure("no of classroom is required.", "#No_of_classroom");
+            return false;
+        } else {
+            console.log("-------'",'{{training_center.id}}')
+            var en_data = {
+                'id': '{{training_center.id}}',
+                'name': name,
+                // 'accreditation_number': accreditation_number,
+                'no_of_classroom': no_of_classroom,
+                // 'address_line_one': address_line_one,
+                // 'address_line_two': address_line_two,
+                // 'country': country,
+                // 'state': state,
+                // 'city': city,
+                // 'pincode': pincode,
+                'mobilenumber': mobilenumber,
+                // 'alternate_mobilenumber': alternate_mobilenumber,
+                'email': email,
+                // 'source': 'admin',
+                // 'authority_list': authority_list,
+                // 'courses': course,
+            }
+            var check_encryptData = encryptData(JSON.stringify(en_data))
+
+        tok = 'Bearer {{og_token}}'
+
+          $.ajax({
+                type: "POST",
+                url: backendurl + "/api/adminauth/update-training-center",
+                headers: {
+                    "Authorization": tok,
+                    "encrypted": '1'
+                },
+
+                dataType: "json",
+                data: check_encryptData,
+                processData: false,
+                contentType: false,
+
+            success: function (data) {
+              var decrypt_response = decryptData(data)
+              var json_resposne = $.parseJSON(decrypt_response)
+              if (json_resposne.n == 1) {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                  icon: 'success',
+                  position: 'top',
+                  backdrop: true,
+                  customClass: {
+                    confirmButton: 'swal-button'
+                  }
+                }).then(() => {
+                    location.reload();
+
+                });
+              } else {
+                Swal.fire({
+                  html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                  icon: 'error',
+                  position: 'top',
+                  backdrop: true,
+                  customClass: {
+                    confirmButton: 'swal-button'
+                  }
+                });
+              }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+              Swal.fire({
+                title: 'Error',
+                text: jqXHR.responseJSON.Message,
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          });
+
+        
+      }
+    }
+
+</script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+
+
+{%endblock%}

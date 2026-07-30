@@ -1,0 +1,663 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Add Course
+          </h1>
+          <!--end::Title-->
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">Courses</li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-700">Add Course</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-fluid">
+        <!--begin::Row-->
+        <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+          <!--begin::Col-->
+          <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+            <!--begin::Card widget 20-->
+            <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+              <!--begin::Header-->
+              <div class="card-body py-5">
+                <!--begin::Stepper-->
+                <div class="stepper stepper-pills" id="kt_stepper_example_clickable">
+                  <!--begin::Nav-->
+                  <div class="stepper-nav flex-center flex-wrap mb-2">
+                    <!--begin::Step 1-->
+                    <div class="stepper-item my-4 current" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">1</span>
+                        </div>
+                        <!--end::Icon-->
+
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Course</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+
+                      <!--begin::Line-->
+                      <div class="stepper-line w-100px"></div>
+                      <!--end::Line-->
+                    </div>
+                    <!--end::Step 1-->
+
+                    <!--begin::Step 2-->
+
+                    <!--end::Step 2-->
+                    <!--begin::Step 3-->
+                    <div class="stepper-item my-4" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">2</span>
+                        </div>
+                        <!--begin::Icon-->
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Eligibility</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+                    </div>
+                    <!--end::Step 3-->
+                  </div>
+                  <!--end::Nav-->
+
+                  <!--begin::Form-->
+                  <form class="form mx-auto" novalidate="novalidate" id="kt_stepper_example_basic_form">
+                    <!--begin::Group-->
+                    <div class="">
+                      <!--begin::Step 1-->
+                      <div class="flex-column current" data-kt-stepper-element="content">
+                        <div class="mb-5 fv-row fv-plugins-icon-container row gy-3">
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Name</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="Course Name" value=""
+                              id="coursename" />
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Course Code</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="CC234"
+                              id="coursecode" />
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label"> Training Mode</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Training Mode"
+                              data-hide-search="true" id="training_mode">
+                              <option></option>
+                              {% for i in TrainingMode %}
+                              <option value="{{i.id}}">{{i.training_mode}}</option>
+                              {%endfor%}
+
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <div class="col-md-3">
+                            <div class="form-group">
+                              <label class="form-label">Duration</label><span class="text-danger">*</span>
+                              <input type="text" name="sku" class="form-control mb-3" placeholder="Duration In Days"  
+                                id="duration" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" maxlength="4"/>
+                            </div>
+                          </div>
+                          <div class="col-md-3">
+                            <div class="form-group">
+                              <label class="form-label">Expiry</label>
+                              <input type="date" name="sku" class="form-control mb-3" placeholder="Expiry"  
+                                id="expiry" class="kt_daterangepicker_1" />
+                            </div>
+                          </div>
+
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Should be followed by?</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Course List"
+                              id="followed_by">
+                              <option value="">Select Course</option>
+                              {%for c in course %}
+                              <option value="{{c.id}}">
+                                {{c.course_name}}
+                              </option>
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Topics Covered</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+
+                            <!--begin::Input-->
+                            <input class="form-control" placeholder="Topics Covered" id="topics_covered"
+                              name="topics_covered" id="topics_covered" />
+                            <span class="text-danger" id="topics_required"></span>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Input-->
+                            <div class="form-group">
+                              <label class="form-label">Pricing</label>
+                              <input type="text" name="sku" class="form-control mb-3" placeholder="Pricing in USD"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" id="pricing" />
+                              <span class="text-muted">Note : instructions
+                              </span>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Description</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="textarea" name="sku" class="form-control mb-2" placeholder="Description"
+                              value="" id="description" />
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Supported Language</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Language"
+                              data-hide-search="true" id="languages" multiple>
+                              <option></option>
+                              {% for i in languages%}
+                              <option value="{{i.id}}">{{i.languages_name}}</option>
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <h3>Modules</h3>
+                          <div class="kt_docs_repeater_basic">
+                            <!--begin::Form group-->
+                            <div class="form-group">
+                              <div data-repeater-list="kt_docs_repeater_basic">
+                                <div data-repeater-item>
+                                  <div class="form-group row module_row">
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_name"
+                                          placeholder="Name" value="" id="module_name" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Description</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_description"
+                                          placeholder="Module Description" value="" id="module_description" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Hours</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_hours"
+                                          placeholder="Hours" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" id="module_hours" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                      <a href="javascript:;" data-repeater-delete
+                                        class="btn btn-sm btn-light-danger mt-3 mt-md-8">
+                                        <i class="ki-duotone ki-trash fs-4 pe-0"><span class="path1"></span><span
+                                            class="path2"></span><span class="path3"></span><span
+                                            class="path4"></span><span class="path5"></span></i>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!--begin::Form group-->
+                            <div class="form-group mt-2 mb-5">
+                              <a href="javascript:;" data-repeater-create class="btn btn-sm btn-light-primary">
+                                <i class="ki-duotone ki-plus fs-3"></i>Add
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!--begin::Step 1-->
+
+                      <div class="flex-column" data-kt-stepper-element="content">
+                        <div class="row">
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Category</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Category"
+                              data-hide-search="true" multiple>
+                              <option></option>
+                              <option value="1">Category 1</option>
+                              <option value="2">Category 2</option>
+                              <option value="3">Category 3</option>
+                              <option value="4">Category 4</option>
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Sub Category</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Sub Category"
+                              data-hide-search="true" multiple>
+                              <option></option>
+                              <option value="1">Sub Category 1</option>
+                              <option value="2">Sub Category 2</option>
+                              <option value="3">Sub Category 3</option>
+                              <option value="4">Sub Category 4</option>
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Department</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Department"
+                              data-hide-search="true" multiple>
+                              <option></option>
+                              <option value="1">Department 1</option>
+                              <option value="2">Department 2</option>
+                              <option value="3">Department 3</option>
+                              <option value="4">Department 4</option>
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Ranks</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Rank"
+                              data-hide-search="true" multiple>
+                              <option></option>
+                              <option value="1">Rank 1</option>
+                              <option value="2">Rank 2</option>
+                              <option value="3">Rank 3</option>
+                              <option value="4">Rank 4</option>
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <div class="RankPrioritydiv mt-3 col-6">
+                            <div class="rank-item row row-cols-2 m-1">
+                              <div class="rank-info">
+                                <span>Rank Item</span>
+                              </div>
+                              <div class="radio-buttons">
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status_23"
+                                    value="mandatory" />
+                                  Mandatory
+                                </label>
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status_23"
+                                    value="recommended" />
+                                  Recommended
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <!--begin::Modal-->
+                        <div class="modal fade" tabindex="-1" id="video-preview-modal">
+                          <div class="modal-dialog modal-width">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">Video Preview</h5>
+                                <!--begin::Close-->
+                                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                                  aria-label="Close">
+                                  <i class="ki-duotone ki-cross fs-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                  </i>
+                                </div>
+                                <!--end::Close-->
+                              </div>
+                              <div class="modal-body">
+                                <div class="row justify-content-center">
+                                  <div class="col-md-8">
+                                    <img src="./assets/media/Images/preview.jpg" width="350" height="300" class="m-5" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!--end::Modal-->
+                      <div class="flex-column" data-kt-stepper-element="content">
+                        <!--begin::Repeater-->
+                        <!--begin::Repeater-->
+                        <div class="kt_docs_repeater_basic">
+                          <!--begin::Form group-->
+                          <div class="form-group">
+                            <div data-repeater-list="kt_docs_repeater_basic">
+                              <div data-repeater-item>
+                                <div class="row"></div>
+                              </div>
+                            </div>
+                          </div>
+                          <!--end::Form group-->
+                          <!--begin::Form group-->
+                          <div class="form-group mt-2 mb-5">
+                            <!-- Eligibility code goes here -->
+                          </div>
+                          <!--end::Form group-->
+                        </div>
+                        <!--end::Repeater-->
+
+                        <!--begin::Step 3-->
+                      </div>
+                      <!--end::Group-->
+
+                      <!--begin::Actions-->
+                      <div class="d-flex align-content-center justify-content-center pb-4">
+                        <!--begin::Wrapper-->
+                        <div class="me-2">
+                          <button type="button" class="btn btn-sm btn-active-primary btn-secondary"
+                            data-kt-stepper-action="previous">Back</button>
+                        </div>
+
+                        <!--begin::Wrapper-->
+                        <div>
+                          <button type="button" class="btn btn-sm btn-primary" data-kt-stepper-action="submit">
+                            <span class="indicator-label"> Submit </span>
+                            <span class="indicator-progress">
+                              Please wait...
+                              <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                          </button>
+
+                          <button type="button" class="btn btn-sm btn-primary" data-kt-stepper-action="next"
+                            onclick="addcourse()">Continue</button>
+                        </div>
+                        <!--end::Wrapper-->
+                      </div>
+                  </form>
+                  <!--end::Actions-->
+                  <!--end::Form-->
+                </div>
+                <!--end::Stepper-->
+              </div>
+              <!--end::Header-->
+            </div>
+            <!--end::Card widget 20-->
+          </div>
+          <!--end::Col-->
+          <!--end::Col-->
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+  <!--begin::Footer-->
+  <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+      <!--begin::Copyright-->
+      <div class="text-gray-900">
+        <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+      </div>
+      <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+  </div>
+  <!--end::Footer-->
+</div>
+
+{%endblock%} {% block script %}{{block.super}}
+<script type="text/javascript">
+    $(".kt_daterangepicker_1").daterangepicker();
+
+  var tc_input_tag = document.querySelector("#topics_covered");
+  new Tagify(tc_input_tag);
+
+  function handleValidationFailure(message, selector) {
+    showErrorToast(message);
+    scrollToElement(selector);
+
+    // Remove the stepper if it exists
+    if (stepper) {
+      stepper.destroy();
+      stepper = null;
+    }
+  }
+
+  function showErrorToast(message) {
+    bootstrap.showToast({
+      body: message,
+      closeButton: true,
+      toastClass: "alert-danger",
+      delay: 2000,
+    });
+  }
+
+  function scrollToElement(selector) {
+    $("html, body").animate(
+      {
+        scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+      },
+      "slow"
+    );
+  }
+
+  $(".kt_docs_repeater_basic").repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      "text-input": "foo",
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    },
+  });
+
+  function addcourse() {
+    var coursename = $("#coursename").val();
+    var coursecode = $("#coursecode").val().trim();
+    var training_mode = $("#training_mode").val();
+    var duration = $("#duration").val().trim();
+    var expiry = $("#expiry").val();
+    var followed_by = $("#followed_by").val();
+    var topics_covered = $("#topics_covered").val();
+    var pricing = $("#pricing").val();
+    var description = $("#description").val();
+    var languages = $("#languages").val();
+
+
+    if (IsValid(coursename)) {
+      handleValidationFailure("Name is required.", "#name");
+      return false;
+    } else if (IsValid(coursecode)) {
+      handleValidationFailure("Course Code is required.", "#coursecode");
+      return false;
+    } else if (IsValid(training_mode)) {
+      handleValidationFailure("Training Mode is required.", "#training_mode");
+      return false;
+    } else if (IsValid(duration)) {
+      handleValidationFailure("Duration is required.", "#duration");
+      return false;
+    // } else if (IsValid(expiry)) {
+    //   handleValidationFailure("Expiry is required.", "#expiry");
+    //   return false;
+    // } else if (IsValid(topics_covered)) {
+    //   handleValidationFailure("Topics Covered is required.", "#topics_covered");
+    //   return false;
+    // } else if (IsValid(pricing)) {
+    //   handleValidationFailure("Pricing is required.", "#pricing");
+    //   return false;
+    // } else if (IsValid(description)) {
+    //   handleValidationFailure("Description is required.", "#description");
+    //   return false;
+    // 
+    }else if (IsValid(languages)) {
+      handleValidationFailure("languages are required.", "#languages");
+      return false;
+    }else {
+      debugger;
+
+      var modules_list = [];
+
+      $(".module_row").each(function () {
+        var module_name = $(this).find("div .module_name").val();
+        var module_description = $(this)
+          .find("div .module_description")
+          .val()
+          .trim();
+        var module_hours = $(this).find("div .module_hours").val().trim();
+
+        modules_list.push({
+          module_name: module_name,
+          module_description: module_description,
+          module_hours: module_hours,
+        });
+      });
+
+      var en_data = {
+        coursename: coursename,
+        coursecode: coursecode,
+        training_mode: training_mode,
+        duration: duration,
+        expiry: expiry,
+        followed_by: followed_by,
+        topics_covered: topics_covered,
+        pricing: pricing,
+        description: description,
+        languages: languages,
+        module_list: modules_list,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+
+      tok = 'Bearer {{og_token}}'
+      $.ajax({
+        url: backendurl + "/api/course/add-course",
+        headers: {
+          Authorization: tok,
+          encrypted: "1",
+        },
+        dataType: "json",
+        data: check_encryptData,
+        type: "POST",
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          var decrypt_response = decryptData(response);
+          var json_resposne = $.parseJSON(decrypt_response);
+          console.log("success");
+          if (json_resposne.n == 1) {
+
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+
+            })
+
+            window.location.href = backendurl + "/course/update-course/" + json_resposne.data.id
+
+          } else {
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+
+            })
+            $("html").scrollTop(0);
+          }
+        },
+      });
+    }
+  }
+
+  
+</script>
+{%endblock%}

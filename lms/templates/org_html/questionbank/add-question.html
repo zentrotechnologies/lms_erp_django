@@ -1,0 +1,1171 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Add Question</h1>
+          <!--end::Title-->
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+           
+            <!--end::Item-->
+            <!--begin::Item-->
+           
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted"> <a href="question-bank.html"
+                class="text-muted text-hover-primary">Question Bank</a></li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-700">Add Question</li>
+            <!--end::Item-->
+          </ul>
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-fluid">
+        <!--begin::Row-->
+        <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+          <!--begin::Col-->
+          <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+            <!--begin::Card widget 20-->
+            <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+              <!--begin::Header-->
+              <div class="card-body py-5">
+               
+                <div class="kt_docs_repeater_basic">
+                  <!-- <div data-repeater-list="kt_docs_repeater_basic">
+                    <div data-repeater-item> -->
+                  <div>
+                    <div>
+                      <div class="add-que-box">
+                        <!-- <div class="d-flex justify-content-between">
+                          <h4>Add New Question</h4>
+                          <i class="ki-duotone ki-cross-square fs-2 text-danger">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                          </i>
+                        </div> -->
+                        <div class="mb-2 fv-row fv-plugins-icon-container row gy-3">
+                          <div class="mb-5 fv-row fv-plugins-icon-container row gy-3">
+                            <div class="col-lg-4">
+                              <!--begin::Label-->
+                              <label class="form-label">Course Name </label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <select class="form-select" data-control="select2" id="course" multiple onchange="getcoursedetail()" data-placeholder="Select Course">
+                         
+                                {%for i in course_list %}
+                                <option value="{{i.id}}">{{i.course_name}}</option>
+                                {%endfor%}
+                              </select>
+                              <!--end::Input-->
+                            </div>
+                            <div class="col-lg-4">
+                              <!--begin::Label-->
+                              <label class="form-label"> Module List</label>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <select class="form-select" id="module" multiple data-control="select2" data-placeholder="Select Module"
+                                data-hide-search="true">
+                          
+                                
+                              </select>
+                              <!--end::Input-->
+                            </div>
+                          </div>
+                          <div class="col-lg-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Type of Question
+                            </label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-hide-search="true" id="type_of_question">
+                              <option value="">Select Type of Question</option>
+                              <option value="Objective">Objective</option>
+                              <!-- <option value="Subjective">Subjective</option> -->
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-lg-9">
+                            <!--begin::Label-->
+                            <label class="form-label">Question </label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="Question" value="" id="question_text">
+                            <!--end::Input-->
+                          </div>
+                        </div>
+                        <div class="mb-2 fv-row fv-plugins-icon-container row gy-3">
+                          <div class="col-lg-6">
+                            <!--begin::Dropzone-->
+                            <div class="dropzone p-9" id="kt_dropzonejs_example_1">
+                              <!--begin::Message-->
+                              <div class="dz-message needsclick">
+                                <i class="ki-duotone ki-file-up fs-4x text-primary"><span class="path1"></span><span
+                                    class="path2"></span></i>
+                                <!--begin::Info-->
+                                <div class="ms-4 mt-2">
+                                  <h3 class="fs-6 fw-semibold text-gray-900 ">
+                                    Drop files here or click to
+                                    upload.</h3>
+                                  <span class="fs-7 fw-normal text-gray-500">Upload
+                                    up to 10 files</span>
+                                </div>
+                                <!--end::Info-->
+                              </div>
+                            </div>
+                            <!--end::Dropzone-->
+                          </div>
+                        </div>
+                        <!--begin::Col-->
+                        <div id="item1Details">
+                          <div class="mb-2 fv-row fv-plugins-icon-container row gy-2">
+                            <div class="col-6 all_options">
+                              <!--begin::Label-->
+                              <label class="form-label">Option 1 </label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer" value="" id="option_1">
+                                </div>
+                                <div class="col-lg-6">
+                                  <div class="file-upload custom-upload">
+                                    <button class="btn-upload">
+                                      <span class="text-file-name">Upload Image</span>
+                                    </button>
+                                    <i class="fa fa-camera i-pic-upload"></i>
+                                    <i class="i-deselect"></i>
+                                    <input type="file" class="form-control d-none av_option_image" id="image_option_1">
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Input-->
+                            </div>
+                            <!--end::Col-->
+                            <div class="col-6 all_options">
+                              <!--begin::Label-->
+                              <label class="form-label">Option 2 </label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer" value="" id="option_2">
+                                </div>
+                                <div class="col-lg-6">
+                                  <div class="file-upload custom-upload">
+                                    <button class="btn-upload">
+                                      <span class="text-file-name">Upload
+                                        Image</span>
+                                    </button>
+                                    <i class="fa fa-camera i-pic-upload"></i>
+                                    <i class="i-deselect"></i>
+                                    <input type="file" class="form-control d-none av_option_image" id="image_option_2">
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Input-->
+                            </div>
+                            <div class="col-6 all_options">
+                              <!--begin::Label-->
+                              <label class="form-label">Option 3 </label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer" value="" id="option_3">
+                                </div>
+                                <div class="col-lg-6">
+                                  <div class="file-upload custom-upload">
+                                    <button class="btn-upload">
+                                      <span class="text-file-name">Upload
+                                        Image</span>
+                                    </button>
+                                    <i class="fa fa-camera i-pic-upload"></i>
+                                    <i class="i-deselect"></i>
+                                    <input type="file" class="form-control d-none av_option_image" id="image_option_3">
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Input-->
+                            </div>
+                            <div class="col-6 all_options">
+                              <!--begin::Label-->
+                              <label class="form-label">Option 4 </label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer" value="" id="option_4">
+                                </div>
+                                <div class="col-lg-6">
+                                  <div class="file-upload custom-upload">
+                                    <button class="btn-upload">
+                                      <span class="text-file-name">Upload
+                                        Image</span>
+                                    </button>
+                                    <i class="fa fa-camera i-pic-upload"></i>
+                                    <i class="i-deselect"></i>
+                                    <input type="file" class="form-control d-none av_option_image" id="image_option_4">
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Input-->
+                            </div>
+                            <div id="kt_docs_repeater_basic1 ">
+                              <!--begin::Form group-->
+                              <div class="form-group" >
+                                <div>
+                                  <div>
+                                    <div class="form-group row" id="more_option_div">
+                                      <div class="col-6 more_options all_options">
+                                        <!--begin::Label-->
+                                        <label class="form-label">Option
+                                          5 </label>
+                                        <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                                          <span class="path1"></span>
+                                          <span class="path2"></span>
+                                        </i>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="row">
+                                          <div class="col-lg-6">
+                                            <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                                              value="" id="option_5">
+                                          </div>
+                                          <div class="col-lg-6">
+                                            <div class="file-upload custom-upload">
+                                              <button class="btn-upload">
+                                                <span class="text-file-name">Upload
+                                                  Image</span>
+                                              </button>
+                                              <i class="fa fa-camera i-pic-upload"></i>
+                                              <i class="i-deselect"></i>
+                                              <input type="file" class="form-control d-none av_option_image" id="image_option_5">
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <!--end::Input-->
+                                      </div>
+                                      <div class="col-6 more_options all_options">
+                                        <!--begin::Label-->
+                                        <label class="form-label">Option
+                                          6 </label>
+                                        <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                                          <span class="path1"></span>
+                                          <span class="path2"></span>
+                                        </i>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="row">
+                                          <div class="col-lg-6">
+                                            <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                                              value="" id="option_6">
+                                          </div>
+                                          <div class="col-lg-6">
+                                            <div class="file-upload custom-upload">
+                                              <button class="btn-upload">
+                                                <span class="text-file-name">Upload
+                                                  Image</span>
+                                              </button>
+                                              <i class="fa fa-camera i-pic-upload"></i>
+                                              <i class="i-deselect"></i>
+                                              <input type="file" class="form-control d-none av_option_image" id="image_option_6">
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <!--end::Input-->
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Form group-->
+                              <!--begin::Form group-->
+                              <div class="form-group mt-2 m-9 ">
+                                <a href="javascript:void(0)" onclick="add_more_options();" class=" QuestionBank-addButton">
+                                  Add More Options
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mb-3 fv-row fv-plugins-icon-container row gy-3 mt-3">
+                            <div class="col-lg-6">
+                              <!--begin::Label-->
+                              <label class="form-label">Correct
+                                Answer</label><span class="text-danger">*</span>
+                              <!--end::Label-->
+                              <select class="form-select" data-control="select2"
+                                data-placeholder="Select Correct Answer" data-hide-search="true" id="correct_option">
+                                <option value="">Select Correct Option</option>
+                                <option value="1">Option 1</option>
+                                <option value="2">Option 2</option>
+                                <option value="3">Option 3</option>
+                                <option value="4">Option 4</option>
+                                <option value="5">Option 5</option>
+                                <option value="6">Option 6</option>
+                          
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="hidden" id="item2Details">
+                          <div class="col-lg-6">
+                            <!--begin::Label-->
+                            <label class="form-label">Demonstrative
+                              Answer</label>
+                            <!--end::Label-->
+                            <div id="richTextBox"></div>
+                          </div>
+                        </div>
+                        <div class=" fv-row fv-plugins-icon-container row gy-3 mt-">
+                          <div class="col-lg-4">
+                            <!--begin::Label-->
+                            <label class="form-label">Time to Solve </label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="Time to Solve"
+                              value="" id="time_to_solve">
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-lg-4">
+                            <!--begin::Label-->
+                            <label class="form-label">Marks </label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="Marks" value="" id="marks">
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-lg-4">
+                            <!--begin::Label-->
+                            <label class="form-label">Difficulty Level
+                            </label>
+                            <!--end::Label-->
+                            <select class="form-select" data-control="select2" data-hide-search="true" id="difficulty_level">
+                              <option value="">Select Difficulty Level</option>
+                              <option value="Easy">Easy</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Hard">Hard</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Tags</label>
+                            <input id="question_tags" placeholder="Add Tags" class="form-control" />
+                          </div>
+                          <div class="col-lg-6">
+                            <!--begin::Label-->
+                            <label class="form-label">Add Note</label>
+                            <!--end::Label-->
+                            <textarea class="form-control" data-kt-autosize="true" placeholder="Add Note" id="note"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- <div class="text-center">
+                    <a href="javascript:;" data-repeater-create class="btn btn-sm btn-light-primary">
+                      <i class="ki-duotone ki-plus fs-3"></i>
+                      Add
+                    </a>
+                  </div> -->
+                  <div class="d-flex justify-content-center pt-8">
+                    <!--begin::Button-->
+                    <a href="javascript:void(0)" class="btn btn-sm btn-light me-5">Cancel</a>
+                    <!--end::Button-->
+                    <!--begin::Button-->
+                    <button type="button" class="btn btn-sm btn-primary" onclick="add_question()">
+                      <span class="indicator-label">Save</span>
+                      <span class="indicator-progress">Please wait...
+                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    </button>
+                    <!--end::Button-->
+                  </div>
+                </div>
+                <!--end::Header-->
+              </div>
+              <!--end::Card widget 20-->
+            </div>
+            <!--end::Col-->
+            <!--end::Col-->
+          </div>
+          <!--end::Row-->
+        </div>
+        <!--end::Content container-->
+      </div>
+      <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+      <!--begin::Footer container-->
+      <div class="app-container container-fluid d-flex justify-content-center py-3">
+        <!--begin::Copyright-->
+        <div class="text-gray-900">
+          <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright ©
+            LMS</span>
+        </div>
+        <!--end::Copyright-->
+      </div>
+      <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+  </div>
+  <!--end:::Main-->
+</div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+  $("#kt_daterangepicker_1").daterangepicker();
+
+
+  $('.kt_docs_repeater_basic').repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      'text-input': 'foo'
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    }
+  });
+
+
+
+  $('#kt_docs_repeater_basic1').repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      'text-input': 'foo'
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    }
+  });
+
+  var myDropzone = new Dropzone("#kt_dropzonejs_example_1", {
+    url: "https://keenthemes.com/scripts/void.php", // Set the url for your upload script location
+    paramName: "file", // The name that will be used to transfer the file
+    maxFiles: 10,
+    maxFilesize: 10, // MB
+    addRemoveLinks: true,
+    accept: function (file, done) {
+      if (file.name == "wow.jpg") {
+        done("Naha, you don't.");
+      } else {
+        done();
+      }
+    }
+  });
+
+  function handleValidationFailure(message, selector) {
+    showErrorToast(message);
+    scrollToElement(selector);
+
+    // Remove the stepper if it exists
+    if (stepper) {
+      stepper.destroy();
+      stepper = null;
+    }
+  }
+
+  function showErrorToast(message) {
+    bootstrap.showToast({
+      body: message,
+      closeButton: true,
+      toastClass: "alert-danger",
+      delay: 2000,
+    });
+  }
+
+  function scrollToElement(selector) {
+    $("html, body").animate(
+      {
+        scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+      },
+      "slow"
+    );
+  }
+
+
+  $(".file-upload").each(function () {
+    var fI = $(this).children('input'),
+      btn = $(this).children('.btn-upload'),
+      i1 = $(this).children('.i-pic-upload'),
+      i2 = $(this).children('.i-deselect'),
+      dN = "Upload screenshot of story",
+      tfN = $(this).find('.text-file-name'),
+      bT = $(this).find('.text-browse');
+    //bT.text('<img src="src/img/upload-image.svg">');
+    tfN.text('Upload Image');
+
+    btn.click(function (b) {
+      b.preventDefault();
+      fI.click();
+    });
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          i1.css("padding", "16.4px 9px");
+          i1.css("background", "url(" + e.target.result + ") no-repeat center").removeClass('fa fa-camera');
+
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    fI.change(function (e) {
+      readURL(this);
+      var fN = e.target.files[0].name;
+      tfN.text(fN);
+      i2.fadeIn(200);
+      // bT.text('Change...');
+    });
+    i2.click(function () {
+      i2.fadeOut(100);
+      window.setTimeout(function () {
+        i1.css("padding", "2.4px 9px");
+        i1.css("background", "#fff").addClass('fa fa-camera');
+        //bT.src('src/img/upload-image.svg');
+        tfN.text('Upload Image');
+        fI.val(null);
+      }, 200);
+
+    });
+  });
+
+
+  $(document).ready(function () {
+    // Event listener for Select2 selection
+    $('#select2Dropdown').on('select2:select', function (e) {
+      // Get selected option
+      const selectedOption = e.params.data.element;
+      const value = $(selectedOption).val();
+
+      // Show the relevant details div based on the selected value
+      if (value === 'item1') {
+        $('#item1Details').removeClass('hidden');
+        $('#item2Details').addClass('hidden');
+      } else if (value === 'item2') {
+        $('#item2Details').removeClass('hidden');
+        $('#item1Details').addClass('hidden');
+      }
+    });
+  });
+
+  // The DOM elements you wish to replace with Tagify
+  var input1 = document.querySelector("#question_tags");
+
+  // Initialize Tagify components on the above inputs
+  new Tagify(input1);
+
+  const quill = new Quill('#richTextBox', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'], // Formatting buttons
+        [{ 'header': 1 }, { 'header': 2 }], // Header sizes
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }], // Lists
+        [{ 'color': [] }, { 'background': [] }], // Text color/background
+        ['clean'] // Remove formatting
+      ]
+    }
+  });
+
+
+
+  /////////////////////////////////////////////////
+
+  function getcoursedetail(){
+    debugger;
+    var course = $("#course").val();
+    var modulehtml = ""
+
+    var en_data = {
+      'course_list': course,
+  
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/course/get-course-detail-multiple",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("success",json_resposne);
+        if (json_resposne.n == 1) {
+           
+          $.each(json_resposne.module_list, function (i, o) {  
+          
+            modulehtml +=`
+            <option value="`+o.id+`">`+o.name+`</option>
+            `
+          })
+
+          $("#module").html(modulehtml)
+
+        } else {
+          $("#module").html('')
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+  }
+
+
+  ///////////////////--Add more options--//////////////////
+
+  function add_more_options(){
+    debugger;
+    var opthtml = ""
+
+    var more_options_length = $(".more_options").length
+    console.log("more_options_length",more_options_length)
+
+    if(more_options_length > 5){
+
+      var toast = bootstrap.showToast({			
+          body: "Max 10 options are allowed.", 
+          closeButton: true, 
+          toastClass: "alert-danger",
+          delay: 2000,
+      })
+      //$("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+
+    }else if(more_options_length == 0){
+
+        opthtml = `
+ 
+                  <div class="col-6 more_options all_options">
+                    <!--begin::Label-->
+                    <label class="form-label">Option
+                      5 </label>
+                    <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                    <!--end::Label-->
+                    <!--begin::Input-->
+                    <div class="row">
+                      <div class="col-lg-6">
+                        <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                          value="" id="option_5">
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="file-upload custom-upload">
+                          <button class="btn-upload">
+                            <span class="text-file-name">Upload
+                              Image</span>
+                          </button>
+                          <i class="fa fa-camera i-pic-upload"></i>
+                          <i class="i-deselect"></i>
+                          <input type="file" class="form-control d-none av_option_image" id="image_option_5">
+                        </div>
+                      </div>
+                    </div>
+                    <!--end::Input-->
+                  </div>
+                  <div class="col-6 more_options all_options">
+                    <!--begin::Label-->
+                    <label class="form-label">Option
+                      6 </label>
+                    <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                    <!--end::Label-->
+                    <!--begin::Input-->
+                    <div class="row">
+                      <div class="col-lg-6">
+                        <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                          value="" id="option_6">
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="file-upload custom-upload">
+                          <button class="btn-upload">
+                            <span class="text-file-name">Upload
+                              Image</span>
+                          </button>
+                          <i class="fa fa-camera i-pic-upload"></i>
+                          <i class="i-deselect"></i>
+                          <input type="file" class="form-control d-none av_option_image" id="image_option_6">
+                        </div>
+                      </div>
+                    </div>
+                    <!--end::Input-->
+                  </div>
+          
+        
+        `
+  
+  
+      }
+
+      else if(more_options_length == 1){
+  
+        opthtml = `
+                  <div class="col-6 more_options all_options">
+                    <!--begin::Label-->
+                    <label class="form-label">Option
+                      6 </label>
+                    <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                    <!--end::Label-->
+                    <!--begin::Input-->
+                    <div class="row">
+                      <div class="col-lg-6">
+                        <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                          value="" id="option_6">
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="file-upload custom-upload">
+                          <button class="btn-upload">
+                            <span class="text-file-name">Upload
+                              Image</span>
+                          </button>
+                          <i class="fa fa-camera i-pic-upload"></i>
+                          <i class="i-deselect"></i>
+                          <input type="file" class="form-control d-none av_option_image" id="image_option_6">
+                        </div>
+                      </div>
+                    </div>
+                    <!--end::Input-->
+                  </div>
+    
+    `
+  
+      }
+      else if(more_options_length == 2){
+  
+        opthtml = `
+
+                      <div class="col-6 more_options all_options">
+                        <!--begin::Label-->
+                        <label class="form-label">Option
+                          7 </label>
+                        <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <!--end::Label-->
+                        <!--begin::Input-->
+                        <div class="row">
+                          <div class="col-lg-6">
+                            <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                              value="" id="option_7">
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="file-upload custom-upload">
+                              <button class="btn-upload">
+                                <span class="text-file-name">Upload
+                                  Image</span>
+                              </button>
+                              <i class="fa fa-camera i-pic-upload"></i>
+                              <i class="i-deselect"></i>
+                              <input type="file" class="form-control d-none av_option_image" id="image_option_7">
+                            </div>
+                          </div>
+                        </div>
+                        <!--end::Input-->
+                      </div>
+                      <div class="col-6 more_options all_options">
+                        <!--begin::Label-->
+                        <label class="form-label">Option
+                          8 </label>
+                        <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <!--end::Label-->
+                        <!--begin::Input-->
+                        <div class="row">
+                          <div class="col-lg-6">
+                            <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                              value="" id="option_8">
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="file-upload custom-upload">
+                              <button class="btn-upload">
+                                <span class="text-file-name">Upload
+                                  Image</span>
+                              </button>
+                              <i class="fa fa-camera i-pic-upload"></i>
+                              <i class="i-deselect"></i>
+                              <input type="file" class="form-control d-none av_option_image" id="image_option_8">
+                            </div>
+                          </div>
+                        </div>
+                        <!--end::Input-->
+                      </div>
+           
+    
+    `
+  
+      }
+
+      
+      else if(more_options_length == 3){
+  
+        opthtml = `
+                  <div class="col-6 more_options all_options">
+                        <!--begin::Label-->
+                        <label class="form-label">Option
+                          8 </label>
+                        <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <!--end::Label-->
+                        <!--begin::Input-->
+                        <div class="row">
+                          <div class="col-lg-6">
+                            <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                              value="" id="option_8">
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="file-upload custom-upload">
+                              <button class="btn-upload">
+                                <span class="text-file-name">Upload
+                                  Image</span>
+                              </button>
+                              <i class="fa fa-camera i-pic-upload"></i>
+                              <i class="i-deselect"></i>
+                              <input type="file" class="form-control d-none av_option_image" id="image_option_8">
+                            </div>
+                          </div>
+                        </div>
+                        <!--end::Input-->
+                      </div>
+    
+    `
+  
+      }
+      else if(more_options_length == 4){
+  
+        opthtml = `
+                          <div class="col-6 more_options all_options">
+                            <!--begin::Label-->
+                            <label class="form-label">Option
+                              9 </label>
+                            <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                            </i>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <div class="row">
+                              <div class="col-lg-6">
+                                <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                                  value="" id="option_9">
+                              </div>
+                              <div class="col-lg-6">
+                                <div class="file-upload custom-upload">
+                                  <button class="btn-upload">
+                                    <span class="text-file-name">Upload
+                                      Image</span>
+                                  </button>
+                                  <i class="fa fa-camera i-pic-upload"></i>
+                                  <i class="i-deselect"></i>
+                                  <input type="file" class="form-control d-none av_option_image" id="image_option_9">
+                                </div>
+                              </div>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-6 more_options all_options">
+                            <!--begin::Label-->
+                            <label class="form-label">Option
+                              10 </label>
+                            <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                            </i>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <div class="row">
+                              <div class="col-lg-6">
+                                <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                                  value="" id="option_10">
+                              </div>
+                              <div class="col-lg-6">
+                                <div class="file-upload custom-upload">
+                                  <button class="btn-upload">
+                                    <span class="text-file-name">Upload
+                                      Image</span>
+                                  </button>
+                                  <i class="fa fa-camera i-pic-upload"></i>
+                                  <i class="i-deselect"></i>
+                                  <input type="file" class="form-control d-none av_option_image" id="image_option_10">
+                                </div>
+                              </div>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+                `
+  
+      }
+      else if(more_options_length == 5){
+  
+        opthtml = `
+                  <div class="col-6 more_options all_options">
+                            <!--begin::Label-->
+                            <label class="form-label">Option
+                              10 </label>
+                            <i class="ki-duotone ki-cross-square fs-2 text-primary">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                            </i>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <div class="row">
+                              <div class="col-lg-6">
+                                <input type="text" name="sku" class="form-control mb-2 av_option" placeholder="Answer"
+                                  value="" id="option_10">
+                              </div>
+                              <div class="col-lg-6">
+                                <div class="file-upload custom-upload">
+                                  <button class="btn-upload">
+                                    <span class="text-file-name">Upload
+                                      Image</span>
+                                  </button>
+                                  <i class="fa fa-camera i-pic-upload"></i>
+                                  <i class="i-deselect"></i>
+                                  <input type="file" class="form-control d-none av_option_image" id="image_option_10">
+                                </div>
+                              </div>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+    
+    `
+  
+      }
+      
+      else{
+          opthtml = ""
+      }
+      
+
+    $("#more_option_div").append(opthtml)
+    var after_more_option_div_length = $(".more_options").length
+    var all_options_div_length = $(".all_options").length
+    debugger;
+    var final_options = after_more_option_div_length
+
+    var correct_opt_html = "<option value = ''>Select Option</option>"
+    var option_counter = 1
+    $(".all_options").each(function(i,o){
+
+      correct_opt_html += `
+        <option value="`+option_counter+`">Option `+option_counter+`</option>
+      `
+
+      option_counter +=1
+    })
+
+    //for (let i = 1; i <= 4; i++) {
+    //  $('#output').append('<p>Iteration: ' + i + '</p>');
+    //}
+
+    $("#correct_option").html(correct_opt_html)
+
+
+    
+  }
+
+  function getAcceptedFiles() {
+		return myDropzone.getAcceptedFiles();
+	}
+
+
+  ///////////////////-- Add Question --////////////////////
+
+  function add_question(){
+
+    var course = $("#course").val();
+    var module = $("#module").val();
+    var type_of_question = $("#type_of_question").val();
+    var question_text = $("#question_text").val();
+    var correct_option = $("#correct_option").val();
+    var time_to_solve = $("#time_to_solve").val();
+    var marks = $("#marks").val();
+    var difficulty_level = $("#difficulty_level").val();
+    var question_tags = $("#question_tags").val();
+    var note = $("#note").val();
+
+    var file_list =  getAcceptedFiles();
+
+    var option_list = []
+
+
+    var fd = new FormData();  
+    $(".all_options").each(function(i,o){
+      debugger;
+       var td_option = $(this).find(".av_option").val()
+       var td_option_image = $(this).find(".av_option_image")[0].files[0]
+
+     
+       option_list.push({
+        "td_option":td_option,
+        "td_option_image":td_option_image || null
+       })
+
+       fd.append(`option_list[${i}][td_option]`, td_option);
+
+        if (td_option_image) {
+            fd.append(`option_list[${i}][td_option_image]`, td_option_image);
+        }
+      
+       //fd.append("td_option",td_option);
+       //fd.append("td_option_image",td_option_image);
+
+
+    })
+  
+    console.log("option",option_list)
+
+    $(file_list).each(function (i, o) {
+      fd.append("file_list",o);
+    })
+
+    fd.append("course",course);
+    fd.append("module",module);
+    fd.append("type_of_question",type_of_question);
+    fd.append("question_text",question_text);
+    fd.append("correct_option",correct_option);
+    fd.append("time_to_solve",time_to_solve);
+    fd.append("marks",marks);
+    fd.append("difficulty_level",difficulty_level);
+    fd.append("tags",question_tags);
+    fd.append("note",note);
+    fd.append("option_list",JSON.stringify(option_list));
+
+    if (IsValid(course)) {
+      handleValidationFailure("Course is required.", "#course");
+      return false;
+    } else if (IsValid(type_of_question)) {
+      handleValidationFailure("type of question is required.", "#type_of_question");
+      return false;
+    } else if (IsValid(question_text)) {
+      handleValidationFailure("question is required.", "#question_text");
+      return false;
+    } else if (IsValid(correct_option)) {
+      handleValidationFailure("correct option is required.", "#correct_option");
+      return false;
+    }
+    else if (IsValid(time_to_solve)) {
+      handleValidationFailure("time to solve is required.", "#time_to_solve");
+      return false;
+    }
+    else if (IsValid(marks)) {
+      handleValidationFailure("marks is required.", "#marks");
+      return false;
+    }
+
+
+
+    tok = 'Bearer {{og_token}}'   
+
+    $.ajax({
+        type: "POST",
+        url: backendurl + "/api/questionbank/add-question",
+        data: fd,
+        headers: {
+            "Authorization": tok,
+            //"encrypted": '1'
+        },
+
+        processData: false,
+        contentType: false,
+      
+        success: function (response) {
+          console.log("res", response);
+          if (response.n == 1) {
+
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + response.msg + '</h5></div>',
+                icon: 'success',
+                position: 'top',
+                backdrop: true,
+
+              })
+              window.location.href = backendurl + "/masters/question-list";
+          
+        }else {
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + response.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+
+            })
+            $("html").scrollTop(0);
+          }
+     
+      }
+    })
+  }
+
+  
+
+</script>
+{%endblock%}

@@ -1,0 +1,1721 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<style>
+  .citywrapper{
+      position: relative;
+    }
+    
+    .citywrapper .citysearch {
+      background: #fff;
+      width: 100%;
+      border-radius: 5px;
+      position: absolute;
+      z-index: 10;
+      box-shadow: none;
+    }
+   
+    .citysearch input {
+      height: 40px;
+      width: 100%;
+      outline: none;
+      border: 1px solid #d1d3e2;
+      border-radius: 5px;
+      padding: 0 8px 0 8px;
+      font-size: 12px;
+      box-shadow: none;
+    }
+    form.user .form-control-user {
+      padding: 1rem 0.4rem;
+    }
+    
+    .citysearch.active input {
+      border-radius: 5px;
+    }
+    .table td, .table th {
+      padding:0.3rem 0.4rem;
+    }
+    .table-bordered td{
+        font-size: 12px;
+    }
+    form.user.cust-details{
+      padding-top: 25px;
+    }
+    .citysearch .autocomp-box {
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .citysearch.active .autocomp-box {
+      padding: 10px 8px;
+      opacity: 1;
+      pointer-events: auto;
+      width: 375px;
+      background: white;
+      border: 1px solid #d1d3e2;
+      border-radius: 5px;
+    }
+    .autocomp-box li {
+      list-style: none;
+      padding: 3px 6px;
+      font-size: 12px;
+      display: none;
+      width: 100%;
+      cursor: default;
+      border-radius: 3px;
+    }
+    .citysearch.active .autocomp-box li {
+      display: block;
+    }
+    .autocomp-box li:hover {
+      background: #efefef;
+      cursor: pointer;
+    }
+</style>
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Update
+            Candidate</h1>
+          <!--end::Title-->
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">Candidate</li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-700">Update Candidate</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-fluid">
+        <!--begin::Row-->
+        <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+          <!--begin::Col-->
+          <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+            <!--begin::Card widget 20-->
+            <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+              <!--begin::Header-->
+              <div class="card-body py-5">
+                <!--begin::Stepper-->
+                <div class="stepper stepper-pills" id="kt_stepper_example_clickable">
+                  <!--begin::Nav-->
+                  <div class="stepper-nav flex-center flex-wrap mb-6">
+                    <!--begin::Step 1-->
+                    <div class="stepper-item my-4 current" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">1</span>
+                        </div>
+                        <!--end::Icon-->
+
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Basic Info</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+
+                      <!--begin::Line-->
+                      <div class="stepper-line w-100px"></div>
+                      <!--end::Line-->
+                    </div>
+                    <!--end::Step 1-->
+
+                    <!--begin::Step 2-->
+                    <div class="stepper-item my-4" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">2</span>
+                        </div>
+                        <!--begin::Icon-->
+
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Details</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+
+                      <!--begin::Line-->
+                      <div class="stepper-line w-100px"></div>
+                      <!--end::Line-->
+                    </div>
+                    <!--end::Step 2-->
+
+                    <!--begin::Step 3-->
+                    <div class="stepper-item my-4" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">3</span>
+                        </div>
+                        <!--begin::Icon-->
+
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Documents</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+                    </div>
+                    <!--end::Step 3-->
+                  </div>
+                  <!--end::Nav-->
+
+                  <!--begin::Form-->
+                  <form class="form mx-auto" novalidate="novalidate" id="kt_stepper_example_basic_form">
+                    <!--begin::Group-->
+                    <div class="">
+                      <!--begin::Step 1-->
+                      <div class="flex-column current" data-kt-stepper-element="content">
+                        <h3>Details</h3>
+                        <div class="mb-5 row row-cols-md-2 row-cols-1 br-sep pb-5">
+                          <div class="col-md-2">
+
+                            <div class="col-lg-2">
+
+                              <div class="mb-7">
+                                <!--begin::Label-->
+                                <label class="fs-6 fw-semibold mb-6 text-nowrap">
+                                  <span>Candidate Photo</span>
+                                </label>
+                                <!--end::Label-->
+                                <!--begin::Image input wrapper-->
+                                <div class="mt-1">
+                                  <!--begin::Image placeholder-->
+                                  <style>
+                                    .image-input-placeholder {
+                                      background-image: url("assets/media/svg/files/blank-image.svg");
+                                    }
+
+                                    [data-bs-theme="dark"] .image-input-placeholder {
+                                      background-image: url("assets/media/svg/files/blank-image-dark.svg");
+                                    }
+                                  </style>
+                                  <!--end::Image placeholder-->
+                                  <!--begin::Image input-->
+                                  <div
+                                    class="image-input image-input-outline image-input-placeholder image-input-empty image-input-empty"
+                                    data-kt-image-input="true">
+                                    <!--begin::Preview existing avatar-->
+                                    <div id="upload_image" accept="image/*" class="image-input-wrapper w-120px h-120px" style="background-image: url({{canddata.profile_pic}}); cursor: pointer;
+                                    "></div>
+                                    <!--end::Preview existing avatar-->
+                                    <!--begin::Edit-->
+                                    <label
+                                      class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                      data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Upload Photo">
+                                      <i class="ki-duotone ki-pencil fs-7">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                      </i>
+                                      <!--begin::Inputs-->
+                                      <input type="file" name="avatar" id="profile_pic"  accept=".png, .jpg, .jpeg"/>
+                                      <!-- <img id="profile_pic_preview" src="{{ user.profile_pic_url }}" alt="Profile Picture" style="width: 150px; height: 150px; display: block; margin-top: 10px;"> -->
+                                      
+                                      <input type="hidden" name="avatar_remove" />
+                                      <!--end::Inputs-->
+                                    </label>
+                                    <!--end::Edit-->
+                                    <!--begin::Cancel-->
+                                    <span
+                                      class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                      data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel Photo">
+                                      <i class="ki-duotone ki-cross fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                      </i>
+                                    </span>
+                                    <!--end::Cancel-->
+                                    <!--begin::Remove-->
+                                    <span
+                                      class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                      data-kt-image-input-action="remove" data-bs-toggle="tooltip"
+                                      title="Remove avatar">
+                                      <i class="ki-duotone ki-cross fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                      </i>
+                                    </span>
+                                    <!--end::Remove-->
+                                  </div>
+                                  <!--end::Image input-->
+                                </div>
+                                <!--end::Image input wrapper-->
+                              </div>
+                              <!--end::Input group-->
+                            </div>
+
+                          </div>
+                          <div class="col-md-10">
+                            <div class="row gy-1">
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">First Name</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="first_name" id="first_name" class="form-control mb-3"
+                                  placeholder="Enter your First Name"  value="{{canddata.first_name|default_if_none:''}}" />
+                                <!--end::Input-->
+                                <input type="hidden" id="user_id" value="{{canddata.id}}" >
+                              </div>
+                              
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Middle Name</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="middle_name" id="middle_name" class="form-control mb-3"
+                                  placeholder="Enter your Middle Name" value="{{canddata.middle_name|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Last Name</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="last_name" id="last_name" class="form-control mb-3"
+                                  placeholder="Enter your Last Name" value="{{canddata.last_name|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Email</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="email" name="email" id="email" class="form-control mb-3"
+                                  placeholder="Enter your Email Id" value="{{canddata.email|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Phone Number</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+
+                                <input type="number" name="mobilenumber" id="mobilenumber" class="form-control mb-2"
+                                  placeholder="Enter your Phone Number" value="{{canddata.mobilenumber|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Alternate Number</label>
+                                <!--end::Label-->
+
+                                <input type="number" name="alternate_mobilenumber" id="alternate_mobilenumber" class="form-control mb-2"
+                                  placeholder="Enter your Alternate  Number" value="{{canddata.alternate_mobilenumber|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+
+                             
+                             <div class="col-md-4">
+                                <label class="form-label" for="qualification">Highest Qualification</label>
+                                <span class="text-danger">*</span>
+                                <!--begin::Input-->
+                                
+                                <select class="form-select " data-control="select2" data-placeholder="Qualification"
+                                id="highest_qualification" name="highest_qualification">
+                                <option value=""></option>
+                                {%for i in quallist %}
+                                {% if i.id|stringformat:"s" == canddata.highest_qualification|stringformat:"s" %}
+                                <option value="{{i.id}}" selected>{{i.qualification_name}}</option>
+                                {%else%}
+                                <option value="{{i.id}}">{{i.qualification_name}}</option>
+                                {%endif%}
+                                {%endfor%}
+                                 </select>
+
+                                <span class="text-danger" id="highest_qualification_required"></span>
+                                <!--end::Input-->
+                                <!--begin::Label-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <label class="form-label" for="qualification"> Qualification Year</label>
+                                <span class="text-danger">*</span>
+                                <!--begin::Input-->
+                                <input type="date" name="qualification_year" id="qualification_year" class="form-control mb-3" value="{{canddata.qualification_year|default_if_none:''}}" />
+                                <!--end::Input-->
+                                <!--begin::Label-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <label class="form-label" for="qualification"> Date of Birth</label>
+                                <span class="text-danger">*</span>
+                                <!--begin::Input-->
+                                <input type="date" name="dob" id="dob" class="form-control mb-3" value="{{canddata.dob|default_if_none:''}}" />
+                                <!--end::Input-->
+                                <!--begin::Label-->
+                              </div>
+
+                              <div class="col-md-4">
+                                <label class="form-label" for="qualification"> Passport Expiry Date</label>
+                                <span class="text-danger">*</span>
+                                <!--begin::Input-->
+                                <input type="date" name="passport_expiry_date" id="passport_expiry_date" class="form-control mb-3" value="{{canddata.passport_expiry_date|default_if_none:''}}" />
+                                <!--end::Input-->
+                                <!--begin::Label-->
+                              </div>
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Passport Number</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+
+                                <input type="text" name="passport_number" id="passport_number" class="form-control mb-2"
+                                  placeholder="Enter your Passport Number" value="{{canddata.passport_number|default_if_none:''}}" />
+                                <!--end::Input-->
+                              </div>
+                              <!--end::Input-->
+                              <div class="col-md-4">
+                                <!--begin::Label-->
+                                <label class="form-label">Nationality</label>
+                                <span class="text-danger">*</span>
+                                <!--end::Label-->
+
+                                <input type="text" name="nationality" id="nationality" class="form-control mb-2"
+                                  placeholder="Enter your Nationality" value="{{canddata.nationality|default_if_none:''}}" />
+                                <!--end::Input-->
+
+                              </div>
+                            </div>
+                          </div>
+
+
+
+                        </div>
+
+                        <div class="mb-5 row row gy-3 ">
+                          <h3>Location</h3>
+                          <div class="col-md-4">
+                            <!--begin::Label-->
+                            <label class="form-label">City</label>
+
+                            <!--end::Label-->
+                            <div class="citywrapper">
+                            <div class="citysearch" id="citysearchdiv">  
+                              <input type="text" name="city" id="city" class="form-control mb-2" placeholder="Enter your City"
+                              value="{{canddata.city|default_if_none:''}}" oninput="search_cities();" />
+                              <div class="autocomp-box" id="searchcitylist">
+
+                              </div> 
+                              <span class="text-danger" id="city_required"></span> 
+                            </div>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label" for="country">Select Country</label>
+                            <span class="text-danger">*</span>
+
+                            <select class="form-select " data-control="select2" data-placeholder="Select your Country"
+                              data-hide-search="true" id="country" name="country">
+                              <option value="{{canddata.country}}">{{canddata.country_name|default_if_none:''}}</option>
+                            </select>
+
+
+                          </div>
+                          <div class="col-md-4">
+
+                            <!--begin::Input-->
+                            <!--begin::Label-->
+                            <label class="form-label" for="country">Select State</label>
+
+                            <!--end::Label-->
+                            <select class="form-select " data-control="select2" data-placeholder="Select your State"
+                              data-hide-search="true" id="state" name="state">
+                              <option value="{{canddata.state}}">{{canddata.state_name|default_if_none:''}}</option>
+                            </select>
+
+                          </div>
+                          <div class="col-md-4">
+                            <!--begin::Label-->
+                            <label class="form-label">Pincode</label>
+
+                            <!--end::Label-->
+
+                            <input type="pincode" id="pincode" name="pincode" class="form-control mb-2"
+                              placeholder="Enter your pincode" value="{{canddata.pincode|default_if_none:''}}" />
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-4">
+
+                            <label class="form-label" for="add-line1">Address Line 1</label>
+
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="textarea" id="address_line_one" name="address_line_one" class=" form-control mb-3"
+                              placeholder="Enter your Address " value="{{canddata.address_line_one|default_if_none:''}}" />
+                            <!--end::Input-->
+                            <!--begin::Label-->
+
+                          </div>
+                          <div class="col-md-4">
+
+                            <label class="form-label" for="add-line1">Address Line 2</label>
+
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="textarea" id="address_line_two" name="address_line_two" class=" form-control mb-3"
+                              placeholder="Address " value="{{canddata.address_line_two|default_if_none:''}}"/>
+                            <!--end::Input-->
+                            <!--begin::Label-->
+
+                          </div>
+
+                          <div class="row kt_docs_repeater_basic">
+                            <div class="d-flex justify-content-center">
+                              <button type="button" class="btn btn-sm btn-primary" onclick="updatecandidate();">
+                                Submit
+                              </button>
+                            </div>
+
+                          </div>
+
+                        </div>
+                      </div>
+                      <!--begin::Step 2-->
+                      <!--begin::Step 3-->
+                      <div class="flex-column" data-kt-stepper-element="content">
+                        <!--begin::Repeater-->
+                        <!--begin::Repeater-->
+                        <div class="kt_docs_repeater_basic">
+                          <!--begin::Form group-->
+                          <div class="form-group">
+                            <div data-repeater-list="kt_docs_repeater_basic">
+                              <div data-repeater-item>
+                                <div class="row">
+                                  <div class="col-md-12">
+                                    <div class="row">
+                                      <div class="col-md-4">
+                                        <div class="form-group">
+                                          <label class="form-label">Vessel Name</label>
+                                          <input class="form-control mb-3" type="text" placeholder="Vessel Name"
+                                            id="vessel_name" name="vessel_name" value="{{canddata.vessel_name|default_if_none:''}}"/>
+                                            <span class="text-danger" id="vessel_name_required"></span>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <div class="form-group">
+                                          <label class="form-label">Next Vessel</label>
+                                          <input class="form-control mb-3" type="text" placeholder="Next Vessel Name"
+                                            id="next_vessel" name="next_vessel" value="{{canddata.next_vessel|default_if_none:''}}"/>
+                                            <span class="text-danger" id="next_vessel_required"></span>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <div class="form-group">
+                                          <label class="form-label">Sign On Date</label>
+                                          <span class="text-danger">*</span>
+                                          <input class="form-control mb-3" type="date" id="sign_on_date" name="sign_on_date" value="{{canddata.sign_on_date|default_if_none:''}}"/>
+                                          <span class="text-danger" id="sign_on_date_required"></span>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <div class="form-group">
+                                          <label class="form-label">Sign Off Date</label>
+                                          <span class="text-danger">*</span>
+                                          <input class="form-control mb-3" type="date" id="sign_of_date" id="sign_of_date" value="{{canddata.sign_of_date|default_if_none:''}}"/>
+                                          <span class="text-danger" id="sign_of_date_required"></span>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <div class="form-group">
+                                          <label class="form-label">Seaman's Book Number</label>
+                                          <span class="text-danger">*</span>
+                                          <input class="form-control mb-3" type="number"
+                                            placeholder="Enter Seaman's Number" id="seaman_book_number" name="seaman_book_number" value="{{canddata.seaman_book_number|default_if_none:''}}"/>
+                                            <span class="text-danger" id="seaman_book_number_required"></span>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <!--begin::Label-->
+                                        <label class="form-label">Department </label>
+                                        <span class="text-danger">*</span>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                       
+                                        <select class="form-select" data-control="select2"
+                                          data-placeholder="Select your Department" id="department" name="department" onchange="getdeptranklist();">
+                                          <option value=""></option>
+                                          {% for d in department %}
+                                          {% if  d.id|stringformat:"s" == canddata.department %}
+                                          <option value="{{d.id}}" selected>{{d.department_name}}</option>
+                                          {% else %}
+                                          <option value="{{d.id}}">{{d.department_name}}</option>
+                                          {% endif %}
+                                          {% endfor %}
+                                        </select>
+                                         
+                                        <span class="text-danger" id="department_required"></span>
+                                        <!--end::Input-->
+                                      </div>
+                                      <div class="col-md-4">
+                                        <!--begin::Label-->
+                                        <label class="form-label">Rank </label>
+                                        <span class="text-danger">*</span>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <select class="form-select" data-control="select2" id="rank" name="rank"
+                                          >
+                                         
+                                        </select>
+                                        <span class="text-danger" id="rank_required"></span>
+                                        <!--end::Input-->
+                                      </div>
+                                    </div>
+                                    <div class="row kt_docs_repeater_basic">
+                                      <div class="d-flex justify-content-center">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="update_second_page('{{canddata.id}}');">
+                                          Submit
+                                        </button>
+                                      </div>
+                
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!--end::Form group-->
+                          <!--begin::Form group-->
+                          <!--end::Form group-->
+                        </div>
+                      </div>
+                      <!--end::Repeater-->
+                      <!--begin::Step 3-->
+                      <!--end::Group-->
+                      <!-- dfafasfadsfa -->
+                      <div class="flex-column" data-kt-stepper-element="content">
+                        <!--begin::Repeater-->
+                        <!--begin::Repeater-->
+                        <div class="kt_docs_repeater_basic">
+                          <!--begin::Form group-->
+                          <div class="form-group">
+                            <div data-repeater-list="kt_docs_repeater_basic">
+                              <div data-repeater-item>
+                                <div class="row col-md-12">
+                                  {% for i in canddata.proof_data %}
+                                  <div class="col-md-4" data-repeater-item class="kt_docs_delete_basic">
+                                  
+                                          <div >
+                                              <div class="row docName card p-3 m-3">
+                                                  <div class="col">
+                                                      <div class="form-group docName document_row">
+                                                          <label class="form-label my-3">{{i.document_name}} <span class="text-danger">*</span></label>
+                                                          <input type="hidden" class="doc_id" name="doc_id" value="{{i.id}}">
+                                                          <input type="hidden" class="doc_name" name="doc_name" value="{{i.document_name}}">
+                                                          <input type="hidden" class="document_file"  id= "document_file{{i.id}}" value="{{i.uploaded_proof}}">
+                                                          <sup>
+                                                              <img
+                                                                  src="{% static 'assets/media/svg/action-svg/Info_button.svg' %}"
+                                                                  data-bs-title="Valid file types are: xls, csv, pdf"
+                                                                  height="15"
+                                                                  width="15"
+                                                                  data-bs-toggle="tooltip"
+                                                              />
+                                                          </sup>
+                                                          <input
+                                                              class="docs-button form-control mb-3 document_file_upload"
+                                                              type="file"
+                                                              name="docsUpload"
+                                                              id="document_upload{{i.id}}"
+                                                              onchange="validate_file(this)"
+                                                          />
+                                                      </div>
+                                                  </div>
+                                                  <div class="col">
+                                                      <div class="previewDoc" style="position: relative">
+                                                          <div class="img-div">
+                                                              {%if i.uploaded_proof is not None and i.uploaded_proof != "" %}
+                                                              <img
+                                                                  src="{{i.uploaded_proof}}"
+                                                                  alt="document preview"
+                                                                  width="100"
+                                                                  height="100"
+                                                              />
+                                                              {%else%}
+                                                              <img
+                                                                  src="https://img.freepik.com/free-vector/accept-terms-law-illustration-concept_114360-912.jpg"
+                                                                  alt="document preview"
+                                                                  width="100"
+                                                                  height="100"
+                                                              />
+                                                              {%endif%}
+                                                              
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                            
+                                  </div>
+                                  {% endfor %}
+                                  
+                                 <!-- {{canddata.education_document_data}} -->
+                                  <div class="col-md-4" data-repeater-item class="kt_docs_delete_basic">
+                                  
+                                          <div >
+                                              <div class="row certificatename card p-3 m-3">
+                                                  <div class="col">
+                                                      <div class="form-group">
+                                                          <label class="form-label my-3" id="requ_certificate_name">{{canddata.education_document_data.qualification_name}} <span class="text-danger">*</span></label>
+                                                          <input type="hidden" class="certificate_name" name="certificate_name" value="{{canddata.education_document_data.certificate_name}}">
+                                                          <input type="hidden" class="certificate_file"  id="certificate_file" value="{{canddata.education_document_data.uploaded_certificate|default:''}}">
+                                                          <sup>
+                                                              <img
+                                                                  src="{% static 'assets/media/svg/action-svg/Info_button.svg' %}"
+                                                                  data-bs-title="Valid file types are: xls, csv, pdf"
+                                                                  height="15"
+                                                                  width="15"
+                                                                  data-bs-toggle="tooltip"
+                                                              />
+                                                          </sup>
+                                                          <input
+                                                              class="docs-button form-control mb-3 document_file_upload"
+                                                              type="file"
+                                                              name="certificateUpload"
+                                                              id="educational_certificate_upload"
+                                                              onchange="validate_file(this)"
+                                                          />
+                                                      </div>
+                                                  </div>
+                                                  <div class="col">
+                                                      <div class="previewDoc" style="position: relative">
+                                                          <div class="img-div">
+                                                              {%if canddata.education_document_data.uploaded_certificate %}
+                                                              <img
+                                                                  src="{{canddata.education_document_data.uploaded_certificate}}"
+                                                                  alt="document preview"
+                                                                  width="100"
+                                                                  height="100"
+                                                              />
+                                                              {%else%}
+                                                              <img
+                                                                  src="https://img.freepik.com/free-vector/accept-terms-law-illustration-concept_114360-912.jpg"
+                                                                  alt="document preview"
+                                                                  width="100"
+                                                                  height="100"
+                                                              />
+                                                              {%endif%}
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                            
+                                  </div>
+
+                        
+                              
+                          </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!--end::Form group-->
+                          <!--begin::Form group-->
+
+                          <!--end::Form group-->
+                        </div>
+                        <!--end::Repeater-->
+
+                        <!--begin::Step 3-->
+                      </div>
+                    </div>
+                    
+                    <!-- afahsdfjashdfl -->
+                    <!--begin::Actions-->
+                    <div class="d-flex align-items-center justify-content-end pb-4">
+                      <!--begin::Wrapper-->
+                      <div class="me-2">
+                        <button type="button" class="btn btn-sm btn-secondary"
+                          data-kt-stepper-action="previous">Back</button>
+                      </div>
+                      <!--end::Wrapper-->
+
+                      <!--begin::Wrapper-->
+                      <div>
+                        
+                        <input type="hidden" id="finalsubmithidden" value="{{canddata.candidate_status|default_if_none:''}}">
+
+                        <button type="button" class="btn btn-sm btn-primary" data-kt-stepper-action="submit" 
+                        onclick="finalsubmit();">
+                        
+                          <span class="indicator-label"> Submit </span>
+                          <span class="indicator-progress">
+                            Please wait...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                          </span>
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-primary"  onclick="updatecandidate();"
+                          data-kt-stepper-action="next">Next</button>
+                      </div>
+                      <!--end::Wrapper-->
+                    </div>
+
+                    <!--end::Actions-->
+                  </form>
+                  <!--end::Form-->
+                </div>
+                <!--end::Stepper-->
+              </div>
+              <!--end::Header-->
+            </div>
+            <!--end::Card widget 20-->
+          </div>
+          <!--end::Col-->
+          <!--end::Col-->
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+  <!--begin::Footer-->
+  <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+      <!--begin::Copyright-->
+      <div class="text-gray-900">
+        <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+      </div>
+      <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+  </div>
+  <!--end::Footer-->
+</div>
+<!--end:::Main-->
+{%endblock%} {% block script %}{{block.super}}
+<script type="text/javascript">
+  $("#kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function(e) {
+       
+    getdeptranklist();
+      
+    });
+
+    const today = new Date();
+const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+const formattedDate = maxDate.toISOString().split('T')[0];
+document.getElementById('dob').max = formattedDate;
+
+  // Stepper lement
+  var element = document.querySelector("#kt_stepper_example_clickable");
+
+  // Initialize Stepper
+  var stepper = new KTStepper(element);
+
+  // Handle navigation click
+  stepper.on("kt.stepper.click", function (stepper) {
+    stepper.goTo(stepper.getClickedStepIndex()); // go to clicked step
+  });
+
+  // Handle next step
+  stepper.on("kt.stepper.next", function (stepper) {
+    stepper.goNext(); // go next step
+  });
+
+  // Handle previous step
+  stepper.on("kt.stepper.previous", function (stepper) {
+    stepper.goPrevious(); // go previous step
+  });
+  $(".kt_docs_repeater_basic").repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      "text-input": "foo",
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    },
+  });
+  //
+
+    // Donot allow Numericals and Special characters in Alphabetical field.
+  $(document).ready(function() {
+    // Mobile Number
+    $('#mobilenumber').on('input', function() {
+      var mobilenumber = $(this).val();
+      var nonNumericRegex = /[^0-9]/g;
+      var isNonNumeric = nonNumericRegex.test(mobilenumber);
+
+      if (isNonNumeric) {
+          $(this).val(mobilenumber.replace(nonNumericRegex, ''));
+          $('#mobilenumber_required').html('Mobile number should not contain alphabetical characters.');
+          $('#mobilenumber_required').css('color', 'red');
+          $('#mobilenumber_required').show().delay(5000).slideUp();
+      } else {
+          $('#mobilenumber_required').hide();
+      }
+    });
+    //// Mobile Number
+    $('#alternate_mobilenumber').on('input', function() {
+      var alternate_mobilenumber = $(this).val();
+      var nonNumericRegex = /[^0-9]/g;
+      var isNonNumeric = nonNumericRegex.test(alternate_mobilenumber);
+
+      if (isNonNumeric) {
+          $(this).val(alternate_mobilenumber.replace(nonNumericRegex, ''));
+          $('#alternate_mobilenumber_required').html('Alternate number should not contain alphabetical characters.');
+          $('#alternate_mobilenumber_required').css('color', 'red');
+          $('#alternate_mobilenumber_required').show().delay(5000).slideUp();
+      } else {
+          $('#alternate_mobilenumber_required').hide();
+      }
+    });
+    
+  });
+
+
+
+  function updatecandidate(id){
+    debugger;
+      var profile_pic = $('#profile_pic')[0].files[0];
+      var id = $('#user_id').val();
+      //
+      var first_name = $('#first_name').val().trim();
+      var middle_name = $('#middle_name').val().trim();
+      var last_name = $('#last_name').val().trim();
+      var email = $('#email').val().trim();
+      var mobilenumber = $('#mobilenumber').val().trim();
+      //var alternate_mobilenumber = $('#alternate_mobilenumber').val();
+      var highest_qualification = $('#highest_qualification').val();
+      var qualification_year = $('#qualification_year').val();
+      var dob = $('#dob').val();
+      var passport_expiry_date = $('#passport_expiry_date').val();
+      var passport_number = $('#passport_number').val().trim();
+      var nationality = $('#nationality').val().trim();
+     
+      //
+      var city = $('#city').val();
+      var country = $('#country').val();
+      var state = $('#state').val();
+      var pincode = $('#pincode').val();
+      var emailregex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+      if (IsValid(first_name)) {
+          var toast = bootstrap.showToast({			
+              body: "First name is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          $("html, body").animate({ scrollTop: 0 }, "slow");
+          return false;
+      }
+      if (IsValid(middle_name)) {
+          var toast = bootstrap.showToast({			
+              body: "Middle name is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          $("html, body").animate({ scrollTop: 0 }, "slow");
+          return false;
+      }
+      if (IsValid(last_name)) {
+          var toast = bootstrap.showToast({			
+              body: "Last name is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          $("html, body").animate({ scrollTop: 0 }, "slow");
+          return false;
+      }
+      if (IsValid(email)) {
+          var toast = bootstrap.showToast({			
+              body: "email is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          $("html, body").animate({ scrollTop: 0 }, "slow");
+          return false;
+      } if (!emailregex.test(email)) {
+            var toast = bootstrap.showToast({
+                body: "Please enter valid email.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+
+        }
+      if (IsValid(mobilenumber)) {
+          var toast = bootstrap.showToast({			
+              body: "Mobile Number is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          $("html, body").animate({ scrollTop: 0 }, "slow");
+          return false;
+      }
+      //if (IsValid(alternate_mobilenumber)) {
+      //    var toast = bootstrap.showToast({			
+      //        body: "Alternate Number is required.", 
+      //        closeButton: true, 
+      //        toastClass: "alert-danger",
+      //        delay: 2000,
+      //    })
+      //    $("html, body").animate({ scrollTop: 0 }, "slow");
+      //    return false;
+      //}
+      if (IsValid(highest_qualification)) {
+          var toast = bootstrap.showToast({			
+              body: "Highest qualification is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(qualification_year)) {
+          var toast = bootstrap.showToast({			
+              body: "Qualification Year is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(dob)) {
+          var toast = bootstrap.showToast({			
+              body: "Date of birth is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(passport_expiry_date)) {
+          var toast = bootstrap.showToast({			
+              body: "passport expiry date to is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(passport_number)) {
+          var toast = bootstrap.showToast({			
+              body: "passport number is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(nationality)) {
+          var toast = bootstrap.showToast({			
+              body: "nationality is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      //
+      if (IsValid(city)) {
+          var toast = bootstrap.showToast({			
+              body: "City is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+      if (IsValid(country)) {
+        var toast = bootstrap.showToast({			
+            body: "country is required.", 
+            closeButton: true, 
+            toastClass: "alert-danger",
+            delay: 2000,
+        })
+        return false;
+      }
+      if (IsValid(state)) {
+        var toast = bootstrap.showToast({			
+            body: "state is required.", 
+            closeButton: true, 
+            toastClass: "alert-danger",
+            delay: 2000,
+        })
+        return false;
+      }
+      if (IsValid(pincode)) {
+          var toast = bootstrap.showToast({			
+              body: "pincode is required.", 
+              closeButton: true, 
+              toastClass: "alert-danger",
+              delay: 2000,
+          })
+          return false;
+      }
+     
+    else{
+      
+        var fd = new FormData();
+        fd.append("profile_pic",profile_pic);
+        fd.append("first_name",first_name);
+        fd.append("middle_name",middle_name);
+        fd.append("last_name",last_name);
+        fd.append("email",email);
+        fd.append("mobilenumber",mobilenumber);
+        fd.append("highest_qualification",highest_qualification);
+        fd.append("qualification_year",qualification_year);
+        fd.append("dob",dob);
+        fd.append("passport_expiry_date",passport_expiry_date);
+        fd.append("passport_number",passport_number);
+        fd.append("nationality",nationality);
+        fd.append("city",city);
+        fd.append("country",country);
+        fd.append("state",state);
+        fd.append("pincode",pincode);
+        fd.append("id",id);
+
+
+        tok = 'Bearer {{og_token}}'
+        $.ajax({
+            url: backendurl +  '/api/candidate/update-candidate',
+            headers: {
+              "Authorization": tok,
+            },
+            dataType: "json",
+            data: fd,
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            success: function(response) {
+              // var decrypt_response = decryptData(response)
+              // var json_resposne = $.parseJSON(decrypt_response)
+                
+              if(response.n == 1){
+
+                Swal.fire({
+                    html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + response.msg + '</h5></div>',
+                    icon: 'success',
+                    position: 'top',
+                    backdrop: true,
+                  
+                })
+
+                // console.log("json_resposne.data.id",json_resposne.data.id)
+
+                // window.location.href = backendurl + "/candidate/update-candidate/" + response.data.id
+
+            } else{
+                  Swal.fire({
+                    html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + response.msg + '</h5></div>',
+                    icon: 'success',
+                    position: 'top',
+                    backdrop: true,
+                    customClass: {
+                      confirmButton: 'swal-button'
+                    }
+                  })
+                $("html").scrollTop(0);
+                }
+            }
+          })
+      }
+  }
+
+  function search_cities(){
+    debugger;
+    $("#searchcitylist").show();
+
+    var city = $("#city").val().trim();
+    var trhtml = "";
+    
+    var fd = new FormData();    
+    fd.append("city",city);
+    
+    var en_data = {
+        'city':city
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+        type: "POST",
+        url: backendurl+"/api/adminauth/search-cities",
+        headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+        },
+
+        dataType: "json",
+        data: check_encryptData,
+        processData: false,
+        contentType: false,
+        
+        success: function(response) {
+            
+            var decrypt_response = decryptData(response)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("ppp",json_resposne)
+            if(json_resposne.data.length > 0){
+                $("#citysearchdiv").addClass('active');
+                $.each(json_resposne.data,function(i,o){
+                
+                  
+                  trhtml += `
+                  
+                  <li class="searchlistli" value="`+o.id+`" onclick="selectedcityli(`+o.id+`,'`+o.name+`',`+o.state+`,'`+o.statename+`',`+o.country+`,'`+o.countryname+`');">
+                    <span style="color:black">`+o.name+`</span> <br>
+                   
+                  </li>
+                  `
+                })
+    
+            }else{
+    
+                $("#citysearchdiv").removeClass('active');
+                trhtml += `
+                  
+                  <li class="searchlistli" value="{{user_data.name|default_if_none:''}}">No data found</li>
+                  `
+            }
+                       
+              
+              $("#searchcitylist").html(trhtml);
+
+         
+        },
+    });
+  
+}
+
+function selectedcityli(id,cityname,state_id,state_name,country_id,country_name) {
+    debugger;
+    $("#city").val(cityname); 
+
+    var state_html = `
+    <option value="`+state_id+`">`+state_name+`</option>
+    `
+    $("#state").html(state_html);
+
+    var country_html = `
+    <option value="`+country_id+`">`+country_name+`</option>
+    `
+
+    $("#country").html(country_html); 
+
+    $("#searchcitylist").html('');
+    $("#searchcitylist").hide();
+   
+  
+}
+
+function update_second_page(id){
+  var vessel_name = $('#vessel_name').val();
+    var next_vessel = $('#next_vessel').val();
+    var sign_on_date = $('#sign_on_date').val();
+    var sign_of_date = $('#sign_of_date').val();
+    var seaman_book_number = $('#seaman_book_number').val();
+    var department = $('#department').val();
+    var rank = $('#rank').val();
+
+  //   if (IsValid(vessel_name)) {
+  //     var toast = bootstrap.showToast({			
+  //         body: "vessel name is required.", 
+  //         closeButton: true, 
+  //         toastClass: "alert-danger",
+  //         delay: 2000,
+  //     })
+  //     $("html, body").animate({ scrollTop: 0 }, "slow");
+  //     return false;
+  // }
+//   if (IsValid(next_vessel)) {
+//     var toast = bootstrap.showToast({			
+//         body: "next vessel is required.", 
+//         closeButton: true, 
+//         toastClass: "alert-danger",
+//         delay: 2000,
+//     })
+//     $("html, body").animate({ scrollTop: 0 }, "slow");
+//     return false;
+// }
+if (IsValid(sign_on_date)) {
+  var toast = bootstrap.showToast({			
+      body: "sign on date is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}
+if (IsValid(sign_of_date)) {
+  var toast = bootstrap.showToast({			
+      body: "sign of date is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}if (sign_on_date >= sign_of_date) {
+  var toast = bootstrap.showToast({			
+      body: "sign of date must be greater than sign on date.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}
+if (IsValid(seaman_book_number)) {
+  var toast = bootstrap.showToast({			
+      body: "seaman book number is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}
+if (IsValid(department)) {
+  var toast = bootstrap.showToast({			
+      body: "department is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}
+if (IsValid(rank)) {
+  var toast = bootstrap.showToast({			
+      body: "rank is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+}else{
+  var en_data = {
+    //
+    'id':id,
+    'vessel_name':vessel_name,
+    'next_vessel':next_vessel,
+    'sign_on_date':sign_on_date,
+    'sign_of_date':sign_of_date,
+    'seaman_book_number':seaman_book_number,
+    'department':department,
+    'rank':rank
+  }
+  var check_encryptData = encryptData(JSON.stringify(en_data))
+
+  tok = 'Bearer {{og_token}}'
+  $.ajax({
+      url: backendurl +  '/api/candidate/update-details-candidate-page',
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: 'POST',
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        var decrypt_response = decryptData(response)
+        var json_resposne = $.parseJSON(decrypt_response)
+          
+        if(json_resposne.n == 1){
+
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+            
+          })
+
+          window.location.href = backendurl + "/candidate/update-candidate/" + json_resposne.data.id
+
+        } else{
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            })
+          $("html").scrollTop(0);
+          }
+      }
+    })
+  }
+}
+
+function finalsubmit(){
+  debugger;
+
+
+  var department = $("#department").val();
+  var rank = $("#rank").val();
+  if (IsValid(department)) {
+    var toast = bootstrap.showToast({			
+        body: "Select department is required.", 
+        closeButton: true, 
+        toastClass: "alert-danger",
+        delay: 2000,
+    })
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+    return false;
+  }
+  if (IsValid(rank)) {
+    var toast = bootstrap.showToast({			
+        body: "rank is required.", 
+        closeButton: true, 
+        toastClass: "alert-danger",
+        delay: 2000,
+    })
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+    return false;
+  }
+
+
+
+  var user_id = $("#user_id").val();
+  var candidate_id = $("#user_id").val();
+  var finalsubmithidden = $("#finalsubmithidden").val();
+  
+  var fd = new FormData();  
+  tok = 'Bearer {{og_token}}'
+  var missing_doc = false
+  var missing_doc_name=""
+
+  var all_uploaded = []
+ 
+$(".document_row").each(function () {
+    var doc_id = $(this).find(".doc_id").val().trim();
+    var doc_name = $(this).find(".doc_name").val().trim();
+    var document_file_upload = $(this).find(".document_file_upload")[0].files[0];
+    var document_file = $(this).find(".document_file").val(); // fixed typo
+
+    console.log("document_file", document_file);
+    console.log("document_file_upload", document_file_upload);
+
+    // If both are missing, mark it
+    if (IsValid(document_file_upload) && IsValid(document_file)) {
+        missing_doc = true;
+        missing_doc_name = doc_name;
+    }
+
+    if (!IsValid(document_file)) {
+      if (IsValid(document_file_upload)){
+        all_uploaded.push(true)
+      } 
+      else{
+        all_uploaded.push(false)
+      }
+    } 
+
+    // If new file is provided, append to form data
+    if (!IsValid(document_file_upload)) {
+        fd.append("user_id", user_id);
+        fd.append("doc_id", doc_id);
+        fd.append("doc_name", doc_name);
+        fd.append("document_file_upload", document_file_upload);
+    }
+});
+
+  console.log("fd",fd)
+  if(missing_doc){
+      var toast = bootstrap.showToast({			
+      body: missing_doc_name+"  is required.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+  }
+
+  var certificate_name = $("#requ_certificate_name").text();
+  var certificate_file = $("#certificate_file").val();
+  var educational_certificate_upload = $("#educational_certificate_upload")[0].files[0]; // fixed typo
+  if (IsValid(certificate_file) && IsValid(educational_certificate_upload)) {
+      var toast = bootstrap.showToast({			
+      body: "Please Upload "+certificate_name, 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+    })
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+    return false;
+    }
+  console.log("certificate_file",certificate_file)
+  console.log("1",all_uploaded)
+  debugger
+  // if (!IsValid(certificate_file)) {
+  //       console.log("educational_certificate_upload",educational_certificate_upload)
+
+  //     if (IsValid(educational_certificate_upload)){
+  //       all_uploaded.push(true)
+  //     } 
+  //     else{
+  //       all_uploaded.push(false)
+  //     }
+  // }
+  console.log("certificate_file",certificate_file)
+  console.log("educational_certificate_upload",educational_certificate_upload)
+
+  if (!IsValid(certificate_file) && IsValid(educational_certificate_upload)) {
+
+      
+        all_uploaded.push(true)
+    
+     
+  } else{
+        all_uploaded.push(false)
+      }
+  
+  console.log("2",all_uploaded)
+
+ if (all_uploaded.length > 0 && all_uploaded.every(Boolean)) {
+      var toast = bootstrap.showToast({			
+      body: "All documnets are already uploaded.", 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+  }
+
+  fd.append("certificate_name", certificate_name);
+  fd.append("educational_certificate_upload", educational_certificate_upload);
+  fd.append("candidate_id",candidate_id);
+  fd.append("department",department);
+  fd.append("rank",rank);
+
+  if (finalsubmithidden == ''){
+    fd.append("candidate_status",'2');
+  }
+
+  $.ajax({
+      type: "POST",
+      url: backendurl + "/api/candidate/candidate-upload-documents",
+      data: fd,
+      headers: {
+          "Authorization": tok,
+          "encrypted": '1'
+      },
+
+      processData: false,
+      contentType: false,
+   
+      success: function(response) {
+        var decrypt_response = decryptData(response)
+        var json_resposne = $.parseJSON(decrypt_response)
+         
+        if(json_resposne.n == 1){
+
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+            
+          })
+
+          window.location.href = backendurl + "/candidate/candidate-list";
+      } else{
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            })
+          $("html").scrollTop(0);
+          }
+      }
+    });
+
+}
+
+
+
+var selectedrank = '{{canddata.rank|safe}}'
+console.log("selectedrank",selectedrank)
+function getdeptranklist() {
+    var departmentid = $("#department").val();
+    console.log("departmentid",departmentid)
+    var en_data = {
+      'departmentid': departmentid,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+        $.ajax({
+          url: backendurl + "/api/course/getdeptwiseranklist",
+          type: "POST",
+          headers: {
+            "encrypted": '1'
+          },
+          dataType: "json",
+          data: check_encryptData,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("resp",json_resposne)
+            if (json_resposne.n == 1) {
+                var rankhtml='<option value="" name="">Select Rank</option>'
+                
+                $.each(json_resposne.data, function (i, o) {  
+                  console.log(`Checking: o.id = ${o.id},selectedrank = ${selectedrank}`);
+                  console.log(typeof(o.id),typeof(selectedrank))
+                  if (selectedrank == o.id) {
+                    console.log(`Match found! Selecting rank: ${o.id}`);
+                    rankhtml += `<option value="`+o.id+`" name="`+o.rank+`" selected>`+o.rank+`</option>`
+                  }else{
+                    rankhtml += `<option value="`+o.id+`" name="`+o.rank+`">`+o.rank+`</option>`
+                  }
+                })
+                $("#rank").html(rankhtml)
+            }
+            else {
+              console.log('Success-Error',json_resposne.msg );
+              // Swal.fire({
+              //   html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              //   icon: 'error',
+              //   position: 'top',
+              //   backdrop: true,
+              //   customClass: {
+              //     confirmButton: 'swal-button'
+              //   }
+              // });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            // Swal.fire({
+            //   title: 'Error',
+            //   text: jqXHR.responseJSON.Message,
+            //   icon: 'error',
+            //   position: 'top',
+            //   backdrop: true,
+            //   customClass: {
+            //     confirmButton: 'swal-button'
+            //   }
+            // });
+          }
+        });
+      
+   
+  }
+
+function validate_file(input_field) {
+  // Get the selected file - input_field is the DOM element, not a jQuery object
+  var file = input_field.files[0]; 
+  
+  if (!file) {
+    // No file selected
+    return false;
+  }
+
+  // Validate image
+  var validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validImageTypes.includes(file.type)) {
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Invalid image file type. Please upload a JPEG, PNG, GIF, or WEBP image.</h5></div>',
+      icon: 'error',
+      position: 'top',
+      backdrop: true,
+    });
+    input_field.value = ''; // Clear the input
+    return false;
+  }
+  
+  // Optional: Validate image size (e.g., 5MB limit)
+  var maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">Image is too large. Maximum size allowed is 5MB.</h5></div>',
+      icon: 'error',
+      position: 'top',
+      backdrop: true,
+    });
+    input_field.value = '';
+    return false;
+  }
+  
+  return true;
+}
+
+</script>
+{%endblock%}

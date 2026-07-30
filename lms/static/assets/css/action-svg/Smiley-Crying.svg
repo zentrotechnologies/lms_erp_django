@@ -1,0 +1,22 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Smiley-Crying" filter="url(#filter0_d_890_3978)">
+<g id="smiley-crying">
+<path id="Vector" d="M11.9999 18.4286C16.1026 18.4286 19.4284 15.1027 19.4284 11C19.4284 6.8973 16.1026 3.57141 11.9999 3.57141C7.89717 3.57141 4.57129 6.8973 4.57129 11C4.57129 15.1027 7.89717 18.4286 11.9999 18.4286Z" fill="white" stroke="#354259" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M8.57129 13.8571C9.08301 12.225 11.0276 11.2277 12.9721 11.681C14.0979 11.953 15.019 12.7691 15.4284 13.8571" stroke="#354259" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector 557" d="M8.33887 9.14515C8.444 8.94052 8.77295 8.57699 9.154 8.35699C9.53505 8.13699 10.0143 8.03387 10.2441 8.04515" stroke="#354259" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector 559" d="M13.7559 8.04356C13.9856 8.03229 14.4649 8.1354 14.846 8.3554C15.227 8.5754 15.5559 8.93893 15.6611 9.14356" stroke="#354259" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_890_3978" x="0" y="0" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_890_3978"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_890_3978" result="shape"/>
+</filter>
+</defs>
+</svg>
