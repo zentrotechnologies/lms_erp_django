@@ -1,0 +1,429 @@
+@media only screen and (max-width: 576px) {
+  .searchBox {
+   margin-top: 25px;
+  }
+ 
+  .img-trash-button {
+   position: absolute;
+   top: 5px;
+   left: 60%;
+  }
+ 
+ 
+  .img-trash-button {
+   position: absolute;
+   top: 5px;
+   left: 80%;
+  }
+ 
+ 
+ }
+ 
+ @media (min-width: 576px) and (max-width: 1200px) {}
+ 
+ .searchBox {
+  margin-left: 10px;
+ }
+ 
+ #export_modal {
+  height: 700px;
+ }
+ 
+ .import-button {
+  background-color: rgb(218, 218, 218);
+  border: 1px solid rgb(205, 205, 205);
+ }
+ 
+ 
+ 
+ .exp-block {
+  margin-bottom: 50px;
+ }
+ 
+ .specializationCount,
+ .sendBtn {
+  background-color: #cadceb;
+  color: #03599f;
+ }
+ 
+ .sendBtn:hover {
+  background-color: #03599f;
+  color: white;
+ }
+ 
+ .accordion-btn {
+  background-color: #e5eef5;
+ }
+ 
+ 
+ .nav-item {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  position: relative !important;
+ }
+ 
+ 
+ .nav-link {
+  width: 100%;
+  font-weight: 400;
+ }
+ 
+ .file-nav {
+  width: 30%;
+ }
+ 
+ .file-selection {
+  overflow-y: scroll;
+  height: 60vh;
+ }
+ 
+ 
+ 
+ 
+ 
+ .moduleLink.active {
+  border: 2px solid #03599f !important;
+  color: #03599f !important;
+ }
+ 
+ 
+ 
+ 
+ 
+ 
+ .moduleLink {
+  color: #aaaaaa !important;
+  background-color: #ececec !important;
+  font-weight: 400 !important;
+ }
+ 
+ .moduleLink.disabled {
+  background-color: #f1f1f1 !important;
+  color: #c7c7c7 !important;
+ }
+ 
+ .file-img {
+  margin: 1%;
+ }
+ 
+ 
+ .navLink.active,
+ .admission-nav.active,
+ .navFiles.active,
+ .moduleLink.active {
+  font-weight: 700 !important;
+  background-color: #ffffff !important;
+  color: #03599f !important;
+  border: none !important;
+ }
+ 
+ .navLink,
+ .admission-nav,
+ .navFiles {
+  color: #aaaaaa !important;
+  font-weight: 400 !important;
+  background-color: #ececec !important;
+ }
+ 
+ .moduleLink.active {
+  border: 2px solid #03599f !important;
+ }
+ 
+ .navLink.active::after,
+ .navFiles.active:after {
+  content: '';
+  position: absolute !important;
+  bottom: 3px !important;
+  left: 90%;
+  width: 85%;
+  height: 2px;
+  transform: translateX(-95%);
+  background-color: #03599f;
+ }
+ 
+ .admission-nav.active:after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  /* left: 48%; */
+  width: 75%;
+  height: 2px;
+  transform: translateX(-95%);
+  background-color: #03599f;
+ }
+ 
+ .nav-item,
+ .nav-link {
+  border-radius: 5px;
+ }
+ 
+ .branch-list {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-around;
+  overflow-y: scroll;
+  height: 500px;
+ }
+ 
+ 
+ .map {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+ }
+ 
+ .map-div {
+  text-decoration: none;
+  overflow: hidden;
+  max-width: 100%;
+  width: 600px;
+  height: 500px;
+ }
+ 
+ .img-div {
+  width: fit-content;
+  position: relative;
+ 
+ }
+ 
+ 
+ 
+ 
+ .img-trash-button {
+  position: absolute;
+  top: 5px;
+  right: 0;
+ 
+ }
+ 
+ 
+ .docName {
+  width: fit-content;
+  display: inline-block;
+  margin-top: 10px;
+ }
+ 
+ #embed-map-canvas img {
+  max-height: none;
+  max-width: none !important;
+  background: none !important;
+ }
+ 
+ 
+ 
+ .status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+ }
+ 
+ .dropDown {
+  height: 30px !important;
+ }
+ 
+ .filter-tabs {
+  background-color: #e5eef5;
+  border-radius: 30px;
+  width: fit-content;
+  height: fit-content
+ }
+ 
+ .filter-tabs:hover {
+  color: black !important;
+  background-color: #dddddd;
+ }
+ 
+ .applied-filter {
+  display: inline-block;
+  cursor: default;
+  color: #a0a5ac;
+ 
+ }
+ 
+ .action-icons {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 22px;
+ }
+ 
+ .action-icons img {
+  margin-right: 12px;
+ }
+ 
+ 
+ .rank-item {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+ 
+  margin-bottom: 10px;
+  /* Space between rows */
+ }
+ 
+ .radio-buttons {
+  display: flex;
+  gap: 20px;
+  /* Space between radio buttons */
+ }
+ 
+ .file-modal-width {
+  width: fit-content !important;
+ }
+ 
+ .upload-button,
+ .likeDislike,
+ .RemoveDelete {
+  position: absolute;
+  right: 5%;
+  top: 37%;
+  z-index: 5;
+ }
+ 
+ .upload-button:hover {
+  color: #919ead !important;
+ }
+ 
+ .upload-button {
+  color: #03599f !important;
+  text-decoration: underline;
+ 
+ }
+ 
+ .accord-button {
+  position: relative;
+ }
+ 
+ /* INPUT TAGS CSS */
+ .tagify {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: 1px solid #e5eef5;
+  border-radius: 4px;
+  font-size: 14px;
+  --tag-bg: #D4D7E2 !important;
+  --tag-text-color: #4A5574 !important;
+  --tag-hover: none !important;
+ 
+ }
+ 
+ tag {
+  margin: 2px !important;
+ 
+ }
+ 
+ tags {
+  width: 100% !important;
+ }
+ 
+ 
+ .tagify__input {
+  border: none;
+  flex-grow: 1;
+  padding: 2px;
+  outline: none;
+ 
+ }
+ 
+ 
+ .tagify__tag {
+  display: inline-flex;
+  align-items: center;
+ 
+  color: var(--tags-text);
+  border: 1px solid var(--tags-border);
+  border-radius: 4px;
+  margin: 9px;
+ 
+  font-size: inherit;
+  cursor: default;
+ }
+ 
+ 
+ 
+ .tagify__tag__remove {
+  margin-left: 5px;
+  cursor: pointer;
+  color: var(--tags-text);
+  font-size: 16px;
+ }
+ 
+ 
+ 
+ .fileUpload {
+  display: none;
+ }
+ 
+ 
+ 
+ .QuestionBank-addButton {
+  position: absolute;
+  bottom: 0%;
+  left: 1%
+ }
+ 
+ 
+ #richTextBox {
+  height: 15vh
+ }
+ 
+ 
+ .QuestionRow {
+  width: 100% !important;
+ }
+ 
+ .Question-info:after {
+  content: '';
+  background-color: black;
+  height: 60%;
+  width: 2px;
+  position: absolute;
+  left: 9%;
+  top: 20%;
+ }
+ 
+ .question-acc-body {
+  box-shadow: 0 0 2px #a9c9e2;
+ }
+ 
+ .like-button:hover,
+ .dislike-button:hover,
+ .remove-button:hover,
+ .delete-button:hover {
+  filter: opacity(0.6);
+ 
+ }
+ 
+ .question-acc-item {
+ 
+  background-color: #EFF1F7 !important;
+ }
+ 
+ .highlightCard {
+  background-color: white !important;
+  border-radius: 5px;
+ }
+ 
+ 
+ .statistic {
+  padding: 1rem;
+  border-radius: 0.5rem;
+ 
+ }
+ 
+ .table>thead {
+  vertical-align: top !important;
+ }
+ 
+ #branch-map {
+ 
+  height: 100%;
+  width: 100%;
+  border: 0
+ }

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate</title>
+</head>
+<body>
+        <div class="voucher-container">
+        <table class="voucher-table">                        
+            <tr class="header" >
+                <td colspan="8" class="header">
+             
+                    <div style="text-align: center;">
+                        <img src="https://navis-candidate.onerooftechnologiesllp.com/Lms-images/maritime.png" border="0" alt="Logo">
+                        <h4>Certificate of Completion</h4>
+                        <input type="hidden" id="view_peticash_id">
+                        
+                    </div>                                
+                </td>
+            </tr>
+            <tr>
+                <th colspan="8">Candidate Name: <span class="less_font_weight">{{data.candidate_data.first_name|default_if_none:''}} {{data.candidate_data.middle_name|default_if_none:''}} {{data.candidate_data.last_name|default_if_none:''}}</span></th>
+           
+            </tr>
+             <tr>
+                <th colspan="8">Course name: <span class="less_font_weight">{{data.exam_detail_data.course_name}}</span></th>
+        
+            </tr>
+
+            <tr>
+                <td colspan="8"></td>
+            </tr>
+            <tr>
+                <th colspan="4">Panama Person</th>
+                <th colspan="4">Date</th>                
+            </tr>
+            <tr>
+                <th colspan="4">_____________________________</th>
+                <th colspan="4">{{data.change_date_format}}</th>
+                
+            </tr>
+            <tr>
+                <td colspan="8" style="text-align: center;font-weight:100;padding-bottom: 0px;padding-top: 20px;">
+                    This is a computer-generated certificate; it does not require a sign and stamp.
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

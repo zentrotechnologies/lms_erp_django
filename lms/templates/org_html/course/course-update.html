@@ -1,0 +1,1473 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Update Course
+          </h1>
+          <!--end::Title-->
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">Courses</li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-700">Add Course</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-fluid">
+        <!--begin::Row-->
+        <div class="row g-5 gx-xl-10 mb-2 mb-xl-4">
+          <!--begin::Col-->
+          <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+            <!--begin::Card widget 20-->
+            <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end mb-5 mb-xl-10">
+              <!--begin::Header-->
+              <div class="card-body py-5">
+                <!--begin::Stepper-->
+                <div class="stepper stepper-pills" id="kt_stepper_example_clickable">
+                  <!--begin::Nav-->
+                  <div class="stepper-nav flex-center flex-wrap mb-2">
+                    <!--begin::Step 1-->
+                    <div class="stepper-item my-4 current" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">1</span>
+                        </div>
+                        <!--end::Icon-->
+
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Course</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+
+                      <!--begin::Line-->
+                      <div class="stepper-line w-100px"></div>
+                      <!--end::Line-->
+                    </div>
+                    <!--end::Step 1-->
+
+                    <!--begin::Step 2-->
+                  
+                    <!--end::Step 2-->
+                    <!--begin::Step 3-->
+                    <div class="stepper-item my-4" data-kt-stepper-element="nav" data-kt-stepper-action="step">
+                      <!--begin::Wrapper-->
+                      <div class="stepper-wrapper d-flex align-items-center">
+                        <!--begin::Icon-->
+                        <div class="stepper-icon w-40px h-40px">
+                          <i class="stepper-check fas fa-check"></i>
+                          <span class="stepper-number">2</span>
+                        </div>
+                        <!--begin::Icon-->
+                        <!--begin::Label-->
+                        <div class="stepper-label">
+                          <div class="stepper-desc">Eligibility</div>
+                        </div>
+                        <!--end::Label-->
+                      </div>
+                      <!--end::Wrapper-->
+                    </div>
+                    <!--end::Step 3-->
+                  </div>
+                  <!--end::Nav-->
+
+                  <!--begin::Form-->
+                  <form class="form mx-auto" novalidate="novalidate" id="kt_stepper_example_basic_form">
+                    <!--begin::Group-->
+                    <div class="">
+                      <!--begin::Step 1-->
+                      <div class="flex-column current" data-kt-stepper-element="content">
+                        <div class="mb-5 fv-row fv-plugins-icon-container row gy-3">
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Name</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="Course Name"
+                              value="{{course_data.course_name}}" id="coursename" />
+                            <input type="hidden" id="course_id" value="{{course_data.id}}" name="course_id">
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Course Code</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="text" name="sku" class="form-control mb-2" placeholder="" id="coursecode"
+                              value="{{course_data.course_code}}" />
+                            <!--end::Input-->
+                          </div>
+                 
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label"> Training Mode</label><span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Training Mode"
+                              id="training_mode">
+                              {%for i in TrainingMode %}
+                              {% if i.id|stringformat:"s" == course_data.training_mode|stringformat:"s" %}
+
+                              <option value="{{i.id}}" selected>{{i.training_mode}}</option>
+                             {%else%}
+                             <option value="{{i.id}}">{{i.training_mode}}</option>
+                             {%endif%}
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <div class="col-md-3">
+                            <div class="form-group">
+                              <label class="form-label">Duration</label><span class="text-danger">*</span>
+                              <input type="text" name="sku" class="form-control mb-3" placeholder="Duration In Days"
+                                value="{{course_data.duration}}" id="duration" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                            </div>
+                          </div>
+                          <div class="col-md-3">
+                            <div class="form-group">
+                              <label class="form-label">Expiry</label>
+                              <input type="date" name="sku" class="form-control mb-3" placeholder="Expiry"
+                                value="{{course_data.expiry}}" id="expiry" class="kt_daterangepicker_1"/>
+                            </div>
+                          </div>
+
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Should be followed by?</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Course List"
+                              id="followed_by">
+                              <option value="">Select Course</option>
+                              {%for c in course %}
+                              {%if c.id == course_data.followed_by %}
+                              <option value="{{c.id}}" selected>
+                                {{c.course_name}}
+                              </option>
+                              {%else%}
+                              <option value="{{c.id}}">
+                                {{c.course_name}}
+                              </option>
+                              {%endif%}
+
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Topics Covered</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+
+                            <!--begin::Input-->
+                            <input class="form-control" placeholder="Topics Covered"
+                              value="{{course_data.topics_covered}}" name="topics_covered" id="topics_covered" />
+                            <span class="text-danger" id="topics_required"></span>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Input-->
+                            <div class="form-group">
+                              <label class="form-label">Pricing</label>
+                              <input type="text" name="sku" class="form-control mb-3" placeholder="Pricing in USD"
+                                value="{{course_data.pricing}}" id="pricing" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                              <span class="text-muted">Note : instructions
+                              </span>
+                            </div>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Description</label>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <input type="textarea" name="sku" class="form-control mb-2" placeholder="Description"
+                              value="{{course_data.description}}" id="description" />
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Supported Language</label>
+                            <span class="text-danger">*</span>  
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Language"  id="languages" multiple>
+                              <option></option>
+                              {% for i in languages %}
+                                  {% if i.id|stringformat:"s" in course_data.languages %}
+                                      <option value="{{ i.id }}" selected>{{ i.languages_name }}</option>
+                                  {% else %}
+                                      <option value="{{ i.id }}">{{ i.languages_name }}</option>
+                                  {% endif %}
+                              {% endfor %}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <h3>Modules</h3>
+                          <div class="kt_docs_repeater_basic">
+                            <!--begin::Form group-->
+                            <div class="form-group">
+                              <div data-repeater-list="kt_docs_repeater_basic">
+
+                                {% if course_data.modules_list %}
+                                {% for m in course_data.modules_list%}
+                                <div>
+                                  <div class="form-group row module_row">
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_name"
+                                          placeholder="Name" value="{{m.module_name|default_if_none:''}}"
+                                          id="module_name" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Description</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_description"
+                                          placeholder="Module Description"
+                                          value="{{m.module_description|default_if_none:''}}" id="module_description" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Hours</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_hours"
+                                          placeholder="Hours" value="{{m.module_hours|default_if_none:''}}"
+                                          id="module_hours" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                      <a href="javascript:;" onclick="deletemodule({{m.id}});"
+                                        class="btn btn-sm btn-light-danger mt-3 mt-md-8">
+                                        <i class="ki-duotone ki-trash fs-4 pe-0"><span class="path1"></span><span
+                                            class="path2"></span><span class="path3"></span><span
+                                            class="path4"></span><span class="path5"></span></i>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                                {%endfor%}
+                                <div data-repeater-item>
+                                  <div class="form-group row module_row">
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_name"
+                                          placeholder="Name" value="" id="module_name" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Description</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_description"
+                                          placeholder="Module Description" value="" id="module_description" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Hours</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_hours"
+                                          placeholder="Hours" value="" id="module_hours" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                      <a href="javascript:;" data-repeater-delete
+                                        class="btn btn-sm btn-light-danger mt-3 mt-md-8">
+                                        <i class="ki-duotone ki-trash fs-4 pe-0"><span class="path1"></span><span
+                                            class="path2"></span><span class="path3"></span><span
+                                            class="path4"></span><span class="path5"></span></i>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                                {%else%}
+                                <div data-repeater-item>
+                                  <div class="form-group row module_row">
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_name"
+                                          placeholder="Name" value="" id="module_name" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Description</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_description"
+                                          placeholder="Module Description" value="" id="module_description" />
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3">
+                                      <!--begin::Input-->
+                                      <div class="form-group">
+                                        <label class="form-label">Hours</label>
+                                        <input type="text" name="sku" class="form-control mb-3 module_hours"
+                                          placeholder="Hours" value="" id="module_hours" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                      </div>
+                                      <!--end::Input-->
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                      <a href="javascript:;" data-repeater-delete
+                                        class="btn btn-sm btn-light-danger mt-3 mt-md-8">
+                                        <i class="ki-duotone ki-trash fs-4 pe-0"><span class="path1"></span><span
+                                            class="path2"></span><span class="path3"></span><span
+                                            class="path4"></span><span class="path5"></span></i>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                                {%endif%}
+                              </div>
+                            </div>
+                            <!--begin::Form group-->
+                            <div class="form-group mt-2 mb-5">
+                              <a href="javascript:;" data-repeater-create class="btn btn-sm btn-light-primary">
+                                <i class="ki-duotone ki-plus fs-3"></i>Add
+                              </a>
+                            </div>
+                            <div class="row kt_docs_repeater_basic">
+                              <div class="d-flex justify-content-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="updatecourse();">
+                                      Submit
+                                  </button>
+                              </div>
+                        
+                          </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!--begin::Step 2-->
+
+                      <div class="flex-column" data-kt-stepper-element="content">
+                        <div class="row">
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Category</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Category" data-hide-search="true" id="category" onchange="getsubcatlist();" multiple>
+                              <option></option>
+                              {% for i in catgeorylist%}
+                              {% if i.status %}
+                              {% if i.id|stringformat:"s" in course_data.eligibility_data.category %}
+                              <option value="{{i.id}}" selected>{{i.category_name}}</option>
+                              {%else%}
+                              <option value="{{i.id}}">{{i.category_name}}</option>
+                              {%endif%}
+                              {%endif%}
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Sub Category</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Sub Category" id="subcatlist" multiple>
+                              <option></option>
+                              
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Department</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Department" data-hide-search="true" id="department" onchange="getdeptranklist();" multiple>
+                              <option></option>
+                              {%for i in departmentlist%}
+                              {% if i.status %}
+                              {% if i.id|stringformat:"s" in course_data.eligibility_data.department %}
+                              <option value="{{i.id}}" selected>{{i.department_name}}</option>
+                              {%else%}
+                              <option value="{{i.id}}">{{i.department_name}}</option>
+                              {%endif%}
+                              {%endif%}
+                              {%endfor%}
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                          <div class="col-md-3">
+                            <!--begin::Label-->
+                            <label class="form-label">Ranks</label>
+                            <span class="text-danger">*</span>
+                            <!--end::Label-->
+                            <!--begin::Input-->
+                            <select class="form-select" data-control="select2" data-placeholder="Select Rank" data-hide-search="true" id="rank" onchange="createrankdiv()" multiple>
+                              <option></option>
+                            
+                            </select>
+                            <!--end::Input-->
+                          </div>
+                         
+                          <div class="RankPrioritydiv mt-3 col-6" id="rankmaindiv">
+                           
+                          </div>
+                        </div>
+                       
+                    
+                      <!--begin::Modal-->
+                      <div class="modal fade" tabindex="-1" id="video-preview-modal">
+                        <div class="modal-dialog modal-width">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Video Preview</h5>
+                              <!--begin::Close-->
+                              <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="ki-duotone ki-cross fs-1">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                </i>
+                              </div>
+                              <!--end::Close-->
+                            </div>
+                            <div class="modal-body">
+                              <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                  <img src="./assets/media/Images/preview.jpg" width="350" height="300" class="m-5" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!--end::Modal-->
+                    <div class="flex-column" data-kt-stepper-element="content">
+                      <!--begin::Repeater-->
+                      <!--begin::Repeater-->
+                      <div class="kt_docs_repeater_basic">
+                        <!--begin::Form group-->
+                        <div class="form-group">
+                          <div data-repeater-list="kt_docs_repeater_basic">
+                            <div data-repeater-item>
+                              <div class="row"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <!--end::Form group-->
+                        <!--begin::Form group-->
+                        <div class="form-group mt-2 mb-5">
+                          <!-- Eligibility code goes here -->
+                        </div>
+                        <!--end::Form group-->
+                      </div>
+                      <!--end::Repeater-->
+
+                      <!--begin::Step 3-->
+                    </div>
+                    <!--end::Group-->
+
+                    <!--begin::Actions-->
+                   
+
+                    <!--begin::Actions-->
+                   
+                      <!--end::Wrapper-->
+
+                      <!--begin::Wrapper-->
+                      <div class="d-flex flex-stack pb-4">
+                        <!--begin::Wrapper-->
+                        <div class="me-2">
+                            <button type="button" class="btn btn-sm btn-secondary"
+                                data-kt-stepper-action="previous">
+                                Back
+                            </button>
+                        </div>
+                        <!--end::Wrapper-->
+
+                        <!--begin::Wrapper-->
+                        <div>
+                            <button type="button" onclick="add_eligibility();" class="btn btn-sm btn-primary" data-kt-stepper-action="submit">
+                                <span class="indicator-label">
+                                    Submit
+                                </span>
+                                <span class="indicator-progress">
+                                    Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-secondary" data-kt-stepper-action="next" onclick="updatecourse()">
+                                Next
+                            </button>
+                        </div>
+                        <!--end::Wrapper-->
+                    </div>
+                      <!--end::Wrapper-->
+                    </div>
+                  </form>
+                  <!--end::Actions-->
+                  <!--end::Form-->
+                </div>
+                <!--end::Stepper-->
+              </div>
+              <!--end::Header-->
+            </div>
+            <!--end::Card widget 20-->
+          </div>
+          <!--end::Col-->
+          <!--end::Col-->
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+  <!--begin::Footer-->
+  <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+      <!--begin::Copyright-->
+      <div class="text-gray-900">
+        <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+      </div>
+      <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+  </div>
+  <!--end::Footer-->
+</div>
+
+{%endblock%} {% block script %}{{block.super}}
+<script type="text/javascript">
+
+var tc_input_tag = document.querySelector("#topics_covered");
+new Tagify(tc_input_tag);
+
+$(".kt_daterangepicker_1").daterangepicker();
+
+ $(document).ready(function(e) {
+        initializeStepper();
+        getonloadsubcatlist();
+        getonloaddeptranklist();
+        // createrankdiv();
+    });
+
+  function handleValidationFailure(message, selector) {
+    showErrorToast(message);
+    scrollToElement(selector);
+
+    // Remove the stepper if it exists
+    if (stepper) {
+      stepper.destroy();
+      stepper = null;
+    }
+  }
+
+  function showErrorToast(message) {
+    bootstrap.showToast({
+      body: message,
+      closeButton: true,
+      toastClass: "alert-danger",
+      delay: 2000,
+    });
+  }
+
+  function scrollToElement(selector) {
+    $("html, body").animate(
+      {
+        scrollTop: $(selector).offset().top - 100, // Adjust for visibility
+      },
+      "slow"
+    );
+  }
+
+  $(".kt_docs_repeater_basic").repeater({
+    initEmpty: false,
+
+    defaultValues: {
+      "text-input": "foo",
+    },
+
+    show: function () {
+      $(this).slideDown();
+    },
+
+    hide: function (deleteElement) {
+      $(this).slideUp(deleteElement);
+    },
+  });
+
+
+  function deletemodule(id) {
+    debugger;
+    console.log("id", id)
+    tok = 'Bearer {{og_token}}'
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to delete this data?</h5></div>',
+      //icon: 'question',
+      position: 'top',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'No',
+      customClass: {
+        confirmButton: 'swal-button',
+        cancelButton: 'swal-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: backendurl + "/api/course/delete-module",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          data: { id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            if (json_resposne.n == 1) {
+              console.log('Success');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                icon: 'success',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  let stepper; // Declare a global variable for the stepper instance
+
+  function updatecourse() {
+    var course_id = $("#course_id").val().trim();
+    var coursename = $("#coursename").val();
+    var coursecode = $("#coursecode").val().trim();
+    var training_mode = $("#training_mode").val();
+    var duration = $("#duration").val().trim();
+    var expiry = $("#expiry").val();
+    var followed_by = $("#followed_by").val();
+    var topics_covered = $("#topics_covered").val();
+    var pricing = $("#pricing").val();
+    var description = $("#description").val();
+    var languages = $("#languages").val();
+
+    if (IsValid(coursename)) {
+      handleValidationFailure("Name is required.", "#name");
+      return false;
+    } else if (IsValid(coursecode)) {
+      handleValidationFailure("Course Code is required.", "#coursecode");
+      return false;
+    } else if (IsValid(training_mode)) {
+      handleValidationFailure("Training Mode is required.", "#training_mode");
+      return false;
+    } else if (IsValid(duration)) {
+      handleValidationFailure("Duration is required.", "#duration");
+      return false;
+    // } else if (IsValid(expiry)) {
+    //   handleValidationFailure("Expiry is required.", "#expiry");
+    //   return false;
+    // }  else if (IsValid(topics_covered)) {
+    //   handleValidationFailure("Topics Covered is required.", "#topics_covered");
+    //   return false;
+    // } else if (IsValid(pricing)) {
+    //   handleValidationFailure("Pricing is required.", "#pricing");
+    //   return false;
+    // } else if (IsValid(description)) {
+    //   handleValidationFailure("Description is required.", "#description");
+    //   return false;
+    }else if (IsValid(languages)) {
+      handleValidationFailure("languages are required.", "#languages");
+      return false;
+    } else {
+      debugger;
+
+      var modules_list = [];
+
+      $(".module_row").each(function () {
+        var module_name = $(this).find("div .module_name").val();
+        var module_description = $(this)
+          .find("div .module_description")
+          .val()
+          .trim();
+        var module_hours = $(this).find("div .module_hours").val().trim();
+
+        modules_list.push({
+          module_name: module_name,
+          module_description: module_description,
+          module_hours: module_hours,
+        });
+      });
+
+      var en_data = {
+        'courseid': course_id,
+        'coursename': coursename,
+        'coursecode': coursecode,
+        'training_mode': training_mode,
+        'duration': duration,
+        'expiry': expiry,
+        'followed_by': followed_by,
+        'topics_covered': topics_covered,
+        'pricing': pricing,
+        'description': description,
+        'languages':languages,
+        'module_list': modules_list,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+
+      tok = 'Bearer {{og_token}}'
+      $.ajax({
+        url: backendurl + "/api/course/update-course",
+        headers: {
+          Authorization: tok,
+          encrypted: "1",
+        },
+        dataType: "json",
+        data: check_encryptData,
+        type: "POST",
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          var decrypt_response = decryptData(response);
+          var json_resposne = $.parseJSON(decrypt_response);
+          console.log("success");
+          if (json_resposne.n == 1) {
+
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+
+            })
+
+            
+
+          } else {
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+
+            })
+            $("html").scrollTop(0);
+          }
+        },
+      });
+    }
+  }
+
+
+  function initializeStepper() {
+        var element = document.querySelector("#kt_stepper_example_clickable");
+    
+        // Destroy the existing stepper if it exists
+        if (stepper) {
+            console.log("Destroying existing stepper");
+            stepper.destroy();
+            stepper = null;
+        }
+    
+        // Check if element exists
+        if (!element) {
+            console.error("Stepper element not found!");
+            return;
+        }
+    
+        console.log("Initializing stepper...");
+        stepper = new KTStepper(element);
+    
+        // Handle navigation click
+        stepper.on("kt.stepper.click", function (stepper) {
+            console.log("Clicked step index:", stepper.getClickedStepIndex());
+            stepper.goTo(stepper.getClickedStepIndex()); // Go to clicked step
+        });
+    
+        // Handle next step
+        stepper.on("kt.stepper.next", function (stepper) {
+            console.log("Proceeding to the next step");
+            stepper.goNext(); // Go next step
+        });
+    
+        // Handle previous step
+        stepper.on("kt.stepper.previous", function (stepper) {
+            console.log("Returning to the previous step");
+            stepper.goPrevious(); // Go previous step
+        });
+    
+        console.log("Stepper initialized:", stepper);
+    }
+    
+    var subcategorylist = {{course_data.eligibility_data.subcategory |safe}}
+    console.log("subcategorylist",subcategorylist)
+
+    function getonloadsubcatlist() {
+    var categoryid = $("#category").val();
+    console.log("categoryid",categoryid)
+    var en_data = {
+      'categoryid': categoryid,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+      tok = 'Bearer {{og_token}}'
+     
+        $.ajax({
+          url: backendurl + "/api/course/getoptsubcategorylist",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          dataType: "json",
+          data: check_encryptData,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("resp",json_resposne)
+            if (json_resposne.n == 1) {
+              var subcathtml=''
+             
+              if (subcategorylist && subcategorylist.length > 0){
+                    var subcathtml='<option value="" name="">Select subcategory</option>'
+                    $.each(json_resposne.data, function (i, o) {  
+                    subcathtml += `<optgroup label="`+o.category_name+`">`;
+                        subcathtml += o.subcatlist.map(function (l) {
+                            if (subcategorylist.includes(l.id.toString())) {
+                                return `<option value="${l.id}" name="${l.sub_name}" selected>${l.sub_name}</option>`;
+                            } else {
+                                return `<option value="${l.id}" name="${l.sub_name}">${l.sub_name}</option>`;
+                            }
+                        }).join("");
+                        subcathtml += `</optgroup>`;
+                    });
+                  $("#subcatlist").html(subcathtml)
+              }
+              else{
+                var subcathtml='<option value="" name="">Select subcategory</option>'
+                $.each(json_resposne.data, function (i, o) {  
+                   subcathtml += 
+                      `<optgroup label="`+o.category_name+`">
+                          ${o.subcatlist.map(l => `
+                            <option value="${l.id}" name="${l.sub_name}">${l.sub_name}</option>
+                          `).join("\n")}
+                      </optgroup>`
+                  })
+                  $("#subcatlist").html(subcathtml)
+              }
+                 
+
+              $('#subcatlist').trigger('change')
+
+
+              
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      
+   
+  }
+
+
+   function getsubcatlist() {
+    var categoryid = $("#category").val();
+    console.log("categoryid",categoryid)
+    var en_data = {
+      'categoryid': categoryid,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+      tok = 'Bearer {{og_token}}'
+     
+        $.ajax({
+          url: backendurl + "/api/course/getoptsubcategorylist",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          dataType: "json",
+          data: check_encryptData,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("resp",json_resposne)
+            //  $("#subcatlist").html('')
+            if (json_resposne.n == 1) {
+              var subcathtml=''
+                var subcathtml='<option value="" name="">Select subcategory</option>'
+                $.each(json_resposne.data, function (i, o) {  
+
+                    subcathtml += 
+                      `<optgroup label="`+o.category_name+`">
+                          ${o.subcatlist.map(l => `
+                          ${l.status == true?`
+
+                            <option value="${l.id}" name="${l.sub_name}">${l.sub_name}</option>
+                            `:``}
+                          `).join("\n")}
+                      </optgroup>`
+
+                  })
+                  $("#subcatlist").html(subcathtml)
+              
+                  $('#subcatlist').trigger('change')
+
+
+              
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      
+   
+  }
+
+  // $('#department').on('select2:select select2:unselect', function () {         getdeptranklist();  });
+  var ranklist ={{course_data.eligibility_data.rank |safe}}
+  console.log("ranklist",ranklist)
+
+
+  function getonloaddeptranklist() {
+    var departmentid = $("#department").val();
+    console.log("departmentid",departmentid)
+    var en_data = {
+      'departmentid': departmentid,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+      tok = 'Bearer {{og_token}}'
+     
+        $.ajax({
+          url: backendurl + "/api/course/getdeptranklist",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          dataType: "json",
+          data: check_encryptData,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("resp",json_resposne)
+            if (json_resposne.n == 1) {
+              var rankhtml=''
+              if (ranklist && ranklist.length > 0){
+                $.each(json_resposne.data, function (i, o) {  
+                        rankhtml += `<optgroup label="`+o.department_name+`">`;
+
+                        rankhtml += o.ranks.map(function (l) {
+                            if (ranklist.includes(l.id.toString())) {
+                                return `<option value="${l.id}" name="${l.rank}" selected>${l.rank}</option>`;
+                            } else {
+                                return `<option value="${l.id}" name="${l.rank}">${l.rank}</option>`;
+                            }
+                        }).join("");
+
+                        rankhtml += `</optgroup>`;
+                    });
+
+                  $("#rank").html(rankhtml)
+                }
+                else{
+                  $.each(json_resposne.data, function (i, o) {  
+
+                      rankhtml += 
+                      `<optgroup label="`+o.department_name+`">
+                          ${o.ranks.map(l => `
+                            <option value="${l.id}" name="${l.rank}">${l.rank}</option>
+                          `).join("\n")}
+                      </optgroup>`
+                      })
+
+                       $("#rank").html(rankhtml)
+
+                }
+                  
+                  $('#rank').trigger('change');
+                  createselectedrankdiv();
+
+
+
+              
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      
+   
+  }
+
+
+
+  
+  
+  function getdeptranklist() {
+    debugger;
+    var departmentid = $("#department").val();
+    console.log("departmentid",departmentid)
+    var en_data = {
+      'departmentid': departmentid,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+      tok = 'Bearer {{og_token}}'
+     
+        $.ajax({
+          url: backendurl + "/api/course/getdeptranklist",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          dataType: "json",
+          data: check_encryptData,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("resprank",json_resposne)
+            if (json_resposne.n == 1) {
+              $("#rank").html('')
+              var rankhtml=''
+              var rankhtml='<option value="" name="">Select rank</option>'
+              $.each(json_resposne.data, function (i, o) {  
+
+                rankhtml += 
+                `<optgroup label="`+o.department_name+`">
+                     ${o.ranks.map(l => `
+                     ${l.status ==true ?`
+                      <option value="${l.id}" name="${l.rank}">${l.rank}</option>
+                      `:``}
+                    `).join("\n")}
+                </optgroup>`
+                })
+              $("#rank").html(rankhtml)
+              $('#rank').trigger('change');
+
+                  
+                 
+
+
+              
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      
+   
+  }
+
+var selecteddivlist ={{course_data.rankitem_data|safe}}
+console.log("selecteddivlist",selecteddivlist)
+function createselectedrankdiv(){
+  debugger;
+    var trhtml = ''
+  if (selecteddivlist && selecteddivlist.length > 0){
+
+      
+          $.each(selecteddivlist, function (i, o) {  
+            trhtml+= `
+              <div class="rank-item row row-cols-2 m-1 rankitems">
+                              <div class="rank-info">
+                                <span>Rank Item <span class="rank-itemno">`+o.rankname+`</span></span>
+                                <span class="rankhiddenval d-none">`+o.rank+`</span>
+                              </div>
+                              ${o.mandatory == 'true'? `
+                              <div class="radio-buttons">
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status`+o.rank+`" value="mandatory" checked>
+                                  Mandatory
+                                </label>
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status`+o.rank+`" value="recommended"/>
+                                  Recommended
+                                </label>
+                              </div>
+                              `:`
+                              <div class="radio-buttons">
+                                <label class="form-check-label">
+                                 
+                                  <input class="form-check-input" type="radio" name="rank_status`+o.rank+`" value="mandatory"/>
+                                  Mandatory
+                                </label>
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status`+o.rank+`" value="recommended"checked>
+                                  Recommended
+                                </label>
+                              </div>
+                              `}
+                            </div>
+            `
+        })
+
+
+        $("#rankmaindiv").html(trhtml)
+        
+  }
+  else{
+    $("#rankmaindiv").html(trhtml)
+  }
+
+
+}
+
+
+
+
+function createrankdiv(){
+  debugger;
+  var rankid = $('#rank').val();
+ 
+  var trhtml = ''
+  if (rankid.length != 0){
+    $('#rank option:selected').each(function() {
+      selectedNames = $(this).attr('name');
+      selectedval = $(this).val();
+    trhtml+= ` <div class="rank-item row row-cols-2 m-1 rankitems">
+                              <div class="rank-info">
+                                <span>Rank Item <span class="rank-itemno"> `+selectedNames+` </span></span>
+                                <span class="rankhiddenval d-none">`+selectedval+`</span>
+                              </div>
+                              <div class="radio-buttons">
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status`+selectedval+`" value="mandatory"/>
+                                  Mandatory
+                                </label>
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="radio" name="rank_status`+selectedval+`" value="recommended"/>
+                                  Recommended
+                                </label>
+                              </div>
+                            </div>`
+  })
+  $("#rankmaindiv").html(trhtml)
+  }
+  else{
+    $("#rankmaindiv").html(trhtml)
+  }
+
+
+}
+
+
+
+function add_eligibility(){
+ 
+  debugger;
+  var course_id = $("#course_id").val().trim();
+  var category = $("#category").val();
+  var subcatlist = $("#subcatlist").val();
+  var department = $("#department").val();
+  var rank = $("#rank").val();
+   
+    if (IsValid(category)) {
+      handleValidationFailure("category is required.", "#category");
+      return false;
+    } else if (IsValid(subcatlist)) {
+      handleValidationFailure("subcategory is required.", "#subcatlist");
+      return false;
+    } else if (IsValid(department)) {
+      handleValidationFailure("department is required.", "#department");
+      return false;
+    } else if (IsValid(rank)) {
+      handleValidationFailure("rank is required.", "#rank");
+      return false;
+    } else {
+      debugger;
+      var missingvalue = false
+      var valuename=""
+
+      var rankitem_list = [];
+
+      $(".rankitems").each(function () {
+        var rank_itemno = $(this).find("div .rank-itemno").text();
+        console.log("rank_itemno",rank_itemno)
+        var rank_itemvalue = $(this).find("div .rankhiddenval").text();
+        console.log("rank_itemvalue",rank_itemvalue,typeof(rank_itemvalue))
+        // if ($("input[name='rank_status"+rank_itemvalue+"']").is(":checked")){
+        //   console.log("hello",$("input[name='rank_status"+rank_itemvalue+"']").val())
+        // }else{
+        //    console.log("hellonot","rank_status"+rank_itemvalue+"")
+        // }
+        var selectedValue = $("input[name='rank_status"+rank_itemvalue+"']:checked").val();
+        console.log("selectedValue",selectedValue,$("input[name='rank_status"+rank_itemvalue+"]:checked"))
+
+        if (IsValid(selectedValue)){
+            missingvalue= true
+            valuename = rank_itemno
+        }
+
+
+        if (!IsValid(selectedValue)){
+          rankitem_list.push({
+          rank_namelabel :rank_itemno,
+          rank_itemvalue: rank_itemvalue,
+          selectedValue: selectedValue,
+        });
+        }
+        
+      });
+
+      if(missingvalue){
+      var toast = bootstrap.showToast({			
+      body: "Select value for Rank Item "+valuename, 
+      closeButton: true, 
+      toastClass: "alert-danger",
+      delay: 2000,
+  })
+  $("html, body").animate({ scrollTop: 0 }, "slow");
+  return false;
+  }
+      
+
+      var en_data = {
+        course_id: course_id,
+        category: category,
+        subcatlist: subcatlist,
+        department: department,
+        rank: rank,
+        rankitem_list: rankitem_list,
+      };
+      var check_encryptData = encryptData(JSON.stringify(en_data));
+
+      tok = 'Bearer {{og_token}}'
+      $.ajax({
+        url: backendurl + "/api/course/add-course-eligibility",
+        headers: {
+          Authorization: tok,
+          encrypted: "1",
+        },
+        dataType: "json",
+        data: check_encryptData,
+        type: "POST",
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          var decrypt_response = decryptData(response);
+          var json_resposne = $.parseJSON(decrypt_response);
+          console.log("success");
+          if(json_resposne.n == 1){
+
+            Swal.fire({
+               html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+               icon: 'success',
+               position: 'top',
+               backdrop: true,
+            
+            })
+
+            window.location.href = backendurl + "/course/course-list";
+
+            }else{
+            Swal.fire({
+               html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+               icon: 'success',
+               position: 'top',
+               backdrop: true,
+               
+            })
+            $("html").scrollTop(0);
+            }
+        },
+      });
+    }
+}
+
+</script>
+{%endblock%}

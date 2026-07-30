@@ -1,0 +1,46 @@
+body,
+html {
+ background: linear-gradient(169deg, rgba(255, 230, 198, 0.00) 21.8%, rgba(255, 230, 198, 0.70) 80.49%), var(--Surface-White, #FFF) !important;
+
+}
+
+
+
+.main-wrapper {
+ border: none !important;
+}
+
+.main-title , .question-part {
+ font-weight: 500;
+}
+*{
+ font-family: "Plus Jakarta Sans";
+}
+
+.top-section {
+ font-family: "Plus Jakarta Sans";
+ background: rgba(255, 230, 198, 0.20);
+ font-family: "Raleway", serif;
+ padding:1rem;
+ margin-bottom:1.5rem;
+ border-radius: 0.5rem;
+ border: 1px solid #dee2e6;
+}
+.instructions{
+ background-color: transparent;
+}
+
+.main-heading {
+ font-family: "Raleway";
+ font-size: 1.9rem;
+ color: #03599F;
+}
+.question-content{
+ box-shadow: 0px 1px 2px 0px rgba(5, 32, 81, 0.3);
+ border-radius:0.5rem;
+ margin-bottom: 1rem;
+ padding: 1rem !important;;
+}
+.edit-icon{
+ margin: 0.1rem;
+}

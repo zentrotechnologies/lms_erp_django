@@ -1,0 +1,662 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                        Course Report
+                    </h1>
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">Reports</li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item">
+                            <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                        </li>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-gray-700">
+                            Course Report
+                        </li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Title-->
+                    <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+                <div>
+                    <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold me-2" id="filter" title="Filter">
+                        <i class="ki-duotone ki-filter fs-4  me-1 p-0">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i></a>
+
+                </div>
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-fluid">
+                <!--begin::Products-->
+                <div class="card card-flush mb-4 filter-card">
+                    <div class="card-body py-4">
+                        <div class="filter">
+                            <div class="row  justify-content-between gy-2">
+                                <div class="col-3">
+                                    <label class="form-label">Date Range</label>
+                                    <!--begin::Input-->
+                                    <input class="form-control kt_daterangepicker_1" placeholder="PO Date"
+                                        id="kt_daterangepicker_1" />
+                                    <!--end::Input-->
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Training Center</label>
+                                    <select class="form-select" data-control="select2"
+                                        data-placeholder="Training Center" data-hide-search="true">
+                                        <option></option>
+                                        {% for t in training_centers %}
+                                        <option value="{{t.id}}">{{t.name}}</option>
+
+                                        {%endfor%}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Certificate Type</label>
+                                    <!--begin::Input-->
+                                    <select class="form-select" data-control="select2"
+                                        data-placeholder="Certificate Type" data-hide-search="true">
+                                        {% for t in certifications %}
+                                        <option value="{{t.id}}">{{t.type_name}}</option>
+
+                                        {%endfor%}
+                                    </select>
+                                    <!--end::Input-->
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Country</label>
+                                    <!--begin::Input-->
+                                    <select class="form-select" data-control="select2" data-placeholder="Country"
+                                        data-hide-search="true">
+                                        <option></option>
+                                        {% for t in countries %}
+                                        <option value="{{t.id}}">{{t.name}}</option>
+
+                                        {%endfor%}
+                                    </select>
+                                    <!--end::Input-->
+                                </div>
+                                <!-- <div class="col-3">
+             <label class="form-label">Teaching Mode</label>
+             <select class="form-select" data-control="select2" data-placeholder="Teaching Mode" data-hide-search="true">
+              <option></option>
+              <option value="1">Online</option>
+              <option value="2">Offline</option>
+             </select>
+            </div> -->
+
+                                <!-- <div class="col-3">
+             <label class="form-label">Status</label>
+             <select class="form-select" data-control="select2" data-placeholder="Status" data-hide-search="true">
+              <option></option>
+              <option value="1">Active</option>
+              <option value="2">Inactive</option>
+
+             </select>
+            </div> -->
+
+
+
+                                <div class="col-6"></div>
+                                <div class="col-6 ">
+                                    <div class="d-flex align-items-end h-100 justify-content-end gap-2 ">
+                                        <button type="button" class="btn btn-sm btn-border-primary"
+                                            onclick="pagination()">
+                                            Apply Filter
+                                        </button>
+                                        <!-- <button type="button" class="btn btn-sm btn-primary">
+               Reset
+              </button> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-statistics pb-3">
+                    <div class="row">
+                        <div class="col">
+                            <div class="statistic bg-light-primary border border-primary">
+                                <div class="d-flex align-items-start justify-content-center flex-column">
+                                    <h6 class="fw-bold">
+                                        Total Courses
+                                    </h6>
+                                    <h5 id="total_courses">
+                                        500K
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="statistic bg-light-info border border-info">
+                                <div class="d-flex align-items-start justify-content-center flex-column">
+                                    <h6 class="fw-bold">
+                                        Schedules
+                                    </h6>
+                                    <h5 id="total_courses_schedules">
+                                        203.29K
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="statistic bg-light-success border border-success">
+                                <div class="d-flex align-items-start justify-content-center flex-column">
+                                    <h6 class="fw-bold">
+                                        Ongoing
+                                    </h6>
+                                    <h5 id="ongoing_courses_schedules">
+                                        303.23K
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="statistic bg-light-warning border border-warning">
+                                <div class="d-flex align-items-start justify-content-center flex-column">
+                                    <h6 class="fw-bold">
+                                        Upcoming
+                                    </h6>
+                                    <h5 id="upcoming_courses_schedules">
+                                        103K
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="statistic bg-light-danger border border-danger">
+                                <div class="d-flex align-items-start justify-content-center flex-column">
+                                    <h6 class="fw-bold">
+                                        Cancelled
+                                    </h6>
+                                    <h5 id="cancel_courses_schedules">
+                                        205K
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+                <div class="card card-flush">
+                    <!--begin::Card header-->
+                    <div class="card-header align-items-center gap-2 gap-md-5">
+                        <!--begin::Card title-->
+                        <div class="card-title">
+                            <!--begin::Search-->
+                            <div class="d-flex align-items-center position-relative my-1">
+                                <i class="ki-duotone ki-magnifier fs-2 end-0 position-absolute me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <input type="text" data-kt-ecommerce-order-filter="search"
+                                    class="form-control form-control-solid w-250px pe-12" placeholder="Search" id="search"/>
+                            </div>
+                            <!--end::Search-->
+                            <!--begin::Export buttons-->
+                            <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+                            <!--end::Export buttons-->
+                        </div>
+                        <!--end::Card title-->
+                        <!--begin::Card toolbar-->
+
+                        <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+                            <div class="">
+                                <!--begin::Input-->
+                                <select class="form-select" data-control="select2" data-placeholder="Sort By"
+                                    data-hide-search="true" id="sort_by">
+                                    <option></option>
+                                    <option value="1">Enrollment</option>
+                                    <option value="2">Schedule</option>
+                                </select>
+                                <!--end::Input-->
+                            </div>
+
+                            <!--begin::Export dropdown-->
+                            <button type="button" class="btn btn-sm btn-light-primary">
+                                <i class="ki-duotone ki-exit-up fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span> </i>Export
+                            </button>
+
+                            <!--end::Export dropdown-->
+                        </div>
+                        <!--end::Card toolbar-->
+                    </div>
+                    <!--end::Card header-->
+                    <!--begin::Card body-->
+                    <div class="card-body pt-0 pb-0">
+                        <!--begin::Table-->
+                        <table class="table align-middle table-row-dashed fs-6 gy-3" id="course_table">
+                            <thead>
+                                <tr class="text-start fw-600 fs-6 gs-0">
+                                    <th class="min-w-40px">Sr. No.</th>
+
+
+                                    <th class="min-w-100px">Course</th>
+                                    <th class="min-w-50px">Training Center</th>
+                                    <th class="min-w-50px">Mode</th>
+                                    <th class="min-w-50px">No. of Schedules</th>
+                                    <th class="min-w-100px">No. of Faculties </th>
+                                    <th class="min-w-70px">Enrollment Count</th>
+                                    <th class="min-w-70px">Status</th>
+
+
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-800" id="table_body">
+
+                            </tbody>
+                        </table>
+                        <!--end::Table-->
+                    </div>
+                    <!--end::Card body-->
+                </div>
+
+                <!--end::Content container-->
+            </div>
+            <!--end::Content-->
+        </div>
+        <!--end::Content wrapper-->
+        <!--begin::Footer-->
+        <div id="kt_app_footer" class="app-footer">
+            <!--begin::Footer container-->
+            <div class="app-container container-fluid d-flex justify-content-center py-3">
+                <!--begin::Copyright-->
+                <div class="text-gray-900">
+                    <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+                </div>
+                <!--end::Copyright-->
+            </div>
+            <!--end::Footer container-->
+        </div>
+        <!--end::Footer-->
+    </div>
+    <!--end:::Main-->
+</div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script type="text/javascript">
+    // $("#course_table").DataTable();
+
+</script>
+<script type="text/javascript">
+    $("#kt_daterangepicker_1").daterangepicker();
+</script>
+<script type="text/javascript">
+
+</script>
+
+<script>
+    // ======================= script for barchart ===============================================
+    document.addEventListener("DOMContentLoaded", function () {
+        function generateRandomNumbers(count, max) {
+            return Array.from({ length: count }, () => Math.floor(Math.random() * max));
+        }
+
+        const DATA_COUNT = 12;
+        const labels = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const data = {
+            labels: labels,
+            datasets: [
+
+                {
+                    label: "Online Enroll - Training Center",
+                    backgroundColor: "rgba(3, 89, 159, 0.5)",
+                    borderColor: "rgba(3, 89, 159, 1)",
+                    data: generateRandomNumbers(DATA_COUNT, 100),
+                    borderWidth: 1,
+                    stack: "Online",
+                },
+                {
+                    label: "Offline Enroll - Training Center",
+                    backgroundColor: "rgba(255, 206, 86, 0.6)",
+                    borderColor: "rgba(255, 206, 86, 1)",
+                    data: generateRandomNumbers(DATA_COUNT, 100),
+                    borderWidth: 1,
+                    stack: "Offline",
+                },
+            ],
+        };
+
+        const config = {
+            type: "bar",
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            footer: (tooltipItems) => {
+                                const hoveredIndex = tooltipItems[0].dataIndex; // Get hovered month index
+
+                                // Calculate Online & Offline Totals Separately
+                                let totalOnline = 0;
+                                let totalOffline = 0;
+
+                                data.datasets.forEach((dataset) => {
+                                    if (dataset.stack === "Online") {
+                                        totalOnline += dataset.data[hoveredIndex];
+                                    } else if (dataset.stack === "Offline") {
+                                        totalOffline += dataset.data[hoveredIndex];
+                                    }
+                                });
+
+                                const grandTotal = totalOnline + totalOffline;
+
+                                return [
+                                    `Online Total: ${totalOnline}`,
+                                    `Offline Total: ${totalOffline}`,
+                                    `Grand Total: ${grandTotal}`
+                                ];
+                            },
+                        },
+                    },
+                },
+                interaction: {
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Month",
+                        },
+                        grid: { display: false },
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Enrollment Count",
+                        },
+                        grid: { display: false },
+                        beginAtZero: true,
+                    },
+                },
+            },
+        };
+
+        const ctxBar = document.getElementById("barchart").getContext("2d");
+        new Chart(ctxBar, config);
+    });
+
+</script>
+<script>
+
+    // ======================= script for piechart ===============================================
+    const ctx2 = document.getElementById("doughnut");
+
+    new Chart(ctx2, {
+        type: "doughnut",
+        data: {
+            labels: [
+                "Active",
+                "Inactive",
+
+            ],
+            datasets: [
+                {
+                    label: "# ",
+                    data: [60, 40],
+                    borderWidth: 1,
+                },
+            ],
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: true, // Keeps the legend visible
+
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            let dataset = tooltipItem.dataset;
+                            let dataIndex = tooltipItem.dataIndex;
+                            let label = dataset.label || "";
+                            let value = dataset.data[dataIndex];
+
+                            return `${tooltipItem.label}: ${value}`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    display: false, // Hides the x-axis grid
+                },
+                y: {
+                    display: false, // Hides the y-axis grid
+                },
+            },
+        },
+    });
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // $('#kt_daterangepicker_1').val(' ')
+
+        pagination();
+    })
+    function convertToDateRange(range) {
+        // Split the string into start and end dates
+
+        const [startDate, endDate] = range.split(" - ");
+
+        // Helper function to convert MM/DD/YYYY to YYYY-MM-DD
+        const formatDate = (date) => {
+            const [month, day, year] = date.split("/");
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+
+        return {
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate)
+        };
+    }
+
+    function pagination() {
+        get_page_data();
+    }
+
+    function get_page_data() {
+        var sort_by = $('#sort_by').val()
+        var search = $('#search').val()
+        var country_id = $('#country_id').val()
+        var daterange = $('#kt_daterangepicker_1').val()
+        var result = convertToDateRange(daterange);
+        var startdate = result.startDate;
+        var enddate = result.endDate;
+
+        var en_data = {
+            'country_id': country_id,
+            'startdate': startdate,
+            'enddate': enddate,
+            'sort_by': sort_by,
+            'search': search,
+
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+        tok = 'Bearer {{og_token}}'
+
+        $.ajax({
+            type: 'POST',
+            url: backendurl + '/api/reports/filter-courses-schedules-report-api',
+            headers: {
+                "Authorization": tok,
+                // "encrypted": '1'
+            },
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                get_courses_schedules_counts()
+
+                // var decrypt_response = decryptData(response)
+                // var json_resposne = $.parseJSON(decrypt_response)
+                console.log("res", response,)
+
+
+                if (response.n == 1) {
+                    var trHTML = "";
+                    counter =1
+                    $.each(response.data, function (i, o) {
+
+                        trHTML += `
+                                <tr>
+                                    <td>${counter}</td>
+                                    <td>${o.course_name}</td>
+                                    <td>
+                                        ${o.training_center_anme}
+                                    </td>
+                                    <td>${o.mode}</td>
+                                    <td>${o.total_schedules}</td>
+
+                                    <td>${o.total_faculties}</td>
+                                    <td>
+                                        ${o.total_enrollments}
+                                    </td>
+                                    <td>${o.status}</td>
+                                </tr>
+                    `
+                        counter += 1
+
+                    });
+
+                    $('#table_body').html(trHTML);
+                    $("#course_table").DataTable(); 
+                    KTMenu.createInstances(); // Reinitialize menus
+                } else {
+                    var trHTML = "<tr><td class='text-center' colspan='8' >No data found</td></tr>";
+                    $('#table_body').html(trHTML);
+                    Swal.fire({
+                        html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + response.msg + '</h5></div>',
+                        icon: 'error',
+                        position: 'top',
+                        backdrop: true,
+                        customClass: {
+                            confirmButton: 'swal-button'
+                        }
+                    })
+                    $("html").scrollTop(0);
+
+
+                }
+
+            },
+
+            error: function (error) {
+                console.log('error; ' + JSON.stringify(error));
+            }
+        });
+    }
+
+    function get_courses_schedules_counts() {
+        var sort_by = $('#sort_by').val()
+        var search = $('#search').val()
+        var country_id = $('#country_id').val()
+        var daterange = $('#kt_daterangepicker_1').val()
+        var result = convertToDateRange(daterange);
+        var startdate = result.startDate;
+        var enddate = result.endDate;
+
+        var en_data = {
+            'country_id': country_id,
+            'startdate': startdate,
+            'enddate': enddate,
+            'sort_by': sort_by,
+            'search': search,
+
+        }
+        var check_encryptData = encryptData(JSON.stringify(en_data))
+        tok = 'Bearer {{og_token}}'
+
+        $.ajax({
+            type: 'POST',
+            url: backendurl + '/api/reports/get-courses-schedules-report-counts-api',
+            headers: {
+                "Authorization": tok,
+                "encrypted": '1'
+            },
+            dataType: "json",
+            data: check_encryptData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+
+                var decrypt_response = decryptData(response)
+                var json_resposne = $.parseJSON(decrypt_response)
+                console.log('get data', json_resposne);
+
+                $('#total_courses').html(json_resposne.total_courses)
+                $('#total_courses_schedules').html(json_resposne.total_courses_schedules)
+                $('#ongoing_courses_schedules').html(json_resposne.ongoing_courses_schedules)
+                $('#upcoming_courses_schedules').html(json_resposne.upcoming_courses_schedules)
+                $('#cancel_courses_schedules').html(json_resposne.cancel_courses_schedules)
+
+
+
+            },
+
+
+            error: function (jqXHR, textStatus, errorThrown) {
+                Swal.fire({
+                    title: 'Error',
+                    text: jqXHR.responseJSON.Message,
+                    icon: 'error',
+                    position: 'top',
+                    backdrop: true,
+                    customClass: {
+                        confirmButton: 'swal-button'
+                    }
+                });
+            }
+        });
+    }
+
+</script>
+{%endblock%}

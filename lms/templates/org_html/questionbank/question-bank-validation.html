@@ -1,0 +1,1136 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Validate Questions
+          </h1>
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+
+            <li class="breadcrumb-item text-muted">
+              <a href="question-bank.html" class="text-muted text-hover-primary">Question Bank</a>
+            </li>
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+
+            <li class="breadcrumb-item text-gray-700">Validate Question</li>
+            <!--end::Item-->
+          </ul>
+          <!--end::Title-->
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+        <div>
+          <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold me-2" id="filter" data-bs-title="Filter"
+            data-bs-toggle="tooltip">
+            <i class="ki-duotone ki-filter fs-4 me-1 p-0">
+              <span class="path1"></span>
+              <span class="path2"></span> </i></a>
+
+        </div>
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-xxl">
+        <!--begin::Products-->
+        <div class="card card-flush mb-4 filter-card">
+          <div class="card-body py-4">
+            <div class="filter">
+              <div class="row row-cols-4 justify-content-between">
+                <div class="col">
+                  <label class="form-label">Course Name</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Course"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Course 1</option>
+                    <option value="2">Course 2</option>
+                    <option value="3">Course 3</option>
+                    <option value="4">Course 4</option>
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Modules</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Module"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Module 1</option>
+                    <option value="2">Module 2</option>
+                    <option value="3">Module 3</option>
+                    <option value="4">Module 4</option>
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Severity Level</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Severity Level"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3">Hard</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Type</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Select Type"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Subjective</option>
+                    <option value="2">Objective</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Validated</label>
+                  <!--begin::Input-->
+                  <select class="form-select" data-control="select2" data-placeholder="Validated"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="1">Yes</option>
+                    <option value="2">No</option>
+
+                  </select>
+                  <!--end::Input-->
+                </div>
+
+                <div class="col-6">
+                  <div class="pt-4 text-end">
+                    <button type="button" class="btn btn-sm btn-border-primary">
+                      Apply Filter
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-flush">
+          <!--begin::Card header-->
+          <div class="card-header align-items-center gap-2 gap-md-5">
+            <!--begin::Card title-->
+            <div class="card-title">
+              <!--begin::Search-->
+              <div class="d-flex align-items-center position-relative my-1">
+                <i class="ki-duotone ki-magnifier fs-2 position-absolute ms-4">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                <input type="text" data-kt-ecommerce-order-filter="search"
+                  class="form-control form-control-solid w-250px ps-12" placeholder="Search" />
+              </div>
+              <!--end::Search-->
+
+
+              <!--begin::Export buttons-->
+              <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+              <!--end::Export buttons-->
+            </div>
+            <!--end::Card title-->
+            <!--begin::Card toolbar-->
+            <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+
+              <!--begin::Export dropdown-->
+              <button type="button" class="btn btn-sm btn-light-primary" role="button">
+                <i class="ki-duotone ki-exit-up fs-2">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                Export
+              </button>
+              <!--end::Export dropdown-->
+            </div>
+            <!--end::Card toolbar-->
+          </div>
+          <!--end::Card header-->
+
+          <div id="questiontbody">
+
+
+
+
+
+        </div>
+
+          <!-- Dislike Modal -->
+          <div class="modal fade   " tabindex="-1" id="dislike_modal">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Dislike
+                  </h5>
+                  <!--begin::Close-->
+                  <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                    aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-1">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                  </div>
+                  <!--end::Close-->
+                </div>
+                <div class="modal-body">
+                  <div class="row row-cols-sm-1 justify-content-start">
+                    <div class="col">
+                      <!--begin::Label-->
+                      <label class="form-label">Reason to Dislike</label>
+                      <!--end::Label-->
+                      <!--begin::Input-->
+                      <input type="hidden" id="dislike_questionid"/>
+                      <input type="text" name="dislike-reason" class="form-control mb-3" placeholder="Reason to Dislike" id="dislike-reason"
+                        value="">
+                      <!--end::Input-->
+                    </div>
+                  </div>
+                  <div class="modal-btns text-center pt-5">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="dislike_question((document.getElementById('dislike_questionid').value))">Submit</button>
+                    <button type="button" class="btn btn-sm btn-secondary me-4" data-bs-dismiss="modal">Close</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Archive Modal -->
+          <div class="modal fade" tabindex="-1" id="archive_modal">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Archive
+                  </h5>
+                  <!--begin::Close-->
+                  <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                    aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-1">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                  </div>
+                  <!--end::Close-->
+                </div>
+                <div class="modal-body">
+                  <div class="row row-cols-sm-1 justify-content-start">
+                    <div class="col">
+                      <!--begin::Label-->
+                      <label class="form-label">Reason to Archive</label>
+                      <!--end::Label-->
+                      <!--begin::Input-->
+                      <input type="hidden" id="archive_questionid" />
+                      <input type="text" id="archive-reason" name="archive-reason" class="form-control mb-3"    placeholder="Reason to Archive"
+                        value="">
+                      <!--end::Input-->
+                    </div>
+                  </div>
+                  <div class="modal-btns text-center pt-5">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="save_archive(document.getElementById('archive_questionid').value)">Submit</button>
+                    <button type="button" class="btn btn-sm btn-secondary me-4" data-bs-dismiss="modal"
+                     >Close</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Duplicate Question Modal -->
+
+          <div class="modal fade" tabindex="-1" id="duplicate_modal">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Duplicate Question
+                  </h5>
+                  <!--begin::Close-->
+                  <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                    aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-1">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                  </div>
+                  <!--end::Close-->
+                </div>
+                <div class="modal-body">
+                  <div class="row row-cols-3">
+                    <div class="col">
+                      <input type="hidden" id="duplicate_questionid" />
+                      <label class="form-label">Course Name</label>
+                      <!--begin::Input-->
+                      <select class="form-select" data-control="select2" data-placeholder="Select Course"
+                      onchange="getcoursedetail()" id="dup_course">
+                        <option value=""></option>
+                          {%for i in course_list %}
+                                <option value="{{i.id}}">{{i.course_name}}</option>
+                          {%endfor%}
+                      </select>
+                      <!--end::Input-->
+                    </div>
+                    <div class="col">
+                      <label class="form-label">Modules</label>
+                      <!--begin::Input-->
+                      <select class="form-select" data-control="select2" data-placeholder="Select Module"
+                         id="dup_modules" onchange="getquestions()">
+                        
+                       
+                      </select>
+                      <!--end::Input-->
+                    </div>
+                    <div class="col">
+                      <label class="form-label">Severity Level</label>
+                      <!--begin::Input-->
+                      <select class="form-select" data-control="select2" data-placeholder="Select Severity Level"
+                        data-hide-search="true" id="severity_level" onchange="getquestions()">
+                        <option value=""></option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                      </select>
+                      <!--end::Input-->
+                    </div>
+                    <div class="col">
+                      <label class="form-label">Type</label>
+                      <!--begin::Input-->
+                      <select class="form-select" data-control="select2" data-placeholder="Select Type"
+                        data-hide-search="true" id="type_question">
+                        <option value=""></option>
+                        <!-- <option value="1">Subjective</option> -->
+                        <option value="Objective">Objective</option>
+                      </select>
+                      <!--end::Input-->
+                    </div>
+                  
+                    <div class="col-12 ">
+                      <label class="form-label ">Select Question</label>
+                      <!--begin::Input-->
+                      <select class="form-select" id="ques_list" data-control="select2" data-placeholder="Select Question" multiple>
+                        <option></option>
+                       
+                      </select>
+                      <!--end::Input-->
+                    </div>
+                  </div>
+                  <div class="modal-btns text-center pt-5">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="save_duplicates(document.getElementById('duplicate_questionid').value)">Submit</button>
+                    <button type="button" class="btn btn-sm btn-secondary me-4" data-bs-dismiss="modal"
+                     >Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+        <!--end::Products-->
+
+
+
+
+
+      </div>
+      <!--end::Content container-->
+
+
+
+
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+  <!--begin::Footer-->
+  <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+      <!--begin::Copyright-->
+      <div class="text-gray-900">
+        <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+      </div>
+      <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+  </div>
+  <!--end::Footer-->
+</div>
+{%endblock%}
+{% block script %}{{block.super}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+<script type="text/javascript">
+  $("#course_table").DataTable({
+    columnDefs: [
+      { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+    ],
+  });
+
+  $("#kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function () {
+
+    $("#filter").click(function () {
+      $(".filter-card").slideToggle("slow");
+    });
+
+    pagination();
+
+  });
+
+
+function getcoursedetail(){
+    debugger;
+    $("#ques_list").html('')
+    var course = $("#dup_course").val();
+    console.log("course",course)
+    var modulehtml = ""
+
+    var en_data = {
+      'id': course
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/course/get-course-details",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("ghghg",json_resposne);
+        if (json_resposne.n == 1) {
+          var modulehtml=`<option value=""> </option>`;
+          $.each(json_resposne.data.modules_list, function (i, o) {  
+            
+            modulehtml +=`
+            <option value="`+o.id+`">`+o.module_name+`</option>
+            `
+          })
+          $("#dup_modules").html(modulehtml)
+        
+        } else {
+          $("#dup_modules").html('')
+          
+          // Swal.fire({
+          //   html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+          //   icon: 'success',
+          //   position: 'top',
+          //   backdrop: true,
+
+          // })
+          // $("html").scrollTop(0);
+        }
+        getquestions();
+
+      },
+    });
+
+  }
+
+
+  function getquestions(){
+    var questionid =  $('#duplicate_questionid').val()
+    var course = $("#dup_course").val();
+    var moduleid = $("#dup_modules").val();
+    var severity_level = $("#severity_level").val();
+    var type = $("#type_question").val();
+    $("#ques_list").html('')
+    var questionshtml = ""
+
+    var en_data = {
+      'questionid':questionid,
+      'course': course,
+      'module':moduleid,
+      'severity_level':severity_level,
+      'type':type
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/get-duplicate-questions-list",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("ques",json_resposne);
+        if (json_resposne.n == 1) {
+          var ques_listhtml=`<option value=""> </option>`;
+          $.each(json_resposne.data, function (i, o) {  
+            
+            ques_listhtml +=`
+            <option value="`+o.id+`">`+o.question_text+`</option>
+            `
+          })
+          $("#ques_list").html(ques_listhtml)
+
+        } else {
+          $("#ques_list").html('')
+          // Swal.fire({
+          //   html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+          //   icon: 'success',
+          //   position: 'top',
+          //   backdrop: true,
+
+          // })
+          // $("html").scrollTop(0);
+        }
+      },
+    });
+      
+  }
+
+  // checkboxes = document.querySelectorAll('.duplicate');
+  // modal1 = new bootstrap.Modal(document.getElementById('duplicate_modal'));
+
+  // document.addEventListener('DOMContentLoaded', () => {
+  //   checkboxes.forEach(checkbox => {
+  //     checkbox.addEventListener('change', function () {
+  //       if (this.checked) {
+  //         modal1.show();
+  //       }
+  //     });
+  //   });
+  // });
+
+  // checkboxes2 = document.querySelectorAll(".archive");;
+  // modal2 = new bootstrap.Modal(document.getElementById('archive_modal'));
+  // document.addEventListener('DOMContentLoaded', () => {
+  //   checkboxes2.forEach(checkbox => {
+  //     checkbox.addEventListener('change', function () {
+  //       if (this.checked) {
+  //         modal2.show();
+  //       }
+  //     });
+  //   });
+  // });
+
+
+  // function uncheckArchive() {
+  //   checkboxes2.forEach(checkbox => (checkbox.checked = false));
+  // }
+
+  // function uncheckDuplicate() {
+  //   checkboxes.forEach(checkbox => (checkbox.checked = false));
+  // }
+
+
+  function get_page_data(p) {
+    
+
+    var en_data = {
+
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+        type: 'POST',
+        url: backendurl + '/api/questionbank/validate-question-list',
+        headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+        },
+        dataType: "json",
+        data: check_encryptData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+
+
+            var decrypt_response = decryptData(response)
+            var json_resposne = $.parseJSON(decrypt_response)
+            console.log("res", json_resposne,)
+            if (json_resposne.n == 1) {
+                var trHTML = "";
+                counter = parseInt(p + "1") - parseInt(10)
+                $.each(json_resposne.data, function (a, b) {
+                  
+                    trHTML += `
+                             <div class="accordion " id="accordion-question`+b.id+`">
+                                <div class="accordion-item mb-0 mt-0 question-acc-item">
+                                  <h2 class="accordion-header">
+                                    <div class="accord-button ">
+                                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse-question`+b.id+`" aria-expanded="false" aria-controls="collapse-question`+b.id+`">
+                                        <div class="row row-cols-4 align-items-center QuestionRow">
+                                          <div class="col-1 Question-info ">
+                                            <div class="d-flex flex-column text-nowrap">
+                                              <h4 class="fw-bold align-self-center">
+                                                Q.1
+                                              </h4>
+                                              <span class="badge badge-danger  mb-1 ">
+                                                <span>
+                                                  `+b.difficulty_level+`
+                                                </span>
+                                              </span>
+                                              <span class="badge badge-light-primary mt-1  ">
+                                                SUBJ
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div class="col-9 ">
+                                            <span>
+                                              `+b.question_text+` ?
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </button>
+
+                                      <div class="d-flex likeDislike ">
+                                        <div>
+                                           ${ b.is_like == true ? `
+                                             <img src="{% static 'assets/media/svg/action-svg/thumbs-up-1.svg'%}" alt="" class="like-button">
+                                             `:`
+                                          <img src="{% static 'assets/media/svg/action-svg/thumbs-up.svg'%}" alt="" class="like-button" onclick="like_question(`+b.id+`)">
+                                          `}
+                                          <span class="fs-6">
+                                            `+b.totallikes+`
+                                          </span>
+                                        </div>
+                                        <span class="mx-1">
+                                          |
+                                        </span>
+                                        <div>
+                                          <span class="fs-6 ">
+                                           `+b.totaldislikes+`
+                                          </span>
+                                           ${ b.is_dislike == true ? `
+                                             <img src="{% static 'assets/media/svg/action-svg/thumbs-down-1 1.svg'%}" alt="" class="dislike-button"
+                                            role="button">
+                                             `:`
+                                           <img src="{% static 'assets/media/svg/action-svg/thumbs-down.svg'%}" alt="" class="dislike-button" onclick="dislikequestionid(`+b.id+`)"
+                                            role="button" data-bs-toggle="modal" data-bs-target="#dislike_modal">
+                                          `}
+                                        
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </h2>
+                                  <div id="collapse-question`+b.id+`" class="accordion-collapse collapse" data-bs-parent="#accordion-question`+b.id+`">
+                                    <div class="accordion-body question-acc-body">
+                                      <div class="row row-cols-2 my-2 fw-bold ">
+                                        <div class="col ">
+                                          <div class="highlightCard p-2">
+                                            Courses: `+b.course_name+`
+
+                                          </div>
+                                        </div>
+                                        <div class="col ">
+                                          <div class="highlightCard p-2">
+
+                                            Module: `+b.module_name+`
+                                          </div>
+                                        </div>
+
+                                      </div>
+                                      <div class="row row-cols-4 my-1  pb-4 br-sep gy-2 ">
+                                        ${b.question_option_data.map(s => `
+
+                                          <div class="col">
+                                            <div class="highlightCard p-2">
+                                              <span class="fw-bold">
+                                                Option `+s.option+` :
+                                              </span>
+                                              <p>
+                                                `+s.option_answer+`
+                                              </p>
+                                            </div>
+                                          </div>
+
+                                        `).join("\n")}
+
+                                      </div>
+                                      <div class="row row-cols-2  mt-4">
+                                        <div class="col">
+                                          <div class="row row-cols-2  gy-2 gx-2">
+                                            <div class="col ">
+                                              <div class="highlightCard p-2">
+
+                                                <div class="">
+                                                  <span class="fw-bold">
+                                                    Added By
+                                                  </span>
+                                                  : `+b.added_by+`
+                                                </div>
+                                                <div class="">
+                                                  <span class="fw-bold">
+                                                    Added On :
+                                                  </span>
+                                                  `+b.added_on+`
+                                                </div>
+
+                                              </div>
+                                            </div>
+
+                                            <div class="col ">
+                                              <div class="highlightCard p-2">
+
+                                                <div class="">
+                                                  <span class="fw-bold">
+                                                    No. of Attempts :
+                                                  </span>
+                                                
+                                                </div>
+                                                <div class="">
+                                                  <span class="fw-bold">
+                                                    Used in Question Paper :
+                                                  </span>
+                                                 
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            <div class="col ">
+                                              <div class="highlightCard p-2">
+
+                                                <div class="">
+                                                  <span class="fw-bold">
+                                                    Time to Solve :
+                                                  </span>
+                                                  `+b.time_to_solve+` Mins
+                                                </div>
+
+                                              </div>
+                                            </div>
+
+                                          </div>
+                                        </div>
+
+                                        <div class="col  ">
+                                          <div class="highlightCard p-4 py-2">
+                                            <label class="fw-bold">Tags :</label>
+                                            <div class="row row-cols-6 ">
+                                              ${b.tags_list.map(s => `
+
+                                              <div>
+                                                <p class="badge badge-light-primary px-7">`+s.value+`</p>
+                                              </div>
+                                              `).join("\n")}
+
+                                            </div>
+                                          </div>
+
+                                        </div>
+                                        <div class="col-6 mt-3">
+                                          <div class="row">
+                                            <div class="col">
+                                             ${ b.is_archive == false ? `
+                                              <input class="form-check-input archivecheck" type="checkbox" value="1" data-bs-toggle="modal" data-bs-target="#archive_modal" onclick="savearchivequestionid(`+b.id+`)"/>
+                                              `:`
+                                               <input class="form-check-input" type="checkbox" value="1" checked disabled/>
+                                               `}	
+                                              <label class="form-label" for="archive">Archive</label>
+                                            </div>
+                                            <div class="col">
+                                              <div class="col">
+                                                 ${ b.is_duplicate == false ? `
+                                                <input class="form-check-input duplicate" data-bs-toggle="modal" data-bs-target="#duplicate_modal" type="checkbox" value="" onclick="saveduplicatequestionid(`+b.id+`)"/ >
+                                                  `:`
+                                                   <input class="form-check-input" type="checkbox" value="1" checked disabled/>
+                                                  `}
+
+                                                <label class="form-label" for="duplicate">Mark as Duplicate</label>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                      </div>
+
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                `
+                    counter += 1
+
+                });
+
+                $('#questiontbody').html(trHTML);
+
+                var totalpagesfilter = Math.ceil(parseInt(json_resposne.count) / 10);
+                $('#pagination-demo').twbsPagination({
+                    totalPages: totalpagesfilter,
+                    visiblePages: 3,
+                    next: 'Next',
+                    prev: 'Prev',
+                    onPageClick: function (event, page) {
+                        var testflag = true;
+                        filternamepageno = page
+                        if (testflag == true) {
+                            testflag = false;
+                            get_page_data(page)
+                        }
+                    }
+                });
+
+                KTMenu.createInstances(); // Reinitialize menus
+            } else {
+                var trHTML = "<tr><td class='text-center' colspan='8' >No data found</td></tr>";
+                $('#table_body').html(trHTML);
+                Swal.fire({
+                    html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                    icon: 'error',
+                    position: 'top',
+                    backdrop: true,
+                    customClass: {
+                        confirmButton: 'swal-button'
+                    }
+                })
+                $("html").scrollTop(0);
+
+
+            }
+
+        },
+
+        error: function (error) {
+            console.log('error; ' + JSON.stringify(error));
+        }
+    });
+}
+
+function pagination() {
+  $('#firstpagination-demo').html('<ul id="pagination-demo" class="pagination-sm"></ul>');
+  var testflag = true;
+  get_page_data(1);
+}
+
+function savearchivequestionid(id) {
+  debugger;
+  $('#archive_questionid').val(id);
+  $('.archivecheck').prop('checked', false);
+}
+
+function dislikequestionid(id){
+  $('#dislike_questionid').val('');
+  $('#dislike_questionid').val(id);
+
+}
+
+function saveduplicatequestionid(id) {
+  // debugger;
+  $('#duplicate_questionid').val('');
+  $("#dup_course").val('').trigger('change');
+  $("#dup_modules").val('').trigger('change');
+  $("#severity_level").val('').trigger('change');
+  $("#type_question").val('').trigger('change');
+
+  $('#duplicate_questionid').val(id);
+  $('.duplicate').prop('checked', false);
+}
+
+function save_archive(id){
+  debugger;
+  var questionid = id;
+  var archivereason = $("#archive-reason").val();
+
+  if (IsValid(archivereason)) {
+            var toast = bootstrap.showToast({
+                body: " Reason to Archive required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+    }
+  var en_data = {
+      'questionid':questionid,
+      'archivereason':archivereason
+    };
+  var check_encryptData = encryptData(JSON.stringify(en_data));
+  tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/archive-question",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+          location.reload();
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+
+}
+
+
+
+
+
+
+function save_duplicates(id){
+  debugger;
+  var queid = id;
+  var duplicatesquestionid =  $("#ques_list").val()
+  var course = $("#dup_course").val();
+  var moduleid = $("#dup_modules").val();
+  var severity_level = $("#severity_level").val();
+  var type = $("#type_question").val();
+
+  if (IsValid(severity_level)) {
+            var toast = bootstrap.showToast({
+                body: "Severity Level is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+    }
+
+    if (IsValid(type)) {
+            var toast = bootstrap.showToast({
+                body: "Type is required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+    }
+ 
+    var en_data = {
+      'questionid':queid,
+      'duplicatequestions':duplicatesquestionid,
+      'course': course,
+      'module':moduleid,
+      'severity_level':severity_level,
+      'type':type
+    };
+    var check_encryptData = encryptData(JSON.stringify(en_data));
+
+    tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/save-duplicates",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        console.log("ques",json_resposne);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+
+        } else {
+          $("#ques_list").html('')
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+      
+}
+
+
+
+
+function like_question(id){
+  debugger;
+  var questionid = id;
+  var en_data = {
+      'questionid':questionid,
+    };
+  var check_encryptData = encryptData(JSON.stringify(en_data));
+  tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/like-question",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+          pagination();
+          // location.reload();
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+}
+
+
+function dislike_question(id){
+  debugger;
+  var questionid = id;
+  var dislikereason = $("#dislike-reason").val();
+  if (IsValid(dislikereason)) {
+            var toast = bootstrap.showToast({
+                body: " Reason to dislike required.",
+                closeButton: true,
+                toastClass: "alert-danger",
+                delay: 2000,
+            })
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+    }
+  var en_data = {
+      'questionid':questionid,
+      'dislike_reason':dislikereason,
+    };
+  var check_encryptData = encryptData(JSON.stringify(en_data));
+  tok = 'Bearer {{og_token}}'
+    $.ajax({
+      url: backendurl + "/api/questionbank/dislike-question",
+      headers: {
+        Authorization: tok,
+        encrypted: "1",
+      },
+      dataType: "json",
+      data: check_encryptData,
+      type: "POST",
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        var decrypt_response = decryptData(response);
+        var json_resposne = $.parseJSON(decrypt_response);
+        if (json_resposne.n == 1) {
+          Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+          })
+          $("#dislike-reason").val('')
+          $('#dislike_modal').modal('hide');
+          pagination();
+
+          // location.reload();
+        } else {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+          })
+          $("html").scrollTop(0);
+        }
+      },
+    });
+}
+
+</script>
+{%endblock%}

@@ -1,0 +1,367 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+    <!--begin::Toolbar container-->
+    <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+    <!--begin::Page title-->
+    <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+        <!--begin::Title-->
+        <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+        Question Bank
+        </h1>
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+        <!--begin::Item-->
+        <li class="breadcrumb-item text-muted">
+        <a href="dashboard.html" class="text-muted text-hover-primary">Home</a>
+        </li>
+        <!--end::Item-->
+        <!--begin::Item-->
+        <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+        </li>
+        <!--end::Item-->
+        <!--begin::Item-->
+        <li class="breadcrumb-item text-muted">Courses</li>
+        <!--end::Item-->
+        <!--begin::Item-->
+        <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+        </li>
+        <!--end::Item-->
+        <!--begin::Item-->
+        <li class="breadcrumb-item text-gray-700">
+        Question Bank
+        </li>
+        <!--end::Item-->
+        </ul>
+        <!--end::Title-->
+        <!--end::Title-->
+    </div>
+    <!--end::Page title-->
+    <div>
+        <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold me-2" id="filter" title="Filter">
+        <i class="ki-duotone ki-filter fs-4  me-1 p-0">
+        <span class="path1"></span>
+        <span class="path2"></span>
+        </i></a>
+
+    </div>
+    </div>
+    <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+    <!--begin::Content container-->
+    <div id="kt_app_content_container" class="app-container container-fluid">
+    <!--begin::Products-->
+    <div class="card card-flush mb-4 filter-card">
+        <div class="card-body py-4">
+        <div class="filter">
+        <div class="row  justify-content-between">
+        <div class="col-4">
+            <label class="form-label">Training Center</label>
+            <!--begin::Input-->
+            <select class="form-select" data-control="select2" data-placeholder="Select Training Center"
+            data-hide-search="true">
+            <option></option>
+            <option value="1">TC A</option>
+            <option value="2">TC B</option>
+            <option value="3">TC C</option>
+            </select>
+            <!--end::Input-->
+        </div>
+        <div class="col-4">
+            <label class="form-label">Country</label>
+            <select class="form-select" data-control="select2" data-placeholder="Select Country "
+            data-hide-search="true">
+            <option></option>
+            <option value="1">INDIA</option>
+            <option value="2">CHINA</option>
+            <option value="3">RUSSIA</option>
+            </select>
+        </div>
+        <div class="col-4">
+            <label class="form-label">Date Range</label>
+            <!--begin::Input-->
+            <input class="form-control kt_daterangepicker_1" placeholder="PO Date" />
+            <!--end::Input-->
+        </div>
+
+        <div class="col-12 ">
+            <div class="pt-4 text-end ">
+            <button type="button" class="btn btn-sm btn-border-primary">
+            Apply Filter
+            </button>
+            <button type="button" class="btn btn-sm btn-primary">
+            Reset
+            </button>
+            </div>
+        </div>
+        </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="question-statistics py-2">
+        <div class="row">
+        <div class="col">
+        <div class="statistic bg-light-primary border border-primary">
+        <div class="d-flex align-items-start justify-content-center flex-column">
+            <h6 class="fw-bold">
+            Courses
+            </h6>
+            <h5>
+            100K
+            </h5>
+        </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="statistic bg-light-info border border-info">
+        <div class="d-flex align-items-start justify-content-center flex-column">
+            <h6 class="fw-bold">
+            Questions
+            </h6>
+            <h5>
+            403.29K
+            </h5>
+        </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="statistic bg-light-success border border-success">
+        <div class="d-flex align-items-start justify-content-center flex-column">
+            <h6 class="fw-bold">
+            Papers
+            </h6>
+            <h5>
+            103.23K
+            </h5>
+        </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="statistic bg-light-warning border border-warning">
+        <div class="d-flex align-items-start justify-content-center flex-column">
+            <h6 class="fw-bold">
+            Examinations
+            </h6>
+            <h5>
+            1.2B
+            </h5>
+        </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="statistic bg-light-danger border border-danger">
+        <div class="d-flex align-items-start justify-content-center flex-column">
+            <h6 class="fw-bold">
+            Candidates
+            </h6>
+            <h5>
+            589.08K
+            </h5>
+        </div>
+        </div>
+        </div>
+
+        </div>
+    </div>
+
+
+    <div class="card card-flush">
+        <!--begin::Card header-->
+        <div class="card-header align-items-center gap-2 gap-md-5">
+        <!--begin::Card title-->
+        <div class="card-title">
+        <!--begin::Search-->
+        <div class="d-flex align-items-center position-relative my-1">
+        <i class="ki-duotone ki-magnifier fs-2 position-absolute ms-4">
+            <span class="path1"></span>
+            <span class="path2"></span>
+        </i>
+        <input type="text" data-kt-ecommerce-order-filter="search"
+            class="form-control form-control-solid w-250px ps-12" placeholder="Search" />
+        </div>
+        <!--end::Search-->
+        <!--begin::Export buttons-->
+        <div id="kt_ecommerce_report_views_export" class="d-none"></div>
+        <!--end::Export buttons-->
+        </div>
+        <!--end::Card title-->
+        <!--begin::Card toolbar-->
+        <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+        <!--begin::Export dropdown-->
+        <button type="button" class="btn btn-sm btn-light-primary">
+        <i class="ki-duotone ki-exit-up fs-2">
+            <span class="path1"></span>
+            <span class="path2"></span> </i>Export
+        </button>
+        <button type="button" class="btn btn-sm btn-light-primary">
+        <i class="ki-duotone ki-exit-down fs-2">
+            <span class="path1"></span>
+            <span class="path2"></span> </i>Import
+        </button>
+        <!--end::Export dropdown-->
+        </div>
+        <!--end::Card toolbar-->
+        </div>
+        <!--end::Card header-->
+        <!--begin::Card body-->
+        <div class="card-body pt-0 pb-0">
+        <!--begin::Table-->
+        <table class="table align-middle table-row-dashed fs-6 gy-3" id="course_table">
+        <thead>
+        <tr class="text-start fw-600 fs-6 gs-0">
+            <th class="min-w-40px">Sr. No.</th>
+            <th class="min-w-70px">Course Name</th>
+            <th class="min-w-100px">Modules</th>
+            <th class="min-w-125px">Questions</th>
+            <th class="min-w-100px">Exam Papers</th>
+            <th class="min-w-100px">Examination Conducted</th>
+            <th class="min-w-100px">Candidates undergone the course</th>
+            <th class="min-w-150px">Certificates Issued</th>
+            <th class="min-w-60px text-nowrap">Re - Attempts</th>
+
+        </tr>
+        </thead>
+        <tbody class="text-gray-800">
+        <tr>
+            <td>1</td>
+            <td>Course 1</td>
+            <td>
+            60
+            </td>
+            <td>
+            100K
+            </td>
+            <td>50K</td>
+            <td>
+            101K
+            </td>
+            <td>
+            200K
+            </td>
+            <td>103K</td>
+            <td>150</td>
+
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Course 2</td>
+            <td>
+            50
+            </td>
+            <td>
+            105K
+            </td>
+            <td>50K</td>
+            <td>
+            101K
+            </td>
+            <td>101K</td>
+            <td>103K</td>
+            <td>150</td>
+
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Course 3</td>
+            <td>
+            30
+            </td>
+            <td>
+            150K
+            </td>
+            <td>50K</td>
+            <td>
+            101K
+            </td>
+            <td>101K</td>
+            <td>103K</td>
+            <td>150</td>
+
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Course 4</td>
+            <td>
+            50
+            </td>
+            <td>
+            130K
+            </td>
+            <td>50K</td>
+            <td>
+            101K
+            </td>
+            <td>101K</td>
+            <td>103K</td>
+            <td>150</td>
+
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Course 5</td>
+            <td>
+            40
+            </td>
+            <td>
+            30K
+            </td>
+            <td>50K</td>
+            <td>
+            101K
+            </td>
+            <td>101Ks</td>
+            <td>103K</td>
+            <td>150</td>
+
+        </tr>
+        </tbody>
+        </table>
+        <!--end::Table-->
+        </div>
+        <!--end::Card body-->
+    </div>
+    <!--end::Products-->
+    </div>
+    <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+    </div>
+    <!--end::Content wrapper-->
+    <!--begin::Footer-->
+    <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+    <!--begin::Copyright-->
+    <div class="text-gray-900">
+    <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+    </div>
+    <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+    </div>
+    <!--end::Footer-->
+</div>
+<!--end:::Main-->
+
+{%endblock%}
+{% block script %}{{block.super}}
+ <script type="text/javascript">
+    $("#course_table").DataTable();
+    $(".kt_daterangepicker_1").daterangepicker();
+
+  $(document).ready(function () {
+   $("#filter").click(function () {
+    $(".filter-card").slideToggle("slow");
+   });
+  });
+</script>
+{%endblock%}

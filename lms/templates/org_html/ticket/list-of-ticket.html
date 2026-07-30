@@ -1,0 +1,1373 @@
+{% extends 'org_base.html' %}{% block content %}{% load static %}
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+  <!--begin::Content wrapper-->
+  <div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-3">
+      <!--begin::Toolbar container-->
+      <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+          <!--begin::Title-->
+          <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+            Tickets
+          </h1>
+          <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+              <a href="/dashboard" class="text-muted text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+              <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">Tickets</li>
+          </ul>
+          <!--end::Title-->
+          <!--end::Title-->
+        </div>
+        <!--end::Page title-->
+        <div>
+          <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold" id="filter">
+            <i class="ki-duotone ki-filter text-muted" data-bs-toggle="tooltip" data-bs-placement="top" title="Filter">
+              <span class="path1"></span>
+              <span class="path2"></span> </i></a>
+          <!-- <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_2">
+            <i class="ki-outline ki-plus fs-2">
+              <span class="path1"></span>
+              <span class="path2"></span> </i>Create
+          </button> -->
+        </div>
+      </div>
+      <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+      <!--begin::Content container-->
+      <div id="kt_app_content_container" class="app-container container-xxl">
+        <!--begin::Products-->
+        <div class="card card-flush mb-4 filter-card">
+          <div class="card-body py-4">
+            <div class="filter">
+              <div class="row row-cols-5">
+                <div class="col">
+                  <label class="form-label">Date Range</label>
+                  <!--begin::Input-->
+                  <input class="form-control" placeholder="Pick date rage" id="kt_daterangepicker_1" />
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Subject</label>
+                  <!--begin::Input-->
+                  <input type="text" class="form-control" id="subject_search" placeholder="Search Subject">
+                  <!--end::Input-->
+                </div>
+                <div class="col">
+                  <label class="form-label">Raised By</label>
+                  <select id="raiseby" class="form-select"  data-control="select2" data-placeholder="Select Raised By"
+                    data-hide-search="true">
+                    <!-- <option value="{{user_id}}">Self</option> -->
+                    <option value="All">All</option>
+
+                  </select>
+                </div>
+
+                <div class="col">
+                  <label class="form-label">Priority</label>
+                  <select id="priority_search" class="form-select" data-control="select2"
+                    data-placeholder="Select Priority" data-hide-search="true">
+                    <option></option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label">Status</label>
+                  <select id="status" class="form-select" data-control="select2" data-placeholder="Select Status"
+                    data-hide-search="true">
+                    <option></option>
+                    <option value="Pending">Pending</option>
+                    <option value="Solved">Solved</option>
+                  </select>
+                </div>
+              </div>
+              <div class="pt-4 text-end">
+                <button type="button" class="btn btn-sm btn-border-primary" onclick="pagination()">
+                  Apply Filter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-flush">
+          <!--begin::Card header-->
+          <div class="card-header align-items-center">
+            <!--begin::Card title-->
+            <div class="card-title">
+              <div class="row">
+                <!-- Ticket Stats -->
+
+                <div class="col-md-2">
+                  <!-- All Tickets -->
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-secondary border border-primary rounded d-flex justify-content-between align-items-center">
+                    All Tickets
+                    <span class="badge bg-primary text-white text-nowrap px-2 py-1" id="allticket">0</span>
+                  </span>
+                </div>
+                <!-- <div class="col-md-2">
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-success border border-success rounded d-flex justify-content-between align-items-center">
+                    Open Tickets
+                    <span class="badge bg-success text-white text-nowrap px-2 py-1" id="openticket">0</span>
+                  </span>
+                </div> -->
+                <div class="col-md-2">
+                  <!-- Closed Tickets -->
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-dark border border-dark rounded d-flex justify-content-between align-items-center">
+                    Closed Tickets
+                    <span class="badge bg-dark text-white text-nowrap px-2 py-1" id="closedticket">0</span>
+                  </span>
+                </div>
+                <div class="col-md-2">
+                  <!-- Pending Tickets -->
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-warning border border-warning rounded d-flex justify-content-between align-items-center">
+                    Pending Tickets
+                    <span class="badge bg-warning text-white text-nowrap px-2 py-1" id="pendingticket">0</span>
+                  </span>
+                </div>
+                <div class="col-md-3">
+                  <!-- Unassigned Tickets -->
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-info border border-info rounded d-flex justify-content-between align-items-center">
+                    Unassigned Tickets
+                    <span class="badge bg-info text-white text-nowrap px-2 py-1" id="unassignedticket">0</span>
+                  </span>
+                </div>
+                <div class="col-md-3">
+                  <!-- Reopened Tickets -->
+                  <span
+                    class="px-3 py-2 fs-6 bg-light-danger border border-danger rounded d-flex justify-content-between align-items-center">
+                    Reopened Tickets
+                    <span class="badge bg-danger text-white text-nowrap px-2 py-1" id="reopenticket">0</span>
+                  </span>
+                </div>
+
+                <!-- Search -->
+                <div class="col-md-4 mt-3">
+                  <div class="position-relative">
+                    <i class="ki-duotone ki-magnifier fs-2 position-absolute top-50 translate-middle-y ms-4">
+                      <span class="path1"></span>
+                      <span class="path2"></span>
+                    </i>
+                    <input type="text" data-kt-ecommerce-order-filter="search"
+                      class="form-control form-control-solid ps-12" placeholder="Search"
+                      style="width: 100%; max-width: 250px" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--end::Card header-->
+          <!--begin::Card body-->
+          <div class="card-body pt-0 pb-0">
+            <!--begin::Table-->
+            <table class="table align-middle table-row-dashed fs-6 gy-3" id="course_table">
+              <thead>
+                <tr class="text-start fw-600 fs-6 gs-0">
+                  <th class="min-w-40px">Sr. No.</th>
+                  <th class="min-w-40px">Ticket ID</th>
+                  <th class="min-w-200px">Subject</th>
+                  <th class="min-w-100px">Raised By</th>
+                  <th class="min-w-100px">Raised Date</th>
+                  <th class="min-w-80px">Priority</th>
+                  <th class="min-w-80px">Status</th>
+                  <th class="min-w-70px">Action</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-800" id="table_body">
+
+
+              </tbody>
+            </table>
+            <div class="row d-felx justify-content-center mb-3" id="firstpagination-demo">
+              <ul id="pagination-demo" class="pagination-sm"></ul>
+          </div>
+            <!--end::Table-->
+          </div>
+          <!--end::Card body-->
+        </div>
+        <!--end::Products-->
+      </div>
+      <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Content wrapper-->
+
+
+  <!--begin::Modal-->
+  <div class="modal fade" tabindex="-1" id="kt_modal_2">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Raise Ticket</h5>
+          <!--begin::Close-->
+          <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+            <i class="ki-duotone ki-cross fs-1">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+          </div>
+          <!--end::Close-->
+        </div>
+        <div class="modal-body">
+          <div class="row row-cols-3 justify-content-start gy-3">
+            <div class="col">
+              <label for="ticket-title" class="form-label">Ticket Subject</label>
+              <input type="text" class="form-control" id="ticket-title" placeholder="Enter a brief summary of the issue"
+                required />
+            </div>
+            <div class="col">
+              <label for="priority" class="form-label">Priority</label>
+              <select id="priority" class="form-select" data-control="select2" data-placeholder="Select Priority"
+                data-hide-search="true" required>
+                <option></option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div class="col">
+              <label for="category" class="form-label">Category</label>
+              <select id="category" class="form-select" data-control="select2" data-placeholder="Select Category"
+                data-hide-search="true" required>
+                {% for category in ticket_category %}
+                  <option value="{{category.id}}">{{category.name}}</option>
+                {%endfor%}
+              </select>
+            </div>
+            <div class="col d-none">
+              <label for="requester-name" class="form-label">Requester Name</label>
+              <input type="text" class="form-control" id="requester-name"
+                placeholder="Enter the name of the person raising the ticket" required />
+            </div>
+            <div class="col d-none">
+              <label for="email" class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="email" placeholder="Enter the requester's email" required />
+            </div>
+            <div class="col">
+              <label for="attachments" class="form-label">Attachments</label>
+              <input type="file" class="form-control" id="attachments" accept=".png, .jpg, .jpeg, .pdf, .docx, .xls" />
+            </div>
+            <div class="col-12 mb-4">
+              <label for="description" class="form-label">Description</label>
+              <div id="richTextBox"></div>
+            </div>
+          </div>
+
+          <div class="modal-btns text-center pt-5">
+            <button type="button" class="btn btn-sm btn-light me-4" data-bs-dismiss="modal">
+              Close
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="add_ticket();">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--end::Modal-->
+  <!--begin::Offcanvas-->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasRight">History</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="card query-card" id="kt_chat_messenger">
+        <div class="card-body" id="kt_chat_messenger_body">
+          <div class="scroll-y me-n5 pe-5 h-300px h-lg-auto" data-kt-element="messages" data-kt-scroll="true" id="TicketActivityLog">
+            <div class="d-flex justify-content-start mb-2">
+              <div class="d-flex flex-column align-items-start">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="symbol symbol-35px symbol-circle">
+                    <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                  </div>
+                  <div class="ms-3">
+                    <a href="#" class="fs-5 fw-bold text-gray-900 text-hover-primary me-1">Brian Cox</a>
+                    <span class="text-muted fs-7 mb-1">2 mins</span>
+                  </div>
+                </div>
+                <div class="p-5 rounded bg-light-info text-gray-900 fw-semibold mw-lg-400px text-start"
+                  data-kt-element="message-text">
+                  How likely are you to recommend our company to your friends and family ?
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mb-2">
+              <div class="d-flex flex-column align-items-end">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="me-3">
+                    <span class="text-muted fs-7 mb-1">5 mins</span>
+                    <a href="#" class="fs-5 fw-bold text-gray-900 text-hover-primary ms-1">You</a>
+                  </div>
+                  <div class="symbol symbol-35px symbol-circle">
+                    <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                  </div>
+                </div>
+                <div class="p-5 rounded bg-light-primary text-gray-900 fw-semibold mw-lg-400px text-end"
+                  data-kt-element="message-text">
+                  Hey there, we’re just writing to let you know that you’ve been subscribed to a
+                  repository on GitHub.
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-start mb-2">
+              <div class="d-flex flex-column align-items-start">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="symbol symbol-35px symbol-circle">
+                    <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                  </div>
+                  <div class="ms-3">
+                    <a href="#" class="fs-5 fw-bold text-gray-900 text-hover-primary me-1">Brian Cox</a>
+                    <span class="text-muted fs-7 mb-1">1 Hour</span>
+                  </div>
+                </div>
+                <div class="p-5 rounded bg-light-info text-gray-900 fw-semibold mw-lg-400px text-start"
+                  data-kt-element="message-text">
+                  Ok, Understood!
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mb-2">
+              <div class="d-flex flex-column align-items-end">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="me-3">
+                    <span class="text-muted fs-7 mb-1">2 Hours</span>
+                    <a href="#" class="fs-5 fw-bold text-gray-900 text-hover-primary ms-1">You</a>
+                  </div>
+                  <div class="symbol symbol-35px symbol-circle">
+                    <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                  </div>
+                </div>
+                <div class="p-5 rounded bg-light-primary text-gray-900 fw-semibold mw-lg-400px text-end"
+                  data-kt-element="message-text">
+                  You’ll receive notifications for all issues, pull requests!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer pt-4" id="kt_chat_messenger_footer">
+          <div class="row">
+            <div class="col-lg-10">
+              <textarea class="form-control form-control-flush br-btm" rows="1" data-kt-element="input"
+                placeholder="Type here" id="newcomment"></textarea>
+
+              <input type="text" name="" id="ticket_id" hidden>
+            </div>
+            <div class="col-lg-2 p-0">
+              <div class="d-flex align-items-baseline">
+                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-4"
+                  data-bs-toggle="tooltip" data-bs-placement="top" title="Send" onclick="add_comment()">
+                  <i class="ki-duotone ki-send fs-1">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </a>
+                <!-- <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm" data-bs-toggle="tooltip"
+                  data-bs-placement="top" title="Close rab">
+                  <i class="ki-duotone ki-cross fs-1">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </a> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--begin::Offcanvas-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!--begin::Footer-->
+  <div id="kt_app_footer" class="app-footer">
+    <!--begin::Footer container-->
+    <div class="app-container container-fluid d-flex justify-content-center py-3">
+      <!--begin::Copyright-->
+      <div class="text-gray-900">
+        <span class="text-gray-800 text-hover-primary">All Right Reserved | Copyright © LMS</span>
+      </div>
+      <!--end::Copyright-->
+    </div>
+    <!--end::Footer container-->
+  </div>
+  <!--end::Footer-->
+</div>
+
+
+
+
+
+
+
+
+
+
+<!--end:::Main-->
+
+{%endblock%}
+{% block script %}{{block.super}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+
+
+
+
+<script type="text/javascript">
+  // $("#course_table").DataTable({
+  //   columnDefs: [
+  //     { orderable: false, targets: 0 }, // Disabling sorting on the first column (checkbox)
+  //   ],
+  // });
+  $("#kt_daterangepicker_1").daterangepicker();
+
+
+  // The DOM elements you wish to replace with Tagify
+  var input1 = document.querySelector("#kt_tagify_1");
+
+  // Initialize Tagify components on the above inputs
+  new Tagify(input1);
+</script>
+<script>
+  $(document).ready(function () {
+    // $('#kt_daterangepicker_1').val(' ')
+
+    pagination();
+  })
+
+  function deleteticket(id) {
+    
+    console.log("id", id)
+    tok = 'Bearer {{og_token}}'
+    Swal.fire({
+      html: '<div class="d-flex justify-content-around align-items-center "><h5>Are you sure you want to delete ?</h5></div>',
+      //icon: 'question',
+      position: 'top',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'No',
+      customClass: {
+        confirmButton: 'swal-button',
+        cancelButton: 'swal-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: backendurl + "/api/ticket/delete-ticket",
+          type: "POST",
+          headers: {
+            "Authorization": tok,
+            "encrypted": '1'
+          },
+          data: { ticket_id: id, csrfmiddlewaretoken: "{{csrf_token}}" },
+          success: function (data) {
+            var decrypt_response = decryptData(data)
+            var json_resposne = $.parseJSON(decrypt_response)
+            if (json_resposne.n == 1) {
+              console.log('Success');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+                icon: 'success',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              console.log('Success-Error');
+              Swal.fire({
+                html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+                icon: 'error',
+                position: 'top',
+                backdrop: true,
+                customClass: {
+                  confirmButton: 'swal-button'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+            Swal.fire({
+              title: 'Error',
+              text: jqXHR.responseJSON.Message,
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+
+  function convertToDateRange(range) {
+    // Split the string into start and end dates
+
+    const [startDate, endDate] = range.split(" - ");
+
+    // Helper function to convert MM/DD/YYYY to YYYY-MM-DD
+    const formatDate = (date) => {
+      const [month, day, year] = date.split("/");
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    };
+
+    return {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate)
+    };
+  }
+
+  function pagination() {
+    $('#firstpagination-demo').html('<ul id="pagination-demo" class="pagination-sm"></ul>');
+    var testflag = true;
+    get_page_data(1);
+  }
+
+  function get_page_data(p) {
+    var raiseby = $('#raiseby').val()
+    if(raiseby =='All'){
+      raiseby=''
+    }
+    var subject_search = $('#subject_search').val()
+    var priority_search = $('#priority_search').val()
+    var daterange = $('#kt_daterangepicker_1').val()
+    var status = $('#status').val()
+    var result = convertToDateRange(daterange);
+    var startdate = result.startDate;
+    var enddate = result.endDate;
+
+    var en_data = {
+      'raiseby': raiseby,
+      'priority_search': priority_search,
+      'startdate': startdate,
+      'enddate': enddate,
+      'status': status,
+      'subject_search': subject_search,
+
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+      type: 'POST',
+      url: backendurl + '/api/ticket/filter-ticket-api?p='+p,
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+      dataType: "json",
+      data: check_encryptData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        get_ticket_counts()
+
+        var decrypt_response = decryptData(response)
+        var json_resposne = $.parseJSON(decrypt_response)
+        console.log("res", json_resposne,)
+        if (json_resposne.n == 1) {
+          var trHTML = "";
+          counter = parseInt(p + "1") - parseInt(10)
+          $.each(json_resposne.data, function (i, o) {
+            var carton_quantity = (parseInt(o.quantity) / parseInt(o.cartoon_units)).toFixed(0)
+            trHTML += `
+                        <tr>
+                          <td>`+ counter + `</td>
+                          <td>`+ o.ticketid + `</td>
+                          <td>
+                            <div class="multi-lines" data-bs-toggle="tooltip" data-bs-placement="top"
+                              title="`+ o.subject + `">
+                              <a href="/ticket/ticket-info/`+ o.id + `">` + o.subject + `</a>
+                            </div>
+                          </td>
+                          <td>`+ o.requestername + `</td>
+                          <td>`+ o.raisedate + `</td>
+                          <td><span class="badge badge-light-`+ o.priority + `">` + o.priority + `</span></td>
+                          <td><span class="text-`+ o.status + `">` + o.status + `</span></td>
+
+                          <td>
+                            <div class="d-flex">
+                              
+
+                              <a href="#" onclick="get_assgned_user_list('`+ o.id + `')" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 mb-2"
+                                data-bs-toggle="modal" data-bs-target="#kt_modal_1`+ o.id + `">
+                                <i class="ki-duotone ki-user-tick fs-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                                  title="Assign">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                  <span class="path3"></span>
+                                </i>
+                              </a>
+
+
+                              <!--begin::Modal-->
+                              <div class="modal fade" tabindex="-1" id="kt_modal_1`+ o.id + `">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title">Assign</h5>
+                                      <!--begin::Close-->
+                                      <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                                        <i class="ki-duotone ki-cross fs-1">
+                                          <span class="path1"></span>
+                                          <span class="path2"></span>
+                                        </i>
+                                      </div>
+                                      <!--end::Close-->
+                                    </div>
+                                    <div class="modal-body">
+                                      <div class="row justify-content-center">
+                                        <div class="col-lg-10">
+                                          <label for="" class="form-label">Name</label>
+                                          <select class="form-select" data-control="select2" data-placeholder="Select Name" data-hide-search="true" id="assign_user`+ o.id + `">
+                                            <option></option>
+                                            
+                                          </select>
+                                        </div>
+                                      </div>
+                                      <div class="modal-btns text-center pt-5">
+                                        <button type="button" class="btn btn-sm btn-light me-4" data-bs-dismiss="modal">
+                                          Close
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="change_assign_to('`+ o.id + `');">Save</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <!--end::Modal-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                              <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 mb-2"
+                                data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+                                aria-controls="offcanvasRight" onclick="get_ticket_activity(`+ o.id + `)">
+                                <i class="ki-duotone ki-questionnaire-tablet fs-1" data-bs-toggle="tooltip"
+                                  data-bs-placement="top" title="View History">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                </i>
+                              </a>
+                              ${o.requestername == 'You'?`
+                              <a href="#" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1 mb-2" onclick="deleteticket(`+ o.id + `)">
+                                <i class="ki-duotone ki-trash fs-1">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                  <span class="path3"></span>
+                                  <span class="path4"></span>
+                                  <span class="path5"></span>
+                                </i>
+                              </a>
+                              `:``}
+
+
+                            </div>
+                          </td>
+                        </tr>
+                    `
+            counter += 1
+
+          });
+
+          $('#table_body').html(trHTML);
+
+          var totalpagesfilter = Math.ceil(parseInt(json_resposne.count) / 10);
+          $('#pagination-demo').twbsPagination({
+            totalPages: totalpagesfilter,
+            visiblePages: 3,
+            next: 'Next',
+            prev: 'Prev',
+            onPageClick: function (event, page) {
+              var testflag = true;
+              filternamepageno = page
+              if (testflag == true) {
+                testflag = false;
+                get_page_data(page)
+              }
+            }
+          });
+
+          KTMenu.createInstances(); // Reinitialize menus
+        } else {
+          var trHTML = "<tr><td class='text-center' colspan='8' >No data found</td></tr>";
+          $('#table_body').html(trHTML);
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          })
+          $("html").scrollTop(0);
+
+
+        }
+
+      },
+
+      error: function (error) {
+        console.log('error; ' + JSON.stringify(error));
+      }
+    });
+  }
+
+  function add_ticket(p) {
+    var ticket_subject = $('#ticket-title').val()
+    var priority = $('#priority').val()
+    var category = $('#category').val()
+    var attachments = $('#attachments')[0].files[0];
+    var description = quill.root.innerHTML;
+    if (IsValid(ticket_subject)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter the ticket subject.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(priority)) {
+      var toast = bootstrap.showToast({
+        body: "Please select the ticket priority.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(category)) {
+      var toast = bootstrap.showToast({
+        body: "Please select the ticket category.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(attachments)) {
+      var toast = bootstrap.showToast({
+        body: "Please select the ticket attachments.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+    if (IsValid(description)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter the ticket description.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+
+
+
+    var en_data = {
+      'subject': ticket_subject,
+      'priority': priority,
+      'category': category,
+      'attachments': attachments,
+      'description': description,
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+      type: 'POST',
+      url: backendurl + '/api/ticket/add-ticket',
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+      dataType: "json",
+      data: check_encryptData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+
+
+        var decrypt_response = decryptData(response)
+        var json_resposne = $.parseJSON(decrypt_response)
+        console.log("res", json_resposne,)
+        if (json_resposne.n == 1) {
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-success">' + json_resposne.msg + '</h5></div>',
+            icon: 'success',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          })
+          setTimeout(
+            function () {
+              window.location.href = backendurl + "/ticket/ticket-list";
+            }, 2000);
+
+        } else {
+          var trHTML = "<tr><td class='text-center' colspan='8' >No data found</td></tr>";
+          $('#table_body').html(trHTML);
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center"><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          })
+          $("html").scrollTop(0);
+
+
+        }
+
+      },
+
+      error: function (error) {
+        console.log('error; ' + JSON.stringify(error));
+      }
+    });
+  }
+
+  function get_assgned_user_list(id) {
+    
+    console.log("id", id)
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+      url: backendurl + "/api/ticket/assign-user-list",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+      data: { 'ticket': id, csrfmiddlewaretoken: "{{csrf_token}}" },
+      success: function (data) {
+        var decrypt_response = decryptData(data)
+        var json_resposne = $.parseJSON(decrypt_response)
+        if (json_resposne.n == 1) {
+          console.log('Success', json_resposne);
+          var options = `<option value="">Select Assign To</option>`
+          $.each(json_resposne.data, function (i, o) {
+            options += `<option value="` + o.id + `">` + o.name + `</option>`
+          })
+          $('#assign_user' + id).html(options)
+          $('#assign_user' + id).val(json_resposne.active_user_id)
+
+        } else {
+          console.log('Success-Error');
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(textStatus, errorThrown);
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+
+  }
+
+  function change_assign_to(id) {
+    
+    console.log("id", id)
+    tok = 'Bearer {{og_token}}'
+    var userid = $('#assign_user' + id).val();
+    if (IsValid(userid)) {
+      var toast = bootstrap.showToast({
+        body: "Please select assign user.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    } else {
+
+
+
+
+      $.ajax({
+        url: backendurl + "/api/ticket/assign-user-to-ticket",
+        type: "POST",
+        headers: {
+          "Authorization": tok,
+          "encrypted": '1'
+        },
+        data: { 'userid': userid, 'ticket': id, csrfmiddlewaretoken: "{{csrf_token}}" },
+
+        success: function (data) {
+          var decrypt_response = decryptData(data)
+          var json_resposne = $.parseJSON(decrypt_response)
+          if (json_resposne.n == 1) {
+            console.log('Success');
+
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center "><h4>' + json_resposne.msg + '</h4></div>',
+              icon: 'success',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            }).then(() => {
+              location.reload();
+            });
+          } else {
+            console.log('Success-Error');
+            Swal.fire({
+              html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + json_resposne.msg + '</h5></div>',
+              icon: 'error',
+              position: 'top',
+              backdrop: true,
+              customClass: {
+                confirmButton: 'swal-button'
+              }
+            });
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log(textStatus, errorThrown);
+          Swal.fire({
+            title: 'Error',
+            text: jqXHR.responseJSON.Message,
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      });
+    }
+  }
+
+  const quill = new Quill("#richTextBox", {
+    theme: "snow",
+    modules: {
+      toolbar: [
+        ["bold", "italic", "underline"], // Formatting buttons
+        [{ header: 1 }, { header: 2 }], // Header sizes
+        [{ list: "ordered" }, { list: "bullet" }], // Lists
+        [{ color: [] }, { background: [] }], // Text color/background
+        ["clean"], // Remove formatting
+      ],
+    },
+  });
+
+  function get_ticket_activity(ticketid) {
+
+
+    tok = 'Bearer {{og_token}}'
+    $('#ticket_id').val(ticketid)
+
+    $.ajax({
+      url: backendurl + "/api/ticket/get-ticket-activity",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+
+      data: { ticket: ticketid, csrfmiddlewaretoken: "{{csrf_token}}" },
+      success: function (data) {
+        console.log('data', data);
+
+        var decrypt_response = decryptData(data)
+        var json_resposne = $.parseJSON(decrypt_response)
+        console.log('acti', json_resposne);
+
+        if (json_resposne.n == 1) {
+          var logined_userid = json_resposne.logined_userid;
+          var messages = ''
+          $.each(json_resposne.data, function (i, o) {
+              var extension = o.file_extension.substring(1);
+              if (['jpg', 'png', 'jpeg', 'webp'].includes(extension)) {
+                extension = 'image';
+              } else if (['pdf', 'docs', 'video'].includes(extension)) {
+                // extension remains unchanged
+              } else {
+                extension = 'link';
+              }
+            if (o.userid == logined_userid) {
+              messages += `
+              
+                        <div class="d-flex justify-content-end mb-2">
+                          <div class="d-flex flex-column align-items-end">
+                            <div class="d-flex align-items-center mb-2">
+                              <div class="me-3">
+                                <span class="text-muted fs-7 mb-1">`+ o.time_difference + `</span>
+                                <a href="#"
+                                  class="fs-5 fw-bold text-gray-900 text-hover-primary ms-1">You</a>
+                              </div>
+                              <div class="symbol symbol-35px symbol-circle">
+                                <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                              </div>
+                            </div>
+                            <div
+                              class="p-5 rounded bg-light-primary text-gray-900 fw-semibold mw-lg-400px text-end"
+                              data-kt-element="message-text">
+                              `+ o.comment + `
+
+                                  ${o.attachment != null ? `<div class="d-flex align-items-start mb-3">
+                                    <a href="`+ backendurl + o.attachment+`" target="_blank" class="text-black">
+                                    <img src="`+ backendurl + `/static/assets/media/svg/action-svg/` + extension + `.png" alt="` + o.file_extension + ` Icon" class="me-3"
+                                      width="30" height="30" />
+                                    <div>
+                                      <div class="fw-bold">`+ o.file_name + `</div>
+                                    </div>  
+                                      
+                                    </a>
+                                  </div>`: ``}
+
+                            </div>
+                          </div>
+                        </div>
+              `
+            } else {
+
+
+              messages += `
+              
+                      <div class="d-flex justify-content-start mb-2">
+                        <div class="d-flex flex-column align-items-start">
+                          <div class="d-flex align-items-center mb-2">
+                            <div class="symbol symbol-35px symbol-circle">
+                              <img alt="Pic" src="{% static 'assets/media/avatars/blank.png' %}" />
+                            </div>
+                            <div class="ms-3">
+                              <a href="#"
+                                class="fs-5 fw-bold text-gray-900 text-hover-primary me-1">`+ o.username + `</a>
+                              <span class="text-muted fs-7 mb-1">`+ o.time_difference + `</span>
+                            </div>
+                          </div>
+                          <div
+                            class="p-5 rounded bg-light-info text-gray-900 fw-semibold mw-lg-400px text-start"
+                            data-kt-element="message-text">
+                            `+ o.comment + `
+
+                                  ${o.attachment != null ? `<div class="d-flex align-items-start mb-3">
+                                    <a href="`+ backendurl + o.attachment+`" target="_blank" class="text-black">
+                                    <img src="`+ backendurl + `/static/assets/media/svg/action-svg/` + extension + `.png" alt="` + o.file_extension + ` Icon" class="me-3"
+                                      width="30" height="30" />
+                                    <div>
+                                      <div class="fw-bold">`+ o.file_name + `</div>
+                                    </div>  
+                                      
+                                    </a>
+                                  </div>`: ``}
+
+                          </div>
+                        </div>
+                      </div>
+              
+              `
+
+            }
+
+          })
+          $('#TicketActivityLog').html(messages)
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+
+  
+  function add_comment() {
+    
+    var fd = new FormData();
+
+    var comment = $('#newcomment').val();
+    var ticket = $('#ticket_id').val();
+    // var attachment = $('#activityattachment')[0].files[0];
+    if (IsValid(ticket)) {
+      var toast = bootstrap.showToast({
+        body: "ticket id not found.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }if (IsValid(comment)) {
+      var toast = bootstrap.showToast({
+        body: "Please enter valid comment.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    } if (comment == '<p><br></p>' ) {
+      var toast = bootstrap.showToast({
+        body: "Please enter valid comment.",
+        closeButton: true,
+        toastClass: "alert-danger",
+        delay: 2000,
+      })
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+      return false;
+    }
+
+
+    tok = 'Bearer {{og_token}}'
+    fd.append("ticket", ticket);
+    fd.append("comment", comment);
+    // if (attachment != '' && attachment != null) {
+    //   fd.append("attachment", attachment);
+    // }
+
+    $.ajax({
+      url: backendurl + "/api/ticket/add-ticket-activity",
+      type: "POST",
+      headers: {
+        "Authorization": tok,
+        // "encrypted": '1'
+      },
+
+      data: fd,
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        console.log('add data', data);
+
+
+
+        if (data.n == 1) {
+          get_ticket_activity(ticket)
+          quill.root.innerHTML = "";
+          remove_attachment()
+        } else {
+
+          Swal.fire({
+            html: '<div class="d-flex justify-content-around align-items-center "><h5 class="text-danger">' + data.msg + '</h5></div>',
+            icon: 'error',
+            position: 'top',
+            backdrop: true,
+            customClass: {
+              confirmButton: 'swal-button'
+            }
+          });
+        }
+      },
+
+      
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+  
+
+
+
+
+  function remove_attachment() {
+    // let fileInput = document.getElementById("activityattachment");
+    // fileInput.value = ""; // Proper way to clear file input
+    // $('#activityattachmentname').html(""); // Clear file name display
+    $('#newcomment').val(""); // Clear file name display
+
+  }
+  
+  function show_attachment_name() {
+    let fileInput = document.getElementById("activityattachment");
+
+    if (fileInput.files.length > 0) {
+      $('#activityattachmentname').html(
+        fileInput.files[0].name +
+        ` <span onclick="remove_attachment()" style="cursor:pointer;">
+          <i class="ki-duotone ki-cross fs-1 text-danger">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+        </span>`
+      );
+    }
+  }
+
+  function get_ticket_counts() {
+    var raiseby = $('#raiseby').val()
+    if(raiseby =='All'){
+      raiseby=''
+    }
+    var subject_search = $('#subject_search').val()
+    var priority_search = $('#priority_search').val()
+    var daterange = $('#kt_daterangepicker_1').val()
+    var status = $('#status').val()
+    var result = convertToDateRange(daterange);
+    var startdate = result.startDate;
+    var enddate = result.endDate;
+
+
+    var en_data = {
+      'raiseby': raiseby,
+      'priority_search': priority_search,
+      'startdate': startdate,
+      'enddate': enddate,
+      'status': status,
+      'subject_search': subject_search,
+
+    }
+    var check_encryptData = encryptData(JSON.stringify(en_data))
+    tok = 'Bearer {{og_token}}'
+
+    $.ajax({
+      type: 'POST',
+      url: backendurl + '/api/ticket/get-ticket-counts-api',
+      headers: {
+        "Authorization": tok,
+        "encrypted": '1'
+      },
+      dataType: "json",
+      data: check_encryptData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+
+        var decrypt_response = decryptData(response)
+        var json_resposne = $.parseJSON(decrypt_response)
+        console.log('get data', json_resposne.data.allticket);
+
+        $('#allticket').html(json_resposne.data.allticket)
+        $('#closedticket').html(json_resposne.data.closedticket)
+        $('#openticket').html(json_resposne.data.openticket)
+        $('#pendingticket').html(json_resposne.data.pendingticket)
+        $('#reopenticket').html(json_resposne.data.reopenticket)
+        $('#unassignedticket').html(json_resposne.data.unassignedticket)
+
+
+
+      },
+
+      
+      error: function (jqXHR, textStatus, errorThrown) {
+        Swal.fire({
+          title: 'Error',
+          text: jqXHR.responseJSON.Message,
+          icon: 'error',
+          position: 'top',
+          backdrop: true,
+          customClass: {
+            confirmButton: 'swal-button'
+          }
+        });
+      }
+    });
+  }
+
+</script>
+{%endblock%}
