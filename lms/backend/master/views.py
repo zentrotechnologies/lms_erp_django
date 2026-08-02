@@ -7,7 +7,7 @@ from helpers.validations import *
 from rest_framework import permissions
 from adminauth.jwt import UserAdminJWTAuthentication
 from candidate.jwt import CandidateJWTAuthentication
-
+from django.db import transaction
 from adminauth.models import *
 from adminauth.serializers import *
 from feedback.models import *
@@ -16,6 +16,1138 @@ from adminauth.views import save_file
 import urllib.parse
 from adminauth.common import convertcreationdate,convertcreationtime
 # Create your views here.
+import json
+from django.utils import timezone
+def phase_one_response(request, response_data):
+    encrypted_header = request.headers.get("encrypted", "")
+
+    if encrypted_header == "1":
+        data_to_serialize = convert_decimals_to_float(response_data)
+        encrypted_data = encrypt_data(
+            json.dumps(data_to_serialize)
+        )
+        return Response(encrypted_data, status=200)
+
+    return Response(response_data, status=200)
+
+
+
+
+
+# ============================================================
+# Program Master APIs
+# ============================================================
+
+
+class AddProgram(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        data = {}
+
+        data['department_id'] = request_data.get('department_id')
+        data['program_code'] = request_data.get('program_code')
+        data['program_name'] = request_data.get('program_name')
+        data['program_type'] = request_data.get('program_type')
+        data['duration_years'] = request_data.get(
+            'duration_years',
+            1
+        )
+        data['total_semesters'] = request_data.get(
+            'total_semesters',
+            1
+        )
+        data['status'] = request_data.get('status', True)
+        data['createdBy'] = str(request.user.id)
+
+        # Department validation
+        if (
+            data['department_id'] is None
+            or data['department_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Department id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        department_obj = Department.objects.filter(
+            id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if department_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active department not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Program code validation
+        if (
+            data['program_code'] is None
+            or data['program_code'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program code is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Program name validation
+        if (
+            data['program_name'] is None
+            or data['program_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Program type validation
+        if (
+            data['program_type'] is None
+            or data['program_type'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program type is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Duration validation
+        try:
+            data['duration_years'] = int(
+                data['duration_years']
+            )
+
+            if data['duration_years'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Duration years must be a positive "
+                    "number."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Total semesters validation
+        try:
+            data['total_semesters'] = int(
+                data['total_semesters']
+            )
+
+            if data['total_semesters'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Total semesters must be a positive "
+                    "number."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['program_code'] = str(
+            data['program_code']
+        ).strip().upper()
+
+        data['program_name'] = str(
+            data['program_name']
+        ).strip()
+
+        data['program_type'] = str(
+            data['program_type']
+        ).strip().upper()
+
+        # Duplicate program code in the same department
+        duplicate_program = Program.objects.filter(
+            department_id=data['department_id'],
+            program_code__iexact=data['program_code'],
+            isActive=True
+        ).first()
+
+        if duplicate_program is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program code already exists for "
+                    "this department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Duplicate program name in the same department
+        duplicate_name = Program.objects.filter(
+            department_id=data['department_id'],
+            program_name__iexact=data['program_name'],
+            isActive=True
+        ).first()
+
+        if duplicate_name is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program name already exists for "
+                    "this department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ProgramSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Program added successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Program not added.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class ProgramList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        program_obj = Program.objects.filter(
+            isActive=True
+        ).order_by('program_name')
+
+        department_id = request.GET.get('department_id')
+        status = request.GET.get('status')
+
+        if (
+            department_id is not None
+            and department_id != ""
+        ):
+            program_obj = program_obj.filter(
+                department_id=department_id
+            )
+
+        if status is not None and status != "":
+            if str(status).lower() in [
+                "true",
+                "1",
+                "active"
+            ]:
+                program_obj = program_obj.filter(
+                    status=True
+                )
+
+            elif str(status).lower() in [
+                "false",
+                "0",
+                "inactive"
+            ]:
+                program_obj = program_obj.filter(
+                    status=False
+                )
+
+        serializer = ProgramSerializer(
+            program_obj,
+            many=True
+        )
+
+        program_data = serializer.data
+
+        for item in program_data:
+            department_obj = Department.objects.filter(
+                id=item['department_id'],
+                isActive=True
+            ).first()
+
+            if department_obj is not None:
+                item['department_name'] = (
+                    department_obj.department_name
+                )
+                item['department_code'] = (
+                    department_obj.department_code
+                )
+            else:
+                item['department_name'] = ""
+                item['department_code'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Program found successfully.",
+            "data": program_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('id')
+
+        if program_id is None or program_id == "":
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Program not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ProgramSerializer(program_obj)
+        program_data = serializer.data
+
+        department_obj = Department.objects.filter(
+            id=program_obj.department_id,
+            isActive=True
+        ).first()
+
+        if department_obj is not None:
+            program_data['department_name'] = (
+                department_obj.department_name
+            )
+            program_data['department_code'] = (
+                department_obj.department_code
+            )
+        else:
+            program_data['department_name'] = ""
+            program_data['department_code'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Program details found successfully.",
+            "data": program_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class UpdateProgram(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('id')
+
+        if program_id is None or program_id == "":
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Program not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data = {}
+
+        data['department_id'] = request_data.get(
+            'department_id',
+            program_obj.department_id
+        )
+        data['program_code'] = request_data.get(
+            'program_code',
+            program_obj.program_code
+        )
+        data['program_name'] = request_data.get(
+            'program_name',
+            program_obj.program_name
+        )
+        data['program_type'] = request_data.get(
+            'program_type',
+            program_obj.program_type
+        )
+        data['duration_years'] = request_data.get(
+            'duration_years',
+            program_obj.duration_years
+        )
+        data['total_semesters'] = request_data.get(
+            'total_semesters',
+            program_obj.total_semesters
+        )
+        data['status'] = request_data.get(
+            'status',
+            program_obj.status
+        )
+        data['updatedBy'] = str(request.user.id)
+        data['updatedAt'] = timezone.now()
+
+        department_obj = Department.objects.filter(
+            id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if department_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active department not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['program_code'] is None
+            or data['program_code'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program code is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['program_name'] is None
+            or data['program_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['program_type'] is None
+            or data['program_type'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program type is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        try:
+            data['duration_years'] = int(
+                data['duration_years']
+            )
+
+            if data['duration_years'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Duration years must be a positive "
+                    "number."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        try:
+            data['total_semesters'] = int(
+                data['total_semesters']
+            )
+
+            if data['total_semesters'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Total semesters must be a positive "
+                    "number."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['program_code'] = str(
+            data['program_code']
+        ).strip().upper()
+
+        data['program_name'] = str(
+            data['program_name']
+        ).strip()
+
+        data['program_type'] = str(
+            data['program_type']
+        ).strip().upper()
+
+        duplicate_code = Program.objects.filter(
+            department_id=data['department_id'],
+            program_code__iexact=data['program_code'],
+            isActive=True
+        ).exclude(id=program_id).first()
+
+        if duplicate_code is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program code already exists for "
+                    "this department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        duplicate_name = Program.objects.filter(
+            department_id=data['department_id'],
+            program_name__iexact=data['program_name'],
+            isActive=True
+        ).exclude(id=program_id).first()
+
+        if duplicate_name is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program name already exists for "
+                    "this department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ProgramSerializer(
+            program_obj,
+            data=data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Program updated successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Program not updated.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class DeleteProgram(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('id')
+
+        if program_id is None or program_id == "":
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Program id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_exists = Semester.objects.filter(
+            program_id=program_obj.id,
+            isActive=True
+        ).exists()
+
+        if semester_exists:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program cannot be deleted because "
+                    "semesters exist."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_exists = ClassGroup.objects.filter(
+            program_id=program_obj.id,
+            isActive=True
+        ).exists()
+
+        if class_group_exists:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program cannot be deleted because "
+                    "class groups exist."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj.isActive = False
+        program_obj.updatedBy = str(request.user.id)
+        program_obj.updatedAt = timezone.now()
+        program_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Program deleted successfully.",
+            "data": {}
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class ChangeProgramStatus(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('id')
+
+        if program_id is None or program_id == "":
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Program id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj.status = not program_obj.status
+        program_obj.updatedBy = str(request.user.id)
+        program_obj.updatedAt = timezone.now()
+        program_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Program status changed successfully.",
+            "data": {
+                "id": program_obj.id,
+                "status": program_obj.status
+            }
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # CATEGORY
@@ -779,10 +1911,33 @@ class AddDepartment(GenericAPIView):
         if error_response:
             return error_response
         
-        data={}
-        data['department_name'] = request_data.get('department_name')
-        data['tags'] = request_data.get('tags')
-        
+        data = {
+                "college_id": request_data.get("college_id"),
+                "department_code": request_data.get(
+                    "department_code"
+                ),
+                "department_name": request_data.get(
+                    "department_name"
+                ),
+                "hod_faculty_id": request_data.get(
+                    "hod_faculty_id"
+                ),
+                "tags": request_data.get("tags"),
+                "status": request_data.get("status", True),
+                "createdBy": str(request.user.id),
+            }
+        college = College.objects.filter(
+            id=data["college_id"],
+            isActive=True,
+            status=True,
+        ).first()
+
+        if college is None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Active college not found.",
+                "data": {},
+            })
         if data['department_name'] is not None and data['department_name'] !="":
             obj = Department.objects.filter(isActive=True)
             ser = DepartmentSerializer(obj,many=True)
@@ -5085,6 +6240,3798 @@ class ChangeEducationalQualificationStatus(GenericAPIView):
             else:
                 return Response(response_,status=200)
  
+
+
+
+class AddCollege(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        college_code = request_data.get("college_code")
+        college_name = request_data.get("college_name")
+
+        admin_name = request_data.get("admin_name")
+        admin_email = request_data.get("admin_email")
+        admin_mobile = request_data.get("admin_mobile")
+        admin_password = request_data.get(
+            "admin_password",
+            "Default@123"
+        )
+
+        if college_code is None or college_code == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College code is required.",
+                "data": {},
+            })
+
+        if college_name is None or college_name == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College name is required.",
+                "data": {},
+            })
+
+        if admin_name is None or admin_name == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College admin name is required.",
+                "data": {},
+            })
+
+        if admin_email is None or admin_email == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College admin email is required.",
+                "data": {},
+            })
+
+        duplicate_college = College.objects.filter(
+            isActive=True,
+            college_code__iexact=str(college_code).strip(),
+        ).first()
+
+        if duplicate_college is not None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College code already exists.",
+                "data": {},
+            })
+
+        duplicate_admin = UserAdmin.objects.filter(
+            email__iexact=str(admin_email).strip(),
+            isActive=True,
+        ).first()
+
+        if duplicate_admin is not None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College admin email already exists.",
+                "data": {},
+            })
+
+        try:
+            with transaction.atomic():
+
+                college_data = {
+                    "college_code": str(
+                        college_code
+                    ).strip().upper(),
+
+                    "college_name": str(
+                        college_name
+                    ).strip(),
+
+                    "university_name": request_data.get(
+                        "university_name"
+                    ),
+
+                    "affiliation_number": request_data.get(
+                        "affiliation_number"
+                    ),
+
+                    "email": request_data.get("email"),
+                    "phone": request_data.get("phone"),
+                    "address": request_data.get("address"),
+
+                    "status": request_data.get(
+                        "status",
+                        True
+                    ),
+
+                    "createdBy": str(request.user.id),
+                }
+
+                college_serializer = CollegeSerializer(
+                    data=college_data
+                )
+
+                if not college_serializer.is_valid():
+                    return phase_one_response(request, {
+                        "n": 0,
+                        "msg": "College not added.",
+                        "data": college_serializer.errors,
+                    })
+
+                college = college_serializer.save()
+
+                admin_user = UserAdmin(
+                    name=str(admin_name).strip(),
+                    email=str(admin_email).strip().lower(),
+                    mobilenumber=admin_mobile,
+
+                    college_id=college.id,
+
+                    user_type=1,
+                    current_status="ACTIVE",
+
+                    status=True,
+                    deactivate=False,
+
+                    source="COLLEGE_ADMIN",
+                    og_code=college.college_code,
+
+                    createdBy=str(request.user.id),
+                )
+
+                admin_user.set_password(admin_password)
+                admin_user.save()
+
+                response_data = {
+                    "college": college_serializer.data,
+
+                    "college_admin": {
+                        "id": str(admin_user.id),
+                        "name": admin_user.name,
+                        "email": admin_user.email,
+                        "mobilenumber": admin_user.mobilenumber,
+                        "college_id": admin_user.college_id,
+                    }
+                }
+
+                return phase_one_response(request, {
+                    "n": 1,
+                    "msg": (
+                        "College and college admin "
+                        "created successfully."
+                    ),
+                    "data": response_data,
+                })
+
+        except Exception as error:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College creation failed.",
+                "data": {
+                    "error": str(error)
+                },
+            })
+class CollegeList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        queryset = College.objects.filter(
+            isActive=True
+        ).order_by("college_name")
+
+        serializer = CollegeSerializer(
+            queryset,
+            many=True,
+        )
+
+        return phase_one_response(request, {
+            "n": 1,
+            "msg": "College list fetched successfully.",
+            "data": serializer.data,
+        })
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        college_id = request_data.get("id")
+
+        if college_id is None or college_id == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College id is required.",
+                "data": {},
+            })
+
+        college = College.objects.filter(
+            id=college_id,
+            isActive=True,
+        ).first()
+
+        if college is None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "College not found.",
+                "data": {},
+            })
+
+        return phase_one_response(request, {
+            "n": 1,
+            "msg": "College details fetched successfully.",
+            "data": CollegeSerializer(college).data,
+        })
+
+class UpdateCollege(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self,request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+        data={}
+        data['id'] = request_data.get('id')
+        if data['id'] is not None:
+            data['college_name'] = request_data.get('college_name')
+            data['tags'] = request_data.get('tags')
+        
+            obj = College.objects.filter(isActive=True).exclude(id=data['id'])
+            ser = CollegeSerializer(obj,many=True)
+            for p in ser.data:
+                if str(p['college_name']).lower() == str(data['college_name']).lower():
+                    response_={
+                        "n": 0,
+                        'msg':'name already exits.',
+                        'data':{}
+                    }
+                    if encryped_header == "1" :
+                        data_to_serialize = convert_decimals_to_float(response_)
+                        encdata = encrypt_data(json.dumps(data_to_serialize))
+                        return Response(encdata,status=200)
+                    else:
+                        return Response(response_,status=200)
+            peobj=College.objects.filter(id=data['id'],isActive=True).first()
+            if peobj is not None:
+                serializer = CollegeSerializer(peobj,data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_={
+                        "n": 1,
+                        'msg':'College Updated Successfully.',
+                        'data':serializer.data
+                    }
+                    if encryped_header == "1" :
+                        data_to_serialize = convert_decimals_to_float(response_)
+                        encdata = encrypt_data(json.dumps(data_to_serialize))
+                        return Response(encdata,status=200)
+                    else:
+                        return Response(response_,status=200)
+                else:
+                    response_={
+                        "n": 1,
+                        'msg':'College Not Updated.',
+                        'data':serializer.errors
+                    }
+                    if encryped_header == "1" :
+                        data_to_serialize = convert_decimals_to_float(response_)
+                        encdata = encrypt_data(json.dumps(data_to_serialize))
+                        return Response(encdata,status=200)
+                    else:
+                        return Response(response_,status=200)
+            else:
+                response_={
+                    "n": 1,
+                    'msg':'id not found.',
+                    'data':{}
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+        else:
+            response_={
+                "n": 1,
+                'msg':'id is required.',
+                'data':{}
+            }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        
+
+class DeleteCollege(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def post(self,request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+        id = request_data.get('id')
+        if id is not None and id !="":
+            cat_obj=College.objects.filter(id=id,isActive=True).first()
+            if cat_obj is not None:
+                cat_obj.isActive = False
+                cat_obj.save()
+                response_={
+                    "n": 1,
+                    'msg':'College Deteled Successfully.',
+                    'data':{}
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+            else:
+                response_={
+                    "n": 0,
+                    'msg':'College id not found.',
+                    'data':{}
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+        else:
+            response_={
+                "n": 0,
+                'msg':'id is required.',
+                'data':{}
+            }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+class ChangeCollegeStatus(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def post(self,request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+        id = request_data.get('id')
+        if id is not None and id !="":
+            cat_obj=College.objects.filter(id=id,isActive=True).first()
+            if cat_obj is not None:
+                if cat_obj.status:
+                    cat_obj.status = False
+                else:
+                    cat_obj.status=True
+
+                cat_obj.save()
+                response_={
+                    "n": 1,
+                    'msg':'College status changed successfully.',
+                    'data':{}
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+            else:
+                response_={
+                    "n": 0,
+                    'msg':'College id not found.',
+                    'data':{}
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+        else:
+            response_={
+                "n": 0,
+                'msg':'id is required.',
+                'data':{}
+            }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+ 
+
+
+
+class AddAcademicYear(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        name = request_data.get("academic_year_name")
+        start_date = request_data.get("start_date")
+        end_date = request_data.get("end_date")
+
+        if name is None or name == "":
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Academic year name is required.",
+                "data": {},
+            })
+
+        duplicate = AcademicYear.objects.filter(
+            isActive=True,
+            academic_year_name__iexact=str(name).strip(),
+        ).first()
+
+        if duplicate is not None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Academic year already exists.",
+                "data": {},
+            })
+
+        if start_date and end_date and start_date > end_date:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Start date cannot be after end date.",
+                "data": {},
+            })
+
+        is_current = request_data.get("is_current", False)
+
+        if is_current:
+            AcademicYear.objects.filter(
+                isActive=True,
+                is_current=True,
+            ).update(is_current=False)
+
+        data = {
+            "academic_year_name": str(name).strip(),
+            "start_date": start_date,
+            "end_date": end_date,
+            "admission_start_date": request_data.get(
+                "admission_start_date"
+            ),
+            "admission_end_date": request_data.get(
+                "admission_end_date"
+            ),
+            "is_current": is_current,
+            "status": request_data.get("status", True),
+            "createdBy": str(request.user.id),
+        }
+
+        serializer = AcademicYearSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return phase_one_response(request, {
+                "n": 1,
+                "msg": "Academic year added successfully.",
+                "data": serializer.data,
+            })
+
+        return phase_one_response(request, {
+            "n": 0,
+            "msg": "Academic year not added.",
+            "data": serializer.errors,
+        })
+
+class SetCurrentAcademicYear(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        academic_year = AcademicYear.objects.filter(
+            id=request_data.get("id"),
+            isActive=True,
+            status=True,
+        ).first()
+
+        if academic_year is None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Active academic year not found.",
+                "data": {},
+            })
+
+        AcademicYear.objects.filter(
+            isActive=True,
+            is_current=True,
+        ).update(is_current=False)
+
+        academic_year.is_current = True
+        academic_year.updatedBy = str(request.user.id)
+        academic_year.updatedAt = timezone.now()
+        academic_year.save()
+
+        return phase_one_response(request, {
+            "n": 1,
+            "msg": "Current academic year updated successfully.",
+            "data": AcademicYearSerializer(
+                academic_year
+            ).data,
+        })
+
+class CurrentAcademicYear(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        academic_year = AcademicYear.objects.filter(
+            isActive=True,
+            status=True,
+            is_current=True,
+        ).first()
+
+        if academic_year is None:
+            return phase_one_response(request, {
+                "n": 0,
+                "msg": "Current academic year is not configured.",
+                "data": {},
+            })
+
+        return phase_one_response(request, {
+            "n": 1,
+            "msg": "Current academic year fetched successfully.",
+            "data": AcademicYearSerializer(
+                academic_year
+            ).data,
+        })
+
+# ============================================================
+# Academic Year List and Details
+# ============================================================
+
+class AcademicYearList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        academic_year_obj = AcademicYear.objects.filter(
+            isActive=True
+        ).order_by(
+            '-is_current',
+            '-start_date',
+            '-id'
+        )
+
+        status = request.GET.get('status')
+        is_current = request.GET.get('is_current')
+
+        if status is not None and status != "":
+            if str(status).lower() in [
+                "true",
+                "1",
+                "active"
+            ]:
+                academic_year_obj = academic_year_obj.filter(
+                    status=True
+                )
+
+            elif str(status).lower() in [
+                "false",
+                "0",
+                "inactive"
+            ]:
+                academic_year_obj = academic_year_obj.filter(
+                    status=False
+                )
+
+        if is_current is not None and is_current != "":
+            if str(is_current).lower() in [
+                "true",
+                "1"
+            ]:
+                academic_year_obj = academic_year_obj.filter(
+                    is_current=True
+                )
+
+            elif str(is_current).lower() in [
+                "false",
+                "0"
+            ]:
+                academic_year_obj = academic_year_obj.filter(
+                    is_current=False
+                )
+
+        serializer = AcademicYearSerializer(
+            academic_year_obj,
+            many=True
+        )
+
+        response_ = {
+            "n": 1,
+            "msg": "Academic year found successfully.",
+            "data": serializer.data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+
+            return Response(
+                encdata,
+                status=200
+            )
+
+        return Response(
+            response_,
+            status=200
+        )
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        academic_year_id = request_data.get('id')
+
+        if (
+            academic_year_id is None
+            or academic_year_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Academic year id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        serializer = AcademicYearSerializer(
+            academic_year_obj
+        )
+
+        response_ = {
+            "n": 1,
+            "msg": (
+                "Academic year details "
+                "found successfully."
+            ),
+            "data": serializer.data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = (
+                convert_decimals_to_float(
+                    response_
+                )
+            )
+
+            encdata = encrypt_data(
+                json.dumps(
+                    data_to_serialize
+                )
+            )
+
+            return Response(
+                encdata,
+                status=200
+            )
+
+        return Response(
+            response_,
+            status=200
+        )
+
+
+# ============================================================
+# Update Academic Year
+# ============================================================
+
+class UpdateAcademicYear(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        academic_year_id = request_data.get('id')
+
+        if (
+            academic_year_id is None
+            or academic_year_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Academic year id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        data = {}
+
+        data['academic_year_name'] = request_data.get(
+            'academic_year_name',
+            academic_year_obj.academic_year_name
+        )
+
+        data['start_date'] = request_data.get(
+            'start_date',
+            academic_year_obj.start_date
+        )
+
+        data['end_date'] = request_data.get(
+            'end_date',
+            academic_year_obj.end_date
+        )
+
+        data['admission_start_date'] = request_data.get(
+            'admission_start_date',
+            academic_year_obj.admission_start_date
+        )
+
+        data['admission_end_date'] = request_data.get(
+            'admission_end_date',
+            academic_year_obj.admission_end_date
+        )
+
+        data['is_current'] = request_data.get(
+            'is_current',
+            academic_year_obj.is_current
+        )
+
+        data['status'] = request_data.get(
+            'status',
+            academic_year_obj.status
+        )
+
+        data['updatedBy'] = str(
+            request.user.id
+        )
+
+        data['updatedAt'] = timezone.now()
+
+        if (
+            data['academic_year_name'] is None
+            or data['academic_year_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Academic year name is "
+                    "required."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        data['academic_year_name'] = str(
+            data['academic_year_name']
+        ).strip()
+
+        duplicate_obj = AcademicYear.objects.filter(
+            academic_year_name__iexact=(
+                data['academic_year_name']
+            ),
+            isActive=True
+        ).exclude(
+            id=academic_year_id
+        ).first()
+
+        if duplicate_obj is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Academic year already "
+                    "exists."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        if (
+            data['start_date']
+            and data['end_date']
+            and str(data['start_date'])
+            > str(data['end_date'])
+        ):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Start date cannot be "
+                    "after end date."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        if (
+            data['admission_start_date']
+            and data['admission_end_date']
+            and str(data['admission_start_date'])
+            > str(data['admission_end_date'])
+        ):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Admission start date cannot "
+                    "be after admission end date."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        if data['is_current']:
+            AcademicYear.objects.filter(
+                isActive=True,
+                is_current=True
+            ).exclude(
+                id=academic_year_id
+            ).update(
+                is_current=False
+            )
+
+        serializer = AcademicYearSerializer(
+            academic_year_obj,
+            data=data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": (
+                    "Academic year updated "
+                    "successfully."
+                ),
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        response_ = {
+            "n": 0,
+            "msg": "Academic year not updated.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = (
+                convert_decimals_to_float(
+                    response_
+                )
+            )
+
+            encdata = encrypt_data(
+                json.dumps(
+                    data_to_serialize
+                )
+            )
+
+            return Response(
+                encdata,
+                status=200
+            )
+
+        return Response(
+            response_,
+            status=200
+        )
+
+
+# ============================================================
+# Delete Academic Year
+# ============================================================
+
+class DeleteAcademicYear(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        academic_year_id = request_data.get('id')
+
+        if (
+            academic_year_id is None
+            or academic_year_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Academic year id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        if academic_year_obj.is_current:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Current academic year "
+                    "cannot be deleted."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        class_group_exists = ClassGroup.objects.filter(
+            academic_year_id=academic_year_obj.id,
+            isActive=True
+        ).exists()
+
+        if class_group_exists:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Academic year cannot be "
+                    "deleted because class groups "
+                    "exist."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj.isActive = False
+        academic_year_obj.updatedBy = str(
+            request.user.id
+        )
+        academic_year_obj.updatedAt = timezone.now()
+        academic_year_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": (
+                "Academic year deleted "
+                "successfully."
+            ),
+            "data": {}
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = (
+                convert_decimals_to_float(
+                    response_
+                )
+            )
+
+            encdata = encrypt_data(
+                json.dumps(
+                    data_to_serialize
+                )
+            )
+
+            return Response(
+                encdata,
+                status=200
+            )
+
+        return Response(
+            response_,
+            status=200
+        )
+
+
+# ============================================================
+# Change Academic Year Status
+# ============================================================
+
+class ChangeAcademicYearStatus(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        academic_year_id = request_data.get('id')
+
+        if (
+            academic_year_id is None
+            or academic_year_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Academic year id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        if (
+            academic_year_obj.is_current
+            and academic_year_obj.status
+        ):
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Current academic year "
+                    "cannot be deactivated."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = (
+                    convert_decimals_to_float(
+                        response_
+                    )
+                )
+
+                encdata = encrypt_data(
+                    json.dumps(
+                        data_to_serialize
+                    )
+                )
+
+                return Response(
+                    encdata,
+                    status=200
+                )
+
+            return Response(
+                response_,
+                status=200
+            )
+
+        academic_year_obj.status = (
+            not academic_year_obj.status
+        )
+
+        academic_year_obj.updatedBy = str(
+            request.user.id
+        )
+
+        academic_year_obj.updatedAt = (
+            timezone.now()
+        )
+
+        academic_year_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": (
+                "Academic year status changed "
+                "successfully."
+            ),
+            "data": {
+                "id": academic_year_obj.id,
+                "status": academic_year_obj.status,
+                "is_current": (
+                    academic_year_obj.is_current
+                )
+            }
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = (
+                convert_decimals_to_float(
+                    response_
+                )
+            )
+
+            encdata = encrypt_data(
+                json.dumps(
+                    data_to_serialize
+                )
+            )
+
+            return Response(
+                encdata,
+                status=200
+            )
+
+        return Response(
+            response_,
+            status=200
+        )
+
+    
+
+
+
+# ============================================================
+# Semester Master APIs
+# URL spelling retained as "semister" for existing frontend use.
+# Model name remains Semester.
+# ============================================================
+
+
+class AddSemister(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        data = {}
+
+        data['program_id'] = request_data.get('program_id')
+        data['semester_number'] = request_data.get('semester_number')
+        data['semester_name'] = request_data.get('semester_name')
+        data['status'] = request_data.get('status', True)
+        data['createdBy'] = str(request.user.id)
+
+        # Program id validation
+        if (
+            data['program_id'] is None
+            or data['program_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=data['program_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active program not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Semester number validation
+        if (
+            data['semester_number'] is None
+            or data['semester_number'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester number is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        try:
+            data['semester_number'] = int(
+                data['semester_number']
+            )
+
+            if data['semester_number'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": "Semester number must be a positive number.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Semester cannot exceed total semesters configured for program
+        if data['semester_number'] > program_obj.total_semesters:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester number cannot be greater than "
+                    f"{program_obj.total_semesters} for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Semester name validation
+        if (
+            data['semester_name'] is None
+            or data['semester_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['semester_name'] = str(
+            data['semester_name']
+        ).strip()
+
+        # Duplicate semester number for same program
+        duplicate_number = Semester.objects.filter(
+            program_id=data['program_id'],
+            semester_number=data['semester_number'],
+            isActive=True
+        ).first()
+
+        if duplicate_number is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester number already exists "
+                    "for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Duplicate semester name for same program
+        duplicate_name = Semester.objects.filter(
+            program_id=data['program_id'],
+            semester_name__iexact=data['semester_name'],
+            isActive=True
+        ).first()
+
+        if duplicate_name is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester name already exists "
+                    "for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = SemesterSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Semester added successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Semester not added.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class SemisterList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        semester_obj = Semester.objects.filter(
+            isActive=True
+        ).order_by(
+            'program_id',
+            'semester_number'
+        )
+
+        program_id = request.GET.get('program_id')
+        status = request.GET.get('status')
+
+        if (
+            program_id is not None
+            and program_id != ""
+        ):
+            semester_obj = semester_obj.filter(
+                program_id=program_id
+            )
+
+        if status is not None and status != "":
+            if str(status).lower() in [
+                "true",
+                "1",
+                "active"
+            ]:
+                semester_obj = semester_obj.filter(
+                    status=True
+                )
+
+            elif str(status).lower() in [
+                "false",
+                "0",
+                "inactive"
+            ]:
+                semester_obj = semester_obj.filter(
+                    status=False
+                )
+
+        serializer = SemesterSerializer(
+            semester_obj,
+            many=True
+        )
+
+        semester_data = serializer.data
+
+        for item in semester_data:
+            program_obj = Program.objects.filter(
+                id=item['program_id'],
+                isActive=True
+            ).first()
+
+            if program_obj is not None:
+                item['program_name'] = (
+                    program_obj.program_name
+                )
+                item['program_code'] = (
+                    program_obj.program_code
+                )
+
+                department_obj = Department.objects.filter(
+                    id=program_obj.department_id,
+                    isActive=True
+                ).first()
+
+                if department_obj is not None:
+                    item['department_id'] = (
+                        department_obj.id
+                    )
+                    item['department_name'] = (
+                        department_obj.department_name
+                    )
+                else:
+                    item['department_id'] = ""
+                    item['department_name'] = ""
+            else:
+                item['program_name'] = ""
+                item['program_code'] = ""
+                item['department_id'] = ""
+                item['department_name'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester found successfully.",
+            "data": semester_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        semester_id = request_data.get('id')
+
+        if (
+            semester_id is None
+            or semester_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Semester not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = SemesterSerializer(
+            semester_obj
+        )
+
+        semester_data = serializer.data
+
+        program_obj = Program.objects.filter(
+            id=semester_obj.program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is not None:
+            semester_data['program_name'] = (
+                program_obj.program_name
+            )
+            semester_data['program_code'] = (
+                program_obj.program_code
+            )
+
+            department_obj = Department.objects.filter(
+                id=program_obj.department_id,
+                isActive=True
+            ).first()
+
+            if department_obj is not None:
+                semester_data['department_id'] = (
+                    department_obj.id
+                )
+                semester_data['department_name'] = (
+                    department_obj.department_name
+                )
+            else:
+                semester_data['department_id'] = ""
+                semester_data['department_name'] = ""
+        else:
+            semester_data['program_name'] = ""
+            semester_data['program_code'] = ""
+            semester_data['department_id'] = ""
+            semester_data['department_name'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester details found successfully.",
+            "data": semester_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class UpdateSemister(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        semester_id = request_data.get('id')
+
+        if (
+            semester_id is None
+            or semester_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Semester not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data = {}
+
+        data['program_id'] = request_data.get(
+            'program_id',
+            semester_obj.program_id
+        )
+        data['semester_number'] = request_data.get(
+            'semester_number',
+            semester_obj.semester_number
+        )
+        data['semester_name'] = request_data.get(
+            'semester_name',
+            semester_obj.semester_name
+        )
+        data['status'] = request_data.get(
+            'status',
+            semester_obj.status
+        )
+        data['updatedBy'] = str(request.user.id)
+        data['updatedAt'] = timezone.now()
+
+        program_obj = Program.objects.filter(
+            id=data['program_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active program not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['semester_number'] is None
+            or data['semester_number'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester number is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        try:
+            data['semester_number'] = int(
+                data['semester_number']
+            )
+
+            if data['semester_number'] <= 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": "Semester number must be a positive number.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if data['semester_number'] > program_obj.total_semesters:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester number cannot be greater than "
+                    f"{program_obj.total_semesters} for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['semester_name'] is None
+            or data['semester_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['semester_name'] = str(
+            data['semester_name']
+        ).strip()
+
+        duplicate_number = Semester.objects.filter(
+            program_id=data['program_id'],
+            semester_number=data['semester_number'],
+            isActive=True
+        ).exclude(
+            id=semester_id
+        ).first()
+
+        if duplicate_number is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester number already exists "
+                    "for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        duplicate_name = Semester.objects.filter(
+            program_id=data['program_id'],
+            semester_name__iexact=data['semester_name'],
+            isActive=True
+        ).exclude(
+            id=semester_id
+        ).first()
+
+        if duplicate_name is not None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester name already exists "
+                    "for this program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = SemesterSerializer(
+            semester_obj,
+            data=data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Semester updated successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Semester not updated.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class DeleteSemister(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        semester_id = request_data.get('id')
+
+        if (
+            semester_id is None
+            or semester_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Semester id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_exists = ClassGroup.objects.filter(
+            semester_id=semester_obj.id,
+            isActive=True
+        ).exists()
+
+        if class_group_exists:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester cannot be deleted because "
+                    "class groups exist."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj.isActive = False
+        semester_obj.updatedBy = str(request.user.id)
+        semester_obj.updatedAt = timezone.now()
+        semester_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester deleted successfully.",
+            "data": {}
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class ChangeSemisterStatus(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        semester_id = request_data.get('id')
+
+        if (
+            semester_id is None
+            or semester_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Semester id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj.status = not semester_obj.status
+        semester_obj.updatedBy = str(request.user.id)
+        semester_obj.updatedAt = timezone.now()
+        semester_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester status changed successfully.",
+            "data": {
+                "id": semester_obj.id,
+                "status": semester_obj.status
+            }
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+
+
+
+# ============================================================
+# Class Group Master APIs
+# ============================================================
+
+
+class AddClassGroup(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+
+        if error_response:
+            return error_response
+
+        data = {}
+
+        data['academic_year_id'] = request_data.get(
+            'academic_year_id'
+        )
+        data['department_id'] = request_data.get(
+            'department_id'
+        )
+        data['program_id'] = request_data.get(
+            'program_id'
+        )
+        data['semester_id'] = request_data.get(
+            'semester_id'
+        )
+        data['class_name'] = request_data.get(
+            'class_name'
+        )
+        data['division'] = request_data.get(
+            'division'
+        )
+        data['batch_name'] = request_data.get(
+            'batch_name'
+        )
+        data['class_teacher_id'] = request_data.get(
+            'class_teacher_id'
+        )
+        data['capacity'] = request_data.get(
+            'capacity',
+            0
+        )
+        data['status'] = request_data.get(
+            'status',
+            True
+        )
+        data['createdBy'] = str(request.user.id)
+
+        # Academic year validation
+        if (
+            data['academic_year_id'] is None
+            or data['academic_year_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Academic year id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=data['academic_year_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Department validation
+        if (
+            data['department_id'] is None
+            or data['department_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Department id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        department_obj = Department.objects.filter(
+            id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if department_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active department not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Program validation
+        if (
+            data['program_id'] is None
+            or data['program_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Program id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=data['program_id'],
+            department_id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program does not belong to the "
+                    "selected department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Semester validation
+        if (
+            data['semester_id'] is None
+            or data['semester_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Semester id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=data['semester_id'],
+            program_id=data['program_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester does not belong to the "
+                    "selected program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        # Class name validation
+        if (
+            data['class_name'] is None
+            or data['class_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['class_name'] = str(
+            data['class_name']
+        ).strip()
+
+        if (
+            data['division'] is not None
+            and data['division'] != ""
+        ):
+            data['division'] = str(
+                data['division']
+            ).strip().upper()
+        else:
+            data['division'] = None
+
+        if (
+            data['batch_name'] is not None
+            and data['batch_name'] != ""
+        ):
+            data['batch_name'] = str(
+                data['batch_name']
+            ).strip()
+        else:
+            data['batch_name'] = None
+
+        # Capacity validation
+        try:
+            data['capacity'] = int(data['capacity'])
+
+            if data['capacity'] < 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": "Capacity must be zero or a positive number.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        duplicate_query = ClassGroup.objects.filter(
+            academic_year_id=data['academic_year_id'],
+            department_id=data['department_id'],
+            program_id=data['program_id'],
+            semester_id=data['semester_id'],
+            class_name__iexact=data['class_name'],
+            isActive=True
+        )
+
+        if data['division'] is None:
+            duplicate_query = duplicate_query.filter(
+                division__isnull=True
+            )
+        else:
+            duplicate_query = duplicate_query.filter(
+                division__iexact=data['division']
+            )
+
+        duplicate_obj = duplicate_query.first()
+
+        if duplicate_obj is not None:
+            response_ = {
+                "n": 0,
+                "msg": "Class group already exists.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ClassGroupSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Class group added successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Class group not added.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class ClassGroupList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        class_group_obj = ClassGroup.objects.filter(
+            isActive=True
+        ).order_by(
+            'academic_year_id',
+            'class_name',
+            'division'
+        )
+
+        academic_year_id = request.GET.get(
+            'academic_year_id'
+        )
+        department_id = request.GET.get(
+            'department_id'
+        )
+        program_id = request.GET.get(
+            'program_id'
+        )
+        semester_id = request.GET.get(
+            'semester_id'
+        )
+        status = request.GET.get('status')
+
+        if (
+            academic_year_id is not None
+            and academic_year_id != ""
+        ):
+            class_group_obj = class_group_obj.filter(
+                academic_year_id=academic_year_id
+            )
+
+        if (
+            department_id is not None
+            and department_id != ""
+        ):
+            class_group_obj = class_group_obj.filter(
+                department_id=department_id
+            )
+
+        if (
+            program_id is not None
+            and program_id != ""
+        ):
+            class_group_obj = class_group_obj.filter(
+                program_id=program_id
+            )
+
+        if (
+            semester_id is not None
+            and semester_id != ""
+        ):
+            class_group_obj = class_group_obj.filter(
+                semester_id=semester_id
+            )
+
+        if status is not None and status != "":
+            if str(status).lower() in [
+                "true",
+                "1",
+                "active"
+            ]:
+                class_group_obj = class_group_obj.filter(
+                    status=True
+                )
+
+            elif str(status).lower() in [
+                "false",
+                "0",
+                "inactive"
+            ]:
+                class_group_obj = class_group_obj.filter(
+                    status=False
+                )
+
+        serializer = ClassGroupSerializer(
+            class_group_obj,
+            many=True
+        )
+
+        class_group_data = serializer.data
+
+        for item in class_group_data:
+            academic_year_obj = AcademicYear.objects.filter(
+                id=item['academic_year_id'],
+                isActive=True
+            ).first()
+
+            if academic_year_obj is not None:
+                item['academic_year_name'] = (
+                    academic_year_obj.academic_year_name
+                )
+            else:
+                item['academic_year_name'] = ""
+
+            department_obj = Department.objects.filter(
+                id=item['department_id'],
+                isActive=True
+            ).first()
+
+            if department_obj is not None:
+                item['department_name'] = (
+                    department_obj.department_name
+                )
+                item['department_code'] = (
+                    department_obj.department_code
+                )
+            else:
+                item['department_name'] = ""
+                item['department_code'] = ""
+
+            program_obj = Program.objects.filter(
+                id=item['program_id'],
+                isActive=True
+            ).first()
+
+            if program_obj is not None:
+                item['program_name'] = (
+                    program_obj.program_name
+                )
+                item['program_code'] = (
+                    program_obj.program_code
+                )
+            else:
+                item['program_name'] = ""
+                item['program_code'] = ""
+
+            semester_obj = Semester.objects.filter(
+                id=item['semester_id'],
+                isActive=True
+            ).first()
+
+            if semester_obj is not None:
+                item['semester_name'] = (
+                    semester_obj.semester_name
+                )
+                item['semester_number'] = (
+                    semester_obj.semester_number
+                )
+            else:
+                item['semester_name'] = ""
+                item['semester_number'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Class group found successfully.",
+            "data": class_group_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        class_group_id = request_data.get('id')
+
+        if (
+            class_group_id is None
+            or class_group_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class group id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj = ClassGroup.objects.filter(
+            id=class_group_id,
+            isActive=True
+        ).first()
+
+        if class_group_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Class group not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ClassGroupSerializer(
+            class_group_obj
+        )
+
+        class_group_data = serializer.data
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=class_group_obj.academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is not None:
+            class_group_data['academic_year_name'] = (
+                academic_year_obj.academic_year_name
+            )
+        else:
+            class_group_data['academic_year_name'] = ""
+
+        department_obj = Department.objects.filter(
+            id=class_group_obj.department_id,
+            isActive=True
+        ).first()
+
+        if department_obj is not None:
+            class_group_data['department_name'] = (
+                department_obj.department_name
+            )
+            class_group_data['department_code'] = (
+                department_obj.department_code
+            )
+        else:
+            class_group_data['department_name'] = ""
+            class_group_data['department_code'] = ""
+
+        program_obj = Program.objects.filter(
+            id=class_group_obj.program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is not None:
+            class_group_data['program_name'] = (
+                program_obj.program_name
+            )
+            class_group_data['program_code'] = (
+                program_obj.program_code
+            )
+        else:
+            class_group_data['program_name'] = ""
+            class_group_data['program_code'] = ""
+
+        semester_obj = Semester.objects.filter(
+            id=class_group_obj.semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is not None:
+            class_group_data['semester_name'] = (
+                semester_obj.semester_name
+            )
+            class_group_data['semester_number'] = (
+                semester_obj.semester_number
+            )
+        else:
+            class_group_data['semester_name'] = ""
+            class_group_data['semester_number'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Class group details found successfully.",
+            "data": class_group_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class UpdateClassGroup(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        class_group_id = request_data.get('id')
+
+        if (
+            class_group_id is None
+            or class_group_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class group id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj = ClassGroup.objects.filter(
+            id=class_group_id,
+            isActive=True
+        ).first()
+
+        if class_group_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Class group not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data = {}
+
+        data['academic_year_id'] = request_data.get(
+            'academic_year_id',
+            class_group_obj.academic_year_id
+        )
+        data['department_id'] = request_data.get(
+            'department_id',
+            class_group_obj.department_id
+        )
+        data['program_id'] = request_data.get(
+            'program_id',
+            class_group_obj.program_id
+        )
+        data['semester_id'] = request_data.get(
+            'semester_id',
+            class_group_obj.semester_id
+        )
+        data['class_name'] = request_data.get(
+            'class_name',
+            class_group_obj.class_name
+        )
+        data['division'] = request_data.get(
+            'division',
+            class_group_obj.division
+        )
+        data['batch_name'] = request_data.get(
+            'batch_name',
+            class_group_obj.batch_name
+        )
+        data['class_teacher_id'] = request_data.get(
+            'class_teacher_id',
+            class_group_obj.class_teacher_id
+        )
+        data['capacity'] = request_data.get(
+            'capacity',
+            class_group_obj.capacity
+        )
+        data['status'] = request_data.get(
+            'status',
+            class_group_obj.status
+        )
+        data['updatedBy'] = str(request.user.id)
+        data['updatedAt'] = timezone.now()
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=data['academic_year_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if academic_year_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active academic year not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        department_obj = Department.objects.filter(
+            id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if department_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Active department not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        program_obj = Program.objects.filter(
+            id=data['program_id'],
+            department_id=data['department_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if program_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Program does not belong to the "
+                    "selected department."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            id=data['semester_id'],
+            program_id=data['program_id'],
+            isActive=True,
+            status=True
+        ).first()
+
+        if semester_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": (
+                    "Semester does not belong to the "
+                    "selected program."
+                ),
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        if (
+            data['class_name'] is None
+            or data['class_name'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class name is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        data['class_name'] = str(
+            data['class_name']
+        ).strip()
+
+        if (
+            data['division'] is not None
+            and data['division'] != ""
+        ):
+            data['division'] = str(
+                data['division']
+            ).strip().upper()
+        else:
+            data['division'] = None
+
+        if (
+            data['batch_name'] is not None
+            and data['batch_name'] != ""
+        ):
+            data['batch_name'] = str(
+                data['batch_name']
+            ).strip()
+        else:
+            data['batch_name'] = None
+
+        try:
+            data['capacity'] = int(data['capacity'])
+
+            if data['capacity'] < 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            response_ = {
+                "n": 0,
+                "msg": "Capacity must be zero or a positive number.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        duplicate_query = ClassGroup.objects.filter(
+            academic_year_id=data['academic_year_id'],
+            department_id=data['department_id'],
+            program_id=data['program_id'],
+            semester_id=data['semester_id'],
+            class_name__iexact=data['class_name'],
+            isActive=True
+        ).exclude(id=class_group_id)
+
+        if data['division'] is None:
+            duplicate_query = duplicate_query.filter(
+                division__isnull=True
+            )
+        else:
+            duplicate_query = duplicate_query.filter(
+                division__iexact=data['division']
+            )
+
+        if duplicate_query.exists():
+            response_ = {
+                "n": 0,
+                "msg": "Class group already exists.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        serializer = ClassGroupSerializer(
+            class_group_obj,
+            data=data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response_ = {
+                "n": 1,
+                "msg": "Class group updated successfully.",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        response_ = {
+            "n": 0,
+            "msg": "Class group not updated.",
+            "data": serializer.errors
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class DeleteClassGroup(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        class_group_id = request_data.get('id')
+
+        if (
+            class_group_id is None
+            or class_group_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class group id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj = ClassGroup.objects.filter(
+            id=class_group_id,
+            isActive=True
+        ).first()
+
+        if class_group_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Class group id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj.isActive = False
+        class_group_obj.updatedBy = str(request.user.id)
+        class_group_obj.updatedAt = timezone.now()
+        class_group_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Class group deleted successfully.",
+            "data": {}
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class ChangeClassGroupStatus(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        class_group_id = request_data.get('id')
+
+        if (
+            class_group_id is None
+            or class_group_id == ""
+        ):
+            response_ = {
+                "n": 0,
+                "msg": "Class group id is required.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj = ClassGroup.objects.filter(
+            id=class_group_id,
+            isActive=True
+        ).first()
+
+        if class_group_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Class group id not found.",
+                "data": {}
+            }
+
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(
+                    response_
+                )
+                encdata = encrypt_data(
+                    json.dumps(data_to_serialize)
+                )
+                return Response(encdata, status=200)
+
+            return Response(response_, status=200)
+
+        class_group_obj.status = not class_group_obj.status
+        class_group_obj.updatedBy = str(request.user.id)
+        class_group_obj.updatedAt = timezone.now()
+        class_group_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Class group status changed successfully.",
+            "data": {
+                "id": class_group_obj.id,
+                "status": class_group_obj.status
+            }
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+
+
 
 
 

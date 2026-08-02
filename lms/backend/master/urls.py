@@ -2,6 +2,44 @@ from . import views
 from django.urls import include, path
 
 urlpatterns = [
+
+
+    path('add-program',views.AddProgram.as_view(), name='post'),
+    path('program-list',views.ProgramList.as_view(), name='post'),
+    path('update-program',views.UpdateProgram.as_view(), name='post'),
+    path('delete-program',views.DeleteProgram.as_view(), name='post'),
+    path('change-program-status',views.ChangeProgramStatus.as_view(), name='post'),
+
+    path('add-college',views.AddCollege.as_view(), name='post'),
+    path('college-list',views.CollegeList.as_view(), name='post'),
+    path('update-college',views.UpdateCollege.as_view(), name='post'),
+    path('delete-college',views.DeleteCollege.as_view(), name='post'),
+    path('change-college-status',views.ChangeCollegeStatus.as_view(), name='post'),
+
+    path('add-academicyear',views.AddAcademicYear.as_view(), name='post'),
+    path('academicyear-list',views.AcademicYearList.as_view(), name='post'),
+    path('update-academicyear',views.UpdateAcademicYear.as_view(), name='post'),
+    path('delete-academicyear',views.DeleteAcademicYear.as_view(), name='post'),
+    path('change-academicyear-status',views.ChangeAcademicYearStatus.as_view(), name='post'),
+
+    path('set-academicyear-status',views.SetCurrentAcademicYear.as_view(), name='post'),
+    path('current-academicyear-status',views.CurrentAcademicYear.as_view(), name='post'),
+
+
+
+    path('add-semister',views.AddSemister.as_view(), name='post'),
+    path('semister-list',views.SemisterList.as_view(), name='post'),
+    path('update-semister',views.UpdateSemister.as_view(), name='post'),
+    path('delete-semister',views.DeleteSemister.as_view(), name='post'),
+    path('change-semister-status',views.ChangeSemisterStatus.as_view(), name='post'),
+
+    path('add-classgroup',views.AddClassGroup.as_view(), name='post'),
+    path('classgroup-list',views.ClassGroupList.as_view(), name='post'),
+    path('update-classgroup',views.UpdateClassGroup.as_view(), name='post'),
+    path('delete-classgroup',views.DeleteClassGroup.as_view(), name='post'),
+    path('change-classgroup-status',views.ChangeClassGroupStatus.as_view(), name='post'),
+    #___________________________________________________________________________________________________________________
+
     path('add-category',views.AddCategory.as_view(), name='post'),
     path('category-list',views.CategoryList.as_view(), name='post'),
     path('subcat-category-list',views.SubcatCategoryList.as_view(), name='post'),
@@ -117,6 +155,7 @@ urlpatterns = [
 
 
    
+
 
 
 

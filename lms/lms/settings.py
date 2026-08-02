@@ -62,15 +62,6 @@ INSTALLED_APPS = [
     'rules',
     'reports',
 
-    #frontend apps
-    'organisation',
-    'masters_ui',
-    'candidate_ui',
-    'course_ui',
-    'usermanagement_ui',
-    'ticket_ui',
-    'rules_ui',
-    'reports_ui',
 ]
 
 MIDDLEWARE = [

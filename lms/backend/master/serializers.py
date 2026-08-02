@@ -119,6 +119,41 @@ class  CustomBranchSerializer(serializers.ModelSerializer):
 
 
 
+class CollegeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = College
+        fields = "__all__"
+
+
+class AcademicYearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicYear
+        fields = "__all__"
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = "__all__"
+
+
+class ProgramSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Program
+        fields = "__all__"
+
+
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Semester
+        fields = "__all__"
+
+
+class ClassGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassGroup
+        fields = "__all__"
+
 
 
 

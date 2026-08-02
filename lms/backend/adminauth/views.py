@@ -19,6 +19,8 @@ from usermanagement.models import *
 from usermanagement.serializers import *
 from course.models import *
 from django.db.models import Q
+from candidate.models import *
+from candidate.serializers import *
 
 from course.serializers import *
 def sanitize_filename(filename):
@@ -33,6 +35,38 @@ def save_file(folder_path,uploaded_file,request):
     relative_file_path = os.path.relpath(file_path, settings.MEDIA_ROOT)
     file_url=request.build_absolute_uri(settings.MEDIA_URL + relative_file_path.replace("\\", "/"))
     return file_url
+
+
+def apply_college_faculty_fields(data, request_data, default_sub_role=None):
+    college_fields = [
+        "staff_id",
+        "faculty_sub_role",
+        "department_id",
+        "work_group",
+        "work_category",
+        "employment_type",
+        "official_email",
+        "current_status",
+        "pf_no",
+        "employee_code",
+    ]
+    for field in college_fields:
+        if field in request_data:
+            data[field] = request_data.get(field)
+
+    if default_sub_role and not data.get("faculty_sub_role"):
+        data["faculty_sub_role"] = default_sub_role
+
+    if data.get("faculty_sub_role") is not None and data.get("faculty_sub_role") != "":
+        data["faculty_sub_role"] = str(data["faculty_sub_role"]).upper()
+
+    if request_data.get("staffid") is not None and not data.get("staff_id"):
+        data["staff_id"] = request_data.get("staffid")
+
+    if request_data.get("department") is not None and not data.get("department_id"):
+        data["department_id"] = request_data.get("department")
+
+    return data
 
 #super admin
 
@@ -95,13 +129,27 @@ class UserLogin(GenericAPIView):
         if error_response:
             return error_response
         
-        email = request_data.get('email')
+        username = request_data.get('username')
         password = request_data.get('password')
-        
-        if email is None or email == "":
+        role = request_data.get('role')
+        if role is None or role == "":
             response_={
                 "n": 0,                    
-                "msg": 'Email is required',
+                "msg": 'Role is required',
+                "data":[],                  
+            }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+            
+        if username is None or username == "":
+            response_={
+                "n": 0,                    
+                "msg": 'Username is required',
                 "data":[],                  
             }
             if encryped_header == "1" :
@@ -124,7 +172,26 @@ class UserLogin(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-        user_object = UserAdmin.objects.filter(isActive=True,email=email).first()
+
+        role_obj=MainRoles.objects.filter(id=role).first()
+        if role_obj is None:
+            response_={
+                "n": 0,                    
+                "msg": 'Role is not valid',
+                "data":[],                  
+            }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        if role_obj.id == 6:
+            user_object=Candidate.objects.filter(Q(isActive=True,username=username)|Q(isActive=True,email=username))
+        else:
+            user_object = UserAdmin.objects.filter(Q(isActive=True,username=username)|Q(isActive=True,email=username)).first()
         if user_object is None:
 
             response_={
@@ -139,15 +206,15 @@ class UserLogin(GenericAPIView):
             else:
                 return Response(response_,status=200)
         else:
-
-            user_ser = UserAdminSerializer(user_object)
+            if role_obj.id == 6:
+                user_ser = CandidateSerializer(user_object)
+            else:
+                user_ser = UserAdminSerializer(user_object)
             check_user_password = check_password(password,user_object.password)
             if check_user_password == True:
                 role = user_object.role
                 deactive_user_token = UserAdminToken.objects.filter(user_id=user_object.id).update(isActive=False)           
                 user_token= UserAdminToken.objects.create(user_id=user_object.id,authToken=user_object.token)
-                # if user_object.user_type == 3:
-                #     usertype_filter = 3
                 menuobj = MenuDetails.objects.filter(isActive=True,user_type__icontains = str(user_object.user_type)).order_by('sort_order')
                 menu_serializer = MenuDetailsSerializer(menuobj, many=True)
                 
@@ -354,7 +421,6 @@ class AddOrganisation(GenericAPIView):
                 return Response(response_,status=200)
             
 class AddTrainingCenter(GenericAPIView):
-    
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -800,354 +866,6 @@ class DeleteDocument(GenericAPIView):
             else:
                 return Response(response_,status=200)
      
-
-class AddSubTrainingCenter(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-        data = {}
-
-        userid = request.user.id
-        parent_training_center = request_data.get('parent_training_center')
-        if parent_training_center is None or parent_training_center =='':
-            adminobj = UserAdmin.objects.filter(id=userid).first()
-            if adminobj is not None:
-                if adminobj.member_of is not None and adminobj.member_of !='':
-                    data['parent_training_center'] = str(adminobj.member_of)
-                else:
-                    data['parent_training_center'] = str(adminobj.id)
-        else:
-            data['parent_training_center'] = parent_training_center
-            
-
-        data['og_code'] = str(request.user.og_code)
-        data['name'] = request_data.get('name')
-        data['mobilenumber'] = request_data.get('mobilenumber')
-
-        if request_data.get('password') is not None and request_data.get('password') != "":
-            data['password'] = make_password(request_data.get('password'))
-        else:
-            data['password'] =  make_password('Default@123')
-
-
-
-        data['email'] = str(request_data.get('email')).lower()
-
-        data['source'] = request_data.get('source')
-        data['user_type'] = 4
-        
-        data['accreditation_number'] = request_data.get('accreditation_number')
-        data['no_of_classroom'] = request_data.get('no_of_classroom') or 0
-        data['address_line_one'] = request_data.get('address_line_one')
-        data['address_line_two'] = request_data.get('address_line_two')
-        data['country'] = request_data.get('country')
-        data['state'] = request_data.get('state')
-        data['city'] = request_data.get('city')
-        data['pincode'] = request_data.get('pincode')
-        data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None
- 
-        data['og_code'] = str(request.user.og_code)
-
-        data['createdBy'] = str(request.user.id)
-
-        email_object = UserAdmin.objects.filter(isActive=True,email=data['email']).first()
-        number_object = UserAdmin.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).first()
-        if email_object is not None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Email already exists',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        if number_object is not None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Mobile number already exists',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        
-        serializer = UserAdminSerializer(data=data)
-        menu_user_type = "4"
-        if serializer.is_valid():
-            serializer.save()
-            courses=request_data.get('courses')
-            if courses is not None and courses != '':
-                for course in courses:
-                    already_exist_obj=TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],isActive=True).first()
-                    if already_exist_obj is None:
-                        TrainingCenterCourses.objects.create(course_id=course,training_center_id=serializer.data['id'],isActive=True)
-
-            role_obj=UsereRole.objects.create(name='Admin',member_type=4,og_code=data['og_code'],member_of=serializer.data['id'])
-            data['role_id']=role_obj.id
-
-            user_bj=UserAdmin.objects.filter(id=serializer.data['id']).update(role=role_obj.id)
-            serobj = MenuDetails.objects.filter(isActive=True,user_type__icontains = menu_user_type).order_by('sort_order')
-          
-            serializer2 = MenuDetailsSerializer(serobj,many=True)
-            for i in serializer2.data:
-                Permissions.objects.create(
-                        role_id =  data['role_id'],
-                        menu_id = i['id']
-                    )
-
-
-
-
-
-
-
-
-
-
-            authority_list = request_data.get('authority_list')
-
-            if authority_list != []:
-                for i in authority_list:
-                    Authority.objects.create(
-                        createdBy = str(request.user.id),
-                        user_id =  serializer.data['id'],
-                        authority_name = i['authority_name'],
-                        authority_number = i['authority_number'],
-                        authority_email = i['authority_email'],
-                        authority_designation = i['authority_designation'],
-                    )
-            response_={
-                        "n": 1,
-                        "msg": 'Sub Training center added successfully',
-                        "data":serializer.data                        
-                    }
-           
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            print("error",serializer.errors)
-            response_={
-                        "n": 0,
-                        "msg": 'Sub Training center not registered',
-                        "data":[]                     
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-class UpdateSubTrainingCenter(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        updated_of_user_id =request_data.get('id')
-        if updated_of_user_id is None or updated_of_user_id == "":
-            response_={
-                        "n": 0,                    
-                        "msg": 'User id is required',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-        user_object = UserAdmin.objects.filter(id=updated_of_user_id).first()
-        if user_object is None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Training center not Found',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-        data = {}
-        parent_training_center=request_data.get('parent_training_center')
-        if parent_training_center is not None and parent_training_center !='':
-            data['parent_training_center'] = parent_training_center
-
-        data['name'] = request_data.get('name')
-        data['mobilenumber'] = request_data.get('mobilenumber')   
-        data['email'] = str(request_data.get('email')).lower()
-        data['source'] = request_data.get('source')
-        data['accreditation_number'] = request_data.get('accreditation_number')      
-        data['no_of_classroom'] = request_data.get('no_of_classroom')
-        data['address_line_one'] = request_data.get('address_line_one')
-        data['address_line_two'] = request_data.get('address_line_two')
-        data['country'] = request_data.get('country')
-        data['state'] = request_data.get('state')
-        data['city'] = request_data.get('city')
-        data['pincode'] = request_data.get('pincode')
-        data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None
-        data['updatedBy'] = str(request.user.id)
-        data['updatedAt'] = timezone.now()
-        
-        authority_list = request_data.get('authority_list')
-        email_object = UserAdmin.objects.filter(isActive=True,email=data['email']).exclude(id=updated_of_user_id).first()
-        number_object = UserAdmin.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).exclude(id=updated_of_user_id).first()
-        if email_object is not None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Email already exists',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        if number_object is not None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Mobile number already exists',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        
-        serializer = UserAdminSerializer(user_object,data=data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            courses=request_data.get('courses')
-            TrainingCenterCourses.objects.filter(training_center_id=serializer.data['id'],).update(isActive=False)
-            if courses is not None and courses !='':
-                for course in courses:
-                    already_exist_obj=TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],isActive=True).first()
-                    if already_exist_obj is None:
-                        TrainingCenterCourses.objects.create(course_id=course,training_center_id=serializer.data['id'],isActive=True)
-                    else:
-                        TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],).update(isActive=True)
-
-
-
-
-
-
-            if authority_list != []:
-                Authority.objects.filter(user_id=serializer.data['id']).update(isActive=False)
-                for i in authority_list:
-                    Authority.objects.create(
-                        createdBy = str(request.user.id),
-                        user_id =  serializer.data['id'],
-                        authority_name = i['authority_name'],
-                        authority_number = i['authority_number'],
-                        authority_email = i['authority_email'],
-                        authority_designation = i['authority_designation'],
-                    )
-            response_={
-                        "n": 1,
-                        "msg": 'Sub Training center added successfully',
-                        "data":serializer.data                        
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            print("error",serializer.errors)
-            response_={
-                        "n": 0,
-                        "msg": 'Sub Training center not registered',
-                        "data":[]                     
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-class SubTrainingCenterList(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-            
-        useradminobject = UserAdmin.objects.filter(isActive=True,user_type=4,is_member=False).order_by('-createdAt')
-        if request.user.user_type==3:
-            if request.user.member_of is not None and request.user.member_of !='':
-                useradminobject=useradminobject.filter(parent_training_center=str(request.user.member_of),is_member=False)
-
-            else:
-                useradminobject=useradminobject.filter(parent_training_center=str(request.user.id),is_member=False)
-
-        user_admin_ser = UserAdminSerializer(useradminobject,many=True)
-        for i in user_admin_ser.data:
-            country_object = Country.objects.filter(id=i['country']).first()
-            if country_object is not None:
-                i['country_name'] = country_object.name
-            else:
-                i['country_name'] = ""
-
-            ptc_obj=UserAdmin.objects.filter(id=i['parent_training_center']).first()
-            if ptc_obj is not None:
-                i['parent_training_center_name']=ptc_obj.name
-            else:
-                i['parent_training_center_name']=''
-        
-        response_={
-                    "n": 1,
-                    "msg": 'Sub Training center fetched successfully',
-                    "data":user_admin_ser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
 
 
 
@@ -1779,6 +1497,7 @@ class AddFaculty(GenericAPIView):
         data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None 
         data['email'] = request_data.get('email')    
         data['mobilenumber'] = request_data.get('mobilenumber')    
+        data = apply_college_faculty_fields(data, request_data, getattr(self, "default_faculty_sub_role", None))
         data['user_type'] = 5
         data['og_code'] = str(request.user.og_code)
         data['createdBy'] = str(request.user.id)
@@ -1861,6 +1580,9 @@ class FacultyList(GenericAPIView):
         else:
             facultyobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type=5,parent_training_center=str(request.user.id)).order_by('-id')
         
+        faculty_sub_role = getattr(self, "faculty_sub_role", None) or request.GET.get("faculty_sub_role")
+        if faculty_sub_role is not None and faculty_sub_role != "":
+            facultyobj = facultyobj.filter(faculty_sub_role=str(faculty_sub_role).upper())
 
         
         facultyser = UserAdminSerializer(facultyobj,many=True)
@@ -1907,7 +1629,7 @@ class FacultyList(GenericAPIView):
         if error_response:
             return error_response
         
-        facultyid = request_data.get('facultyid')
+        facultyid = request_data.get('facultyid') or request_data.get('id')
         if facultyid is not None and facultyid != "":
             facultyobj = UserAdmin.objects.filter(isActive=True,id=facultyid).first()
             if facultyobj is not None: 
@@ -2018,6 +1740,7 @@ class UpdateFaculty(GenericAPIView):
             data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None 
             data['email'] = request_data.get('email')    
             data['mobilenumber'] = request_data.get('mobilenumber')
+            data = apply_college_faculty_fields(data, request_data, getattr(self, "default_faculty_sub_role", None))
    
             data['updatedBy'] = str(request.user.id)
             data['updatedAt'] = timezone.now()
@@ -2161,6 +1884,38 @@ class DeleteFaculty(GenericAPIView):
                 return Response(response_,status=200)
         
         
+
+class AddHOD(AddFaculty):
+    default_faculty_sub_role = "HOD"
+
+
+class AddTeacher(AddFaculty):
+    default_faculty_sub_role = "TEACHER"
+
+
+class AddStaff(AddFaculty):
+    default_faculty_sub_role = "STAFF"
+
+
+class HODList(FacultyList):
+    faculty_sub_role = "HOD"
+
+
+class TeacherList(FacultyList):
+    faculty_sub_role = "TEACHER"
+
+
+class StaffList(FacultyList):
+    faculty_sub_role = "STAFF"
+
+
+class FacultyProfileDetails(FacultyList):
+    pass
+
+
+class UpdateFacultyProfile(UpdateFaculty):
+    pass
+
 
 
 
