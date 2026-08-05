@@ -1,35 +1,106 @@
 from django.db import models
-from helpers.models import *
-from django.utils.translation import gettext_lazy as _
-from course.models import Course
-from adminauth.models import UserAdmin
+from helpers.models import TrackingModel
 
-# Create your models here.
+
 class Schedule(TrackingModel):
-    course_ids = models.ManyToManyField(Course, blank=True)
-    training_center_ids = models.ManyToManyField(UserAdmin, blank=True)
-    branch_id =  models.CharField(max_length=255,null=True,blank=True)
-    faculty_id =  models.CharField(max_length=255,null=True,blank=True)
-    faculty2_id =  models.CharField(max_length=255,null=True,blank=True)
-    start_date = models.DateField(null=True,blank=True)
-    end_date = models.DateField(null=True,blank=True)
-    start_time = models.CharField(max_length=255,null=True,blank=True)
-    end_time = models.CharField(max_length=255,null=True,blank=True)
-    max_capacity = models.CharField(max_length=255,null=True,blank=True)
-    mode =  models.CharField(max_length=255,null=True,blank=True)
-    schedulename =  models.CharField(max_length=255,null=True,blank=True)
-    action_status =  models.CharField(default="Approved",max_length=255,null=True,blank=True)
-    decline_reason = models.TextField(null=True,blank=True)
+    # Existing class retained but M2M relations replaced by mapping tables.
+    branch_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    faculty_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    faculty2_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    academic_year_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    class_group_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    start_time = models.CharField(max_length=255, null=True, blank=True)
+    end_time = models.CharField(max_length=255, null=True, blank=True)
+    max_capacity = models.PositiveIntegerField(default=0)
+    mode = models.CharField(max_length=50, null=True, blank=True)
+    schedulename = models.CharField(max_length=255, null=True, blank=True)
+    action_status = models.CharField(max_length=50, default="Approved", db_index=True)
+    decline_reason = models.TextField(null=True, blank=True)
+
+
+class ScheduleCourseMapping(TrackingModel):
+    schedule_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["schedule_id", "course_id"], name="uniq_schedule_course"
+            )
+        ]
+
+
+class ScheduleTrainingCenterMapping(TrackingModel):
+    schedule_id = models.BigIntegerField(db_index=True)
+    training_center_id = models.CharField(max_length=255, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["schedule_id", "training_center_id"],
+                name="uniq_schedule_training_center",
+            )
+        ]
+
+
+class TimetableTemplate(TrackingModel):
+    academic_year_id = models.BigIntegerField(db_index=True)
+    class_group_id = models.BigIntegerField(db_index=True)
+    template_name = models.CharField(max_length=150)
+    effective_from = models.DateField()
+    effective_to = models.DateField(null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_by = models.CharField(max_length=255)
+
+
+class TimetableSlot(TrackingModel):
+    timetable_template_id = models.BigIntegerField(db_index=True)
+    day_of_week = models.PositiveSmallIntegerField()
+    period_number = models.PositiveSmallIntegerField()
+    start_time =models.CharField(max_length=250, null=True, blank=True)
+    end_time =models.CharField(max_length=250, null=True, blank=True)
+    course_id = models.BigIntegerField(db_index=True)
+    faculty_id = models.CharField(max_length=255, db_index=True)
+    room_number = models.CharField(max_length=50, null=True, blank=True)
+    lecture_type = models.CharField(max_length=30, default="THEORY")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["timetable_template_id", "day_of_week", "period_number"],
+                name="uniq_timetable_period",
+            )
+        ]
+
+
+class LectureEntry(TrackingModel):
+    academic_year_id = models.BigIntegerField(db_index=True)
+    class_group_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
+    faculty_id = models.CharField(max_length=255, db_index=True)
+    timetable_slot_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    lecture_date = models.DateField(db_index=True)
+    start_time =models.CharField(max_length=250, null=True, blank=True)
+    end_time =models.CharField(max_length=250, null=True, blank=True)
+    topic = models.CharField(max_length=500)
+    teaching_method = models.CharField(max_length=150, null=True, blank=True)
+    lecture_status = models.CharField(max_length=30, default="SCHEDULED", db_index=True)
+    remarks = models.TextField(null=True, blank=True)
+    created_by = models.CharField(max_length=255)
+
 
 class RescheduleLog(TrackingModel):
-    schedule_id =  models.CharField(max_length=255,null=True,blank=True)
-    old_start_date = models.DateField(null=True,blank=True)
-    old_end_date = models.DateField(null=True,blank=True)
-    old_start_time = models.CharField(max_length=255,null=True,blank=True)
-    old_end_time = models.CharField(max_length=255,null=True,blank=True)
-    new_start_date = models.DateField(null=True,blank=True)
-    new_end_date = models.DateField(null=True,blank=True)
-    new_start_time = models.CharField(max_length=255,null=True,blank=True)
-    new_end_time = models.CharField(max_length=255,null=True,blank=True)
-    reschedule_reason = models.TextField(null=True,blank=True)
-
+    schedule_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    old_start_date = models.DateField(null=True, blank=True)
+    old_end_date = models.DateField(null=True, blank=True)
+    old_start_time = models.CharField(max_length=255, null=True, blank=True)
+    old_end_time = models.CharField(max_length=255, null=True, blank=True)
+    new_start_date = models.DateField(null=True, blank=True)
+    new_end_date = models.DateField(null=True, blank=True)
+    new_start_time = models.CharField(max_length=255, null=True, blank=True)
+    new_end_time = models.CharField(max_length=255, null=True, blank=True)
+    reschedule_reason = models.TextField(null=True, blank=True)

@@ -67,6 +67,36 @@ def save_file(folder_path,uploaded_file,request):
     return file_url
 
 
+def apply_student_fields(data, request_data):
+    college_fields = [
+        "admission_number",
+        "roll_number",
+        "academic_year_id",
+        "program_id",
+        "class_group_id",
+        "semester",
+        "division",
+        "mentor_faculty_id",
+        "parent_user_id",
+        "parent_name",
+        "parent_email",
+        "parent_mobile",
+        "admission_status",
+        "student_status",
+    ]
+    for field in college_fields:
+        if field in request_data:
+            data[field] = request_data.get(field)
+
+    if request_data.get("department_id") is not None:
+        data["department"] = request_data.get("department_id")
+
+    if request_data.get("student_status") is not None:
+        data["candidate_status"] = request_data.get("student_status")
+
+    return data
+
+
 
 class CandidateLogin(GenericAPIView):
     
@@ -415,6 +445,7 @@ class AddCandidate(GenericAPIView):
         data['seaman_book_number'] = request_data.get('seaman_book_number')
         data['department'] = request_data.get('department')
         data['rank'] = request_data.get('rank')
+        data = apply_student_fields(data, request_data)
 
         
         if request.user.member_of != '' and request.user.member_of is not None :
@@ -1103,6 +1134,7 @@ class UpdateCandidate(GenericAPIView):
             data['pincode'] = request_data.get('pincode')
             data['address_line_one'] = request_data.get('address_line_one')
             data['address_line_two'] = request_data.get('address_line_two')
+            data = apply_student_fields(data, request_data)
             data['updatedBy'] = str(request.user.id)
             
             obj = Candidate.objects.filter(isActive=True).exclude(id=id)
@@ -1212,6 +1244,7 @@ class UpdateDetailsCandidatePage(GenericAPIView):
             data['seaman_book_number'] = request_data.get('seaman_book_number')
             data['department'] = request_data.get('department')
             data['rank'] = request_data.get('rank')
+            data = apply_student_fields(data, request_data)
             
             # obj = Candidate.objects.filter(isActive=True).exclude(id=id)
            
@@ -1711,6 +1744,7 @@ class RegisterCandidate (GenericAPIView):
         data['mobilenumber'] = request_data.get('mobilenumber')
         data['password'] = request_data.get('password')
         data['source'] = 'Website'
+        data = apply_student_fields(data, request_data)
 
 
         email_object = Candidate.objects.filter(isActive=True,email=data['email']).first()
@@ -1796,6 +1830,7 @@ class CandidateDetails (GenericAPIView):
             data['country'] = request_data.get('country')
             data['pincode'] = request_data.get('pincode')
             data['highest_qualification']=request_data.get('highest_qualification')
+            data = apply_student_fields(data, request_data)
           
             peobj=Candidate.objects.filter(id=candidate_id,isActive=True).first()
             if peobj is not None:
@@ -2941,6 +2976,8 @@ class UpdateGeneralDetails(GenericAPIView):
         if dob is not None and dob != '':
             data['dob']=request_data.get('dob')
 
+        data = apply_student_fields(data, request_data)
+
 
 
 
@@ -3674,6 +3711,45 @@ class GetCandidateInstitutesCourseDetails(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
+
+class StudentLogin(CandidateLogin):
+    pass
+
+
+class StudentLogout(CandidateLogout):
+    pass
+
+
+class AddStudent(AddCandidate):
+    pass
+
+
+class StudentList(PaginationCandidateList):
+    pass
+
+
+class StudentDetails(CandidateList):
+    pass
+
+
+class UpdateStudent(UpdateCandidate):
+    pass
+
+
+class DeleteStudent(DeleteCandidate):
+    pass
+
+
+class RegisterStudent(RegisterCandidate):
+    pass
+
+
+class UpdateStudentProfile(UpdateGeneralDetails):
+    pass
+
+
+class StudentProfileDetails(GetGeneralDetails):
+    pass
 
 
 

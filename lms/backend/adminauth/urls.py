@@ -5,7 +5,6 @@ urlpatterns = [
 
     path('login',views.UserLogin.as_view(), name='post'),
     path('logout',views.UserLogout.as_view(), name='post'),
-    
     path('add-admin',views.AddAdmin.as_view(), name='post'),
     
     path('add-oraganisation',views.AddOrganisation.as_view(), name='post'),
@@ -14,10 +13,7 @@ urlpatterns = [
     path('delete-training-center',views.DeleteTrainingCenter.as_view(), name='post'),
     path('delete-document',views.DeleteDocument.as_view(), name='post'),
 
-    #sub training center
-    path('add-sub-training-center',views.AddSubTrainingCenter.as_view(), name='post'),
-    path('update-sub-training-center',views.UpdateSubTrainingCenter.as_view(), name='post'),
-    path('sub-training-center-list',views.SubTrainingCenterList.as_view(), name='post'),
+
     path('training-center-list',views.TrainingCenterList.as_view(), name='post'),
     path('all-training-center-list',views.AllTrainingCenterList.as_view(), name='post'),
     path('org-all-training-center-list',views.OrgAllTrainingCenterList.as_view(), name='post'),
@@ -36,6 +32,14 @@ urlpatterns = [
     path('user-list',views.userList.as_view(), name='get'),
     path('update-faculty',views.UpdateFaculty.as_view(), name='post'),
     path('deletefaculty',views.DeleteFaculty.as_view(), name='post'),
+    path('add-hod',views.AddHOD.as_view(), name='post'),
+    path('add-teacher',views.AddTeacher.as_view(), name='post'),
+    path('add-staff',views.AddStaff.as_view(), name='post'),
+    path('hod-list',views.HODList.as_view(), name='get'),
+    path('teacher-list',views.TeacherList.as_view(), name='get'),
+    path('staff-list',views.StaffList.as_view(), name='get'),
+    path('faculty-profile-details',views.FacultyProfileDetails.as_view(), name='post'),
+    path('update-faculty-profile',views.UpdateFacultyProfile.as_view(), name='post'),
 
     path('check-decrypt-data',views.CheckAndDecyptData.as_view(), name='post'),
     path('get-public-key',views.GetPublicKey.as_view(), name='post'),

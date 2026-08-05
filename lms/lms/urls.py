@@ -23,15 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #frontend
 
-    path('',include(('organisation.urls','organisation'),namespace="organisation")),
-    path('candidate/',include(('candidate_ui.urls','candidate_ui'),namespace="candidate_ui")),
-    path('course/',include(('course_ui.urls','course_ui'),namespace="course_ui")),
-    path('usermanagement/',include(('usermanagement_ui.urls','usermanagement_ui'),namespace="usermanagement_ui")),
-    
-    path('masters/',include(('masters_ui.urls','masters_ui'),namespace="masters_ui")),
-    path('ticket/',include(('ticket_ui.urls','ticket_ui'),namespace="ticket_ui")),
-    path('rules/',include(('rules_ui.urls','rules_ui'),namespace="rules_ui")),
-    path('reports/',include(('reports_ui.urls','reports_ui'),namespace="reports_ui")),
 
 
 
