@@ -2054,8 +2054,8 @@ class AddDepartment(GenericAPIView):
         
         
 class DepartmentList(GenericAPIView):
-    # authentication_classes=[UserAdminJWTAuthentication]
-    # permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
     
     def get(self,request):
         encryped_header = ""
@@ -2136,6 +2136,58 @@ class DepartmentList(GenericAPIView):
                 return Response(response_,status=200)
         
         
+class DepartmentDetails(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        department_id = request_data.get('id')
+
+        if (
+            department_id is None
+            or department_id == ""
+        ):
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Department id is required.",
+                    "data": {}
+                }
+            )
+
+        department_obj = Department.objects.filter(
+            id=department_id,
+            isActive=True
+        ).first()
+
+        if department_obj is None:
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Department not found.",
+                    "data": {}
+                }
+            )
+
+        return phase_one_response(
+            request,
+            {
+                "n": 1,
+                "msg": "Department details found successfully.",
+                "data": DepartmentSerializer(department_obj).data
+            }
+        )
+
+
 class UpdateDepartment(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)

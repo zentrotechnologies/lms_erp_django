@@ -60,6 +60,7 @@ urlpatterns = [
     # 
     path('add-department',views.AddDepartment.as_view(), name='post'),
     path('department-list',views.DepartmentList.as_view(), name='post'),
+    path('details-department',views.DepartmentDetails.as_view(), name='post'),
     path('update-department',views.UpdateDepartment.as_view(), name='post'),
     path('delete-department',views.DeleteDepartment.as_view(), name='post'),
     path('change-department-status',views.ChangeDepartmentStatus.as_view(), name='post'),
