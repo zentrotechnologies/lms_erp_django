@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('add-semister',views.AddSemister.as_view(), name='post'),
     path('semister-list',views.SemisterList.as_view(), name='post'),
+    path('details-semister',views.SemisterDetails.as_view(), name='post'),
     path('update-semister',views.UpdateSemister.as_view(), name='post'),
     path('delete-semister',views.DeleteSemister.as_view(), name='post'),
     path('change-semister-status',views.ChangeSemisterStatus.as_view(), name='post'),
