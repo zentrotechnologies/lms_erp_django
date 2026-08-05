@@ -6,6 +6,7 @@ urlpatterns = [
 
     path('add-program',views.AddProgram.as_view(), name='post'),
     path('program-list',views.ProgramList.as_view(), name='post'),
+    path('details-program',views.ProgramDetails.as_view(), name='post'),
     path('update-program',views.UpdateProgram.as_view(), name='post'),
     path('delete-program',views.DeleteProgram.as_view(), name='post'),
     path('change-program-status',views.ChangeProgramStatus.as_view(), name='post'),

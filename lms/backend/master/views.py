@@ -529,6 +529,76 @@ class ProgramList(GenericAPIView):
         return Response(response_, status=200)
 
 
+class ProgramDetails(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('id')
+
+        if (
+            program_id is None
+            or program_id == ""
+        ):
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Program id is required.",
+                    "data": {}
+                }
+            )
+
+        program_obj = Program.objects.filter(
+            id=program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is None:
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Program not found.",
+                    "data": {}
+                }
+            )
+
+        program_data = ProgramSerializer(program_obj).data
+
+        department_obj = Department.objects.filter(
+            id=program_obj.department_id,
+            isActive=True
+        ).first()
+
+        if department_obj is not None:
+            program_data['department_name'] = (
+                department_obj.department_name
+            )
+            program_data['department_code'] = (
+                department_obj.department_code
+            )
+        else:
+            program_data['department_name'] = ""
+            program_data['department_code'] = ""
+
+        return phase_one_response(
+            request,
+            {
+                "n": 1,
+                "msg": "Program details found successfully.",
+                "data": program_data
+            }
+        )
+
+
 class UpdateProgram(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
