@@ -257,7 +257,7 @@ class FeedbackDeleteCategory(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Category Deteled Successfully.',
+                    'msg':'Category Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -623,7 +623,7 @@ class FeedbackDeleteForm(GenericAPIView):
                 f_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Form Deteled Successfully.',
+                    'msg':'Form Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :

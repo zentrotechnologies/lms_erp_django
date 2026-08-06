@@ -2200,7 +2200,7 @@ class DeleteExamSet(GenericAPIView):
                 dobj.save()
                 response_={
                     "n": 1,
-                    'msg':'Exam set Deteled Successfully.',
+                    'msg':'Exam set Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :

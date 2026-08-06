@@ -1849,7 +1849,7 @@ class DeleteFaculty(GenericAPIView):
                 facultyobj.save()
                 response_={
                     "n": 1,
-                    'msg':'Faculty Deteled Successfully.',
+                    'msg':'Faculty Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
