@@ -5,9 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import jwt
 import uuid
-
 from helpers.models import TrackingModel
-
 
 class UserAdminManager(UserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -181,7 +179,6 @@ class State(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Cities(models.Model):
     name = models.CharField(max_length=255)
