@@ -59,4 +59,10 @@ urlpatterns = [
     path('register-student',views.RegisterStudent.as_view(), name='post'),
     path('student-profile-details',views.StudentProfileDetails.as_view(), name='get'),
     path('update-student-profile',views.UpdateStudentProfile.as_view(), name='post'),
+
+    path('add-admission',views.AddAdmission.as_view(), name='post'),
+    path('admission-list',views.AdmissionList.as_view(), name='post'),
+    path('admission-details',views.AdmissionDetails.as_view(), name='post'),
+    path('update-admission',views.UpdateAdmission.as_view(), name='post'),
+    path('delete-admission',views.DeleteAdmission.as_view(), name='post'),
 ]
