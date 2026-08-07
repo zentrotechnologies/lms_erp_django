@@ -37,6 +37,7 @@ urlpatterns = [
 
     path('add-classgroup',views.AddClassGroup.as_view(), name='post'),
     path('classgroup-list',views.ClassGroupList.as_view(), name='post'),
+    path('details-classgroup',views.ClassGroupDetails.as_view(), name='post'),
     path('update-classgroup',views.UpdateClassGroup.as_view(), name='post'),
     path('delete-classgroup',views.DeleteClassGroup.as_view(), name='post'),
     path('change-classgroup-status',views.ChangeClassGroupStatus.as_view(), name='post'),
@@ -44,6 +45,7 @@ urlpatterns = [
 
     path('add-category',views.AddCategory.as_view(), name='post'),
     path('category-list',views.CategoryList.as_view(), name='post'),
+    path('details-category',views.CategoryDetails.as_view(), name='post'),
     path('subcat-category-list',views.SubcatCategoryList.as_view(), name='post'),
     path('update-category',views.UpdateCategory.as_view(), name='post'),
     path('delete-category',views.DeleteCategory.as_view(), name='post'),
@@ -52,6 +54,7 @@ urlpatterns = [
     # 
     path('add-sub-category',views.AddSub_Category.as_view(), name='post'),
     path('sub-category-list',views.Sub_CategoryList.as_view(), name='post'),
+    path('details-sub-category',views.SubCategoryDetails.as_view(), name='post'),
     path('update-sub-category',views.UpdateSub_Category.as_view(), name='post'),
     path('delete-sub-category',views.DeleteSub_Category.as_view(), name='post'),
     path('change-sub-category-status',views.ChangeSubCategoryStatus.as_view(), name='post'),

@@ -1511,7 +1511,7 @@ class DeleteCategory(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Category Deteled Successfully.',
+                    'msg':'Category Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -1605,6 +1605,58 @@ class ChangeCategoryStatus(GenericAPIView):
             else:
                 return Response(response_,status=200)
  
+
+class CategoryDetails(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        category_id = request_data.get('id')
+
+        if (
+            category_id is None
+            or category_id == ""
+        ):
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Category id is required.",
+                    "data": {}
+                }
+            )
+
+        category_obj = Category.objects.filter(
+            id=category_id,
+            isActive=True
+        ).first()
+
+        if category_obj is None:
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Category not found.",
+                    "data": {}
+                }
+            )
+
+        return phase_one_response(
+            request,
+            {
+                "n": 1,
+                "msg": "Category details found successfully.",
+                "data": CategorySerializer(category_obj).data
+            }
+        )
+
 
 # Sub_Category
 class AddSub_Category(GenericAPIView):
@@ -1872,7 +1924,7 @@ class DeleteSub_Category(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Sub Category Deteled Successfully.',
+                    'msg':'Sub Category Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -1965,6 +2017,58 @@ class ChangeSubCategoryStatus(GenericAPIView):
             else:
                 return Response(response_,status=200)
  
+
+class SubCategoryDetails(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        sub_category_id = request_data.get('id')
+
+        if (
+            sub_category_id is None
+            or sub_category_id == ""
+        ):
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Sub category id is required.",
+                    "data": {}
+                }
+            )
+
+        sub_category_obj = Sub_Category.objects.filter(
+            id=sub_category_id,
+            isActive=True
+        ).first()
+
+        if sub_category_obj is None:
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Sub category not found.",
+                    "data": {}
+                }
+            )
+
+        return phase_one_response(
+            request,
+            {
+                "n": 1,
+                "msg": "Sub category details found successfully.",
+                "data": Sub_CategorySerializer(sub_category_obj).data
+            }
+        )
+
 
         
 # Department
@@ -2297,7 +2401,7 @@ class DeleteDepartment(GenericAPIView):
                 dep_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Department Deteled Successfully.',
+                    'msg':'Department Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -2651,7 +2755,7 @@ class DeleteRank(GenericAPIView):
                 r_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Rank Deteled Successfully.',
+                    'msg':'Rank Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -3049,7 +3153,7 @@ class DeleteDocuments(GenericAPIView):
                 d_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Documents Deteled Successfully.',
+                    'msg':'Documents Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -3392,7 +3496,7 @@ class DeleteLanguages(GenericAPIView):
                 l_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Languages Deteled Successfully.',
+                    'msg':'Languages Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -3672,7 +3776,7 @@ class DeleteSpecialization(GenericAPIView):
                 s_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Specialization Deteled Successfully.',
+                    'msg':'Specialization Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -4274,7 +4378,7 @@ class DeleteS3File(GenericAPIView):
                 d_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'S3 File Deteled Successfully.',
+                    'msg':'S3 File Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -5569,7 +5673,7 @@ class DeleteTicketCategory(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Category Deteled Successfully.',
+                    'msg':'Category Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -5914,7 +6018,7 @@ class DeleteFeedbackSubCategory(GenericAPIView):
                 r_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'FeedbackSubCategory Deteled Successfully.',
+                    'msg':'FeedbackSubCategory Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -6268,7 +6372,7 @@ class DeleteEducationalQualification(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'Educational Qualifications Deteled Successfully.',
+                    'msg':'Educational Qualifications Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -6604,6 +6708,7 @@ class UpdateCollege(GenericAPIView):
         data['id'] = request_data.get('id')
         if data['id'] is not None:
             data['college_name'] = request_data.get('college_name')
+            data['college_code'] = request_data.get('college_code')
             data['tags'] = request_data.get('tags')
         
             obj = College.objects.filter(isActive=True).exclude(id=data['id'])
@@ -6696,7 +6801,7 @@ class DeleteCollege(GenericAPIView):
                 cat_obj.save()
                 response_={
                     "n": 1,
-                    'msg':'College Deteled Successfully.',
+                    'msg':'College Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
@@ -10208,6 +10313,121 @@ class ChangeClassGroupStatus(GenericAPIView):
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
+
+
+class ClassGroupDetails(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(
+            request
+        )
+
+        if error_response:
+            return error_response
+
+        class_group_id = request_data.get('id')
+
+        if (
+            class_group_id is None
+            or class_group_id == ""
+        ):
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Class group id is required.",
+                    "data": {}
+                }
+            )
+
+        class_group_obj = ClassGroup.objects.filter(
+            id=class_group_id,
+            isActive=True
+        ).first()
+
+        if class_group_obj is None:
+            return phase_one_response(
+                request,
+                {
+                    "n": 0,
+                    "msg": "Class group not found.",
+                    "data": {}
+                }
+            )
+
+        serializer = ClassGroupSerializer(class_group_obj)
+        class_group_data = serializer.data
+
+        academic_year_obj = AcademicYear.objects.filter(
+            id=class_group_obj.academic_year_id,
+            isActive=True
+        ).first()
+
+        if academic_year_obj is not None:
+            class_group_data['academic_year_name'] = (
+                academic_year_obj.academic_year_name
+            )
+        else:
+            class_group_data['academic_year_name'] = ""
+
+        department_obj = Department.objects.filter(
+            id=class_group_obj.department_id,
+            isActive=True
+        ).first()
+
+        if department_obj is not None:
+            class_group_data['department_name'] = (
+                department_obj.department_name
+            )
+            class_group_data['department_code'] = (
+                department_obj.department_code
+            )
+        else:
+            class_group_data['department_name'] = ""
+            class_group_data['department_code'] = ""
+
+        program_obj = Program.objects.filter(
+            id=class_group_obj.program_id,
+            isActive=True
+        ).first()
+
+        if program_obj is not None:
+            class_group_data['program_name'] = (
+                program_obj.program_name
+            )
+            class_group_data['program_code'] = (
+                program_obj.program_code
+            )
+        else:
+            class_group_data['program_name'] = ""
+            class_group_data['program_code'] = ""
+
+        semester_obj = Semester.objects.filter(
+            id=class_group_obj.semester_id,
+            isActive=True
+        ).first()
+
+        if semester_obj is not None:
+            class_group_data['semester_name'] = (
+                semester_obj.semester_name
+            )
+            class_group_data['semester_number'] = (
+                semester_obj.semester_number
+            )
+        else:
+            class_group_data['semester_name'] = ""
+            class_group_data['semester_number'] = ""
+
+        return phase_one_response(
+            request,
+            {
+                "n": 1,
+                "msg": "Class group details found successfully.",
+                "data": class_group_data
+            }
+        )
 
 
 

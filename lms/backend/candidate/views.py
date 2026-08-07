@@ -1060,7 +1060,7 @@ class DeleteCandidate(GenericAPIView):
                 cobj.save()
                 response_={
                     "n": 1,
-                    'msg':'Candidate Deteled Successfully.',
+                    'msg':'Candidate Deleted Successfully.',
                     'data':{}
                 }
                 if encryped_header == "1" :
