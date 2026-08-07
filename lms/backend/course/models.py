@@ -40,7 +40,6 @@ class Course(TrackingModel):
     total_lectures = models.PositiveIntegerField(default=0)
     total_practicals = models.PositiveIntegerField(default=0)
 
-
 class CourseModules(TrackingModel):
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     module_name = models.TextField(default="")
@@ -58,7 +57,7 @@ class CourseMaterial(TrackingModel):
     )
 
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-    module_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    module_id = models.BigIntegerField(null=True, blank=True, db_index=True) #semister
     language = models.BigIntegerField(null=True, blank=True)
     material_type = models.CharField(max_length=50, null=True, blank=True, db_index=True)
     material_label = models.CharField(max_length=255, null=True, blank=True)

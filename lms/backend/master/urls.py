@@ -45,7 +45,6 @@ urlpatterns = [
     path('add-category',views.AddCategory.as_view(), name='post'),
     path('category-list',views.CategoryList.as_view(), name='post'),
     path('subcat-category-list',views.SubcatCategoryList.as_view(), name='post'),
-
     path('update-category',views.UpdateCategory.as_view(), name='post'),
     path('delete-category',views.DeleteCategory.as_view(), name='post'),
     path('change-category-status',views.ChangeCategoryStatus.as_view(), name='post'),

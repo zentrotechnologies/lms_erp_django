@@ -9,7 +9,6 @@ urlpatterns = [
 path('add-course',v.AddCourse.as_view(),name='post'),
 path('course-list',v.CourseList.as_view(),name='post'),
 path('course-modules-list',v.CourseModulesList.as_view(),name='get'),
-
 path('course-filter-list',v.CourseFilterList.as_view(),name='post'),
 path('training-center-course-filter-list',v.TrainingCenterCourseFilterList.as_view(),name='post'),
 
