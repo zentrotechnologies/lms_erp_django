@@ -16,6 +16,9 @@ from adminauth.jwt import *
 from urllib.parse import unquote
 from django.core.files.storage import default_storage
 from django.db.models import Q
+from django.db import transaction
+from django.utils import timezone
+from uuid import UUID
 from random import randint
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
@@ -3750,6 +3753,1081 @@ class UpdateStudentProfile(UpdateGeneralDetails):
 
 class StudentProfileDetails(GetGeneralDetails):
     pass
+
+
+
+
+# ============================================================
+# College Admission APIs
+# ============================================================
+
+
+class AddAdmission(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        first_name = request_data.get('first_name')
+        email = request_data.get('email')
+        mobilenumber = request_data.get('mobilenumber')
+
+        if first_name is None or first_name == "":
+            response_ = {
+                "n": 0,
+                'msg': 'First name is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        if email is None or email == "":
+            response_ = {
+                "n": 0,
+                'msg': 'Email is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        if mobilenumber is None or mobilenumber == "":
+            response_ = {
+                "n": 0,
+                'msg': 'Mobile number is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        email_object = Candidate.objects.filter(
+            isActive=True,
+            email=email
+        ).first()
+        if email_object is not None:
+            response_ = {
+                "n": 0,
+                'msg': 'Email already exists',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        number_object = Candidate.objects.filter(
+            isActive=True,
+            mobilenumber=mobilenumber
+        ).first()
+        if number_object is not None:
+            response_ = {
+                "n": 0,
+                'msg': 'Mobile number already exists',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        data = {}
+
+        def _value(key):
+            value = request_data.get(key)
+            if value == "":
+                return None
+            return value
+
+        data['first_name'] = first_name
+        data['middle_name'] = _value('middle_name')
+        data['last_name'] = _value('last_name')
+        data['email'] = email
+        data['mobilenumber'] = mobilenumber
+        data['alternate_mobilenumber'] = _value('alternate_mobilenumber')
+        data['dob'] = _value('dob')
+        data['gender'] = _value('gender')
+        data['blood_group'] = _value('blood_group')
+        data['marital_status'] = _value('marital_status')
+        data['place_of_birth'] = _value('place_of_birth')
+        data['religion'] = _value('religion')
+        data['caste'] = _value('caste')
+        data['category'] = _value('category')
+        data['mother_tongue'] = _value('mother_tongue')
+        data['domicile_state'] = _value('domicile_state')
+        data['is_minority'] = request_data.get('is_minority', False)
+        data['is_handicapped'] = request_data.get('is_handicapped', False)
+        data['aadhaar_number'] = _value('aadhaar_number')
+        data['abc_id'] = _value('abc_id')
+        data['nationality'] = _value('nationality')
+        data['mother_name'] = _value('mother_name')
+        data['country'] = _value('country')
+        data['state'] = _value('state')
+        data['city'] = _value('city')
+        data['pincode'] = _value('pincode')
+        data['address_line_one'] = _value('address_line_one')
+        data['address_line_two'] = _value('address_line_two')
+        data['local_address'] = _value('local_address')
+        data['local_city'] = _value('local_city')
+        data['local_state'] = _value('local_state')
+        data['local_pincode'] = _value('local_pincode')
+
+        data['academic_year_id'] = _value('academic_year_id')
+        data['college_id'] = _value('college_id')
+        data['department_id'] = _value('department_id')
+        data['program_id'] = _value('program_id')
+        data['semester_id'] = _value('semester_id')
+        data['class_group_id'] = _value('class_group_id')
+        data['division'] = _value('division')
+        data['admission_date'] = _value('admission_date')
+        data['admission_status'] = request_data.get(
+            'admission_status',
+            'Applied'
+        )
+        data['student_status'] = request_data.get(
+            'student_status',
+            'Active'
+        )
+        data['candidate_status'] = data['student_status']
+        data['admission_number'] = _value('admission_number')
+        data['roll_number'] = _value('roll_number')
+        data['university_prn'] = _value('university_prn')
+        data['mentor_faculty_id'] = _value('mentor_faculty_id')
+        data['source'] = 'ADMISSION'
+        data['createdBy'] = str(request.user.id)
+
+        default_password = _value('password')
+        if (
+            default_password is None
+            or default_password == ""
+        ):
+            if (
+                mobilenumber is not None
+                and len(str(mobilenumber)) >= 6
+            ):
+                default_password = str(mobilenumber)[-6:]
+            else:
+                default_password = 'Student@123'
+        data['password'] = make_password(default_password)
+
+        if (
+            data['academic_year_id'] is None
+            or data['academic_year_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                'msg': 'Academic year id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        if (
+            data['program_id'] is None
+            or data['program_id'] == ""
+        ):
+            response_ = {
+                "n": 0,
+                'msg': 'Program id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        serializer = CandidateSerializer(data=data)
+        if not serializer.is_valid():
+            first_key, first_value = next(
+                iter(serializer.errors.items())
+            )
+            response_ = {
+                "n": 0,
+                'msg': first_key + ' : ' + first_value[0],
+                'data': serializer.errors
+            }
+            return self._respond(encryped_header, response_)
+
+        try:
+            with transaction.atomic():
+                candidate = serializer.save()
+
+                application_number = _value('application_number')
+                if (
+                    application_number is None
+                    or application_number == ""
+                ):
+                    application_number = (
+                        'ADM'
+                        + timezone.now().strftime('%Y%m%d')
+                        + '-'
+                        + str(randint(1000, 9999))
+                    )
+
+                application = AdmissionApplication.objects.create(
+                    candidate_id=str(candidate.id),
+                    application_number=application_number,
+                    academic_year_id=data['academic_year_id'],
+                    program_id=data['program_id'],
+                    class_group_id=data['class_group_id'],
+                    admission_applying_for=_value(
+                        'admission_applying_for'
+                    ),
+                    admission_applying_class=_value(
+                        'admission_applying_class'
+                    ),
+                    submission_status=request_data.get(
+                        'submission_status',
+                        'Pending'
+                    ),
+                    current_step=request_data.get(
+                        'current_step',
+                        'SUBMITTED'
+                    ),
+                    submitted_at=timezone.now(),
+                    createdBy=str(request.user.id),
+                )
+
+                education_details = request_data.get(
+                    'education_details'
+                ) or []
+                for edu in education_details:
+                    CandidateEducation.objects.create(
+                        candidate_id=str(candidate.id),
+                        application_id=str(application.id),
+                        previous_exam_passed=edu.get(
+                            'previous_exam_passed'
+                        ),
+                        qualification=edu.get('qualification'),
+                        board_university=edu.get(
+                            'board_university'
+                        ),
+                        institute_name=edu.get('institute_name'),
+                        passing_year=edu.get('passing_year'),
+                        seat_number=edu.get('seat_number'),
+                        percentage=edu.get('percentage'),
+                        cgpa=edu.get('cgpa'),
+                        eligibility_number=edu.get(
+                            'eligibility_number'
+                        ),
+                        createdBy=str(request.user.id),
+                    )
+
+                photo_url = _value('photo_url')
+                signature_url = _value('signature_url')
+                if photo_url or signature_url:
+                    CandidatePhotoSignature.objects.create(
+                        candidate_id=str(candidate.id),
+                        application_id=str(application.id),
+                        photo_url=photo_url,
+                        signature_url=signature_url,
+                        status='Pending',
+                        createdBy=str(request.user.id),
+                    )
+
+                parent_name = _value('parent_name')
+                parent_mobile = _value('parent_mobile')
+                if parent_name or parent_mobile:
+                    parent_obj = ParentProfile.objects.create(
+                        parent_code=(
+                            'PRT'
+                            + str(timezone.now().year)
+                            + str(randint(10000, 99999))
+                        ),
+                        first_name=parent_name,
+                        email=_value('parent_email'),
+                        mobile=parent_mobile,
+                        occupation=_value('parent_occupation'),
+                        address=_value('parent_address'),
+                        parent_annual_income=_value(
+                            'parent_annual_income'
+                        ),
+                        parent_government_employee=request_data.get(
+                            'parent_government_employee',
+                            False
+                        ),
+                        parent_relationship=request_data.get(
+                            'relationship',
+                            'Father'
+                        ),
+                        createdBy=str(request.user.id),
+                    )
+                    ParentStudentMapping.objects.create(
+                        parent_id=parent_obj.id,
+                        student_id=str(candidate.id),
+                        relationship=request_data.get(
+                            'relationship',
+                            'Father'
+                        ),
+                        is_primary=True,
+                        createdBy=str(request.user.id),
+                    )
+
+                response_data = serializer.data
+                response_data.pop('password', None)
+                response_data['application_id'] = str(
+                    application.id
+                )
+                response_data['application_number'] = (
+                    application.application_number
+                )
+
+                response_ = {
+                    "n": 1,
+                    'msg': 'Admission applied successfully.',
+                    'data': response_data
+                }
+        except Exception as error:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission failed.',
+                'data': {
+                    'error': str(error)
+                }
+            }
+
+        return self._respond(encryped_header, response_)
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class AdmissionList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        response_ = self._list_data(request, request.GET)
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        response_ = self._list_data(request, request_data)
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+    def _list_data(self, request, request_data):
+        applications = AdmissionApplication.objects.filter(
+            isActive=True
+        ).order_by('-createdAt')
+
+        program_id = request_data.get('program_id')
+        academic_year_id = request_data.get('academic_year_id')
+        class_group_id = request_data.get('class_group_id')
+        admission_status = request_data.get('admission_status')
+        student_status = request_data.get('student_status')
+        submission_status = request_data.get('submission_status')
+        search = request_data.get('search')
+
+        if program_id not in (None, ""):
+            applications = applications.filter(
+                program_id=program_id
+            )
+
+        if academic_year_id not in (None, ""):
+            applications = applications.filter(
+                academic_year_id=academic_year_id
+            )
+
+        if class_group_id not in (None, ""):
+            applications = applications.filter(
+                class_group_id=class_group_id
+            )
+
+        if submission_status not in (None, ""):
+            applications = applications.filter(
+                submission_status=submission_status
+            )
+
+        candidate_uuid_list = []
+        for candidate_id_value in applications.values_list(
+            'candidate_id',
+            flat=True
+        ):
+            try:
+                candidate_uuid_list.append(
+                    UUID(str(candidate_id_value))
+                )
+            except (ValueError, TypeError):
+                continue
+
+        candidate_query = Q(id__in=candidate_uuid_list)
+
+        admin_obj = UserAdmin.objects.filter(
+            id=request.user.id,
+            isActive=True
+        ).first()
+
+        college_id = None
+        if (
+            admin_obj is not None
+            and admin_obj.college_id is not None
+        ):
+            college_id = str(admin_obj.college_id)
+
+        if college_id is not None:
+            candidate_query = candidate_query & Q(
+                college_id=college_id
+            )
+
+        if student_status not in (None, ""):
+            candidate_query = candidate_query & Q(
+                student_status=student_status
+            )
+
+        if admission_status not in (None, ""):
+            candidate_query = candidate_query & Q(
+                admission_status=admission_status
+            )
+
+        if search not in (None, ""):
+            candidate_query = candidate_query & (
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(mobilenumber__icontains=search)
+                | Q(admission_number__icontains=search)
+                | Q(roll_number__icontains=search)
+            )
+
+        candidates = Candidate.objects.filter(
+            candidate_query,
+            isActive=True
+        )
+
+        candidate_ids = [
+            str(candidate_id)
+            for candidate_id in candidates.values_list(
+                'id',
+                flat=True
+            )
+        ]
+
+        applications = applications.filter(
+            candidate_id__in=candidate_ids
+        )
+
+        data = []
+        for application in applications:
+            candidate_obj = None
+            try:
+                candidate_obj = Candidate.objects.filter(
+                    id=UUID(str(application.candidate_id)),
+                    isActive=True
+                ).first()
+            except (ValueError, TypeError):
+                candidate_obj = None
+
+            if candidate_obj is None:
+                continue
+
+            item = CandidateSerializer(candidate_obj).data
+
+            item['application_id'] = str(application.id)
+            item['application_number'] = (
+                application.application_number
+            )
+            item['academic_year_id'] = (
+                application.academic_year_id
+            )
+            item['program_id'] = application.program_id
+            item['class_group_id'] = application.class_group_id
+            item['admission_applying_for'] = (
+                application.admission_applying_for
+            )
+            item['admission_applying_class'] = (
+                application.admission_applying_class
+            )
+            item['personal_info_status'] = (
+                application.personal_info_status
+            )
+            item['educational_info_status'] = (
+                application.educational_info_status
+            )
+            item['photo_signature_status'] = (
+                application.photo_signature_status
+            )
+            item['subject_selection_status'] = (
+                application.subject_selection_status
+            )
+            item['payment_status'] = application.payment_status
+            item['submission_status'] = application.submission_status
+            item['verification_status'] = (
+                application.verification_status
+            )
+            item['admission_confirmation_status'] = (
+                application.admission_confirmation_status
+            )
+            item['current_step'] = application.current_step
+            item['submitted_at'] = application.submitted_at
+
+            education_obj = CandidateEducation.objects.filter(
+                application_id=str(application.id),
+                isActive=True
+            )
+            item['education_details'] = (
+                CandidateEducationSerializer(
+                    education_obj,
+                    many=True
+                ).data
+            )
+
+            photo_obj = CandidatePhotoSignature.objects.filter(
+                application_id=str(application.id),
+                isActive=True
+            ).first()
+            if photo_obj is not None:
+                item['photo_signature'] = (
+                    CandidatePhotoSignatureSerializer(
+                        photo_obj
+                    ).data
+                )
+            else:
+                item['photo_signature'] = {}
+
+            data.append(item)
+
+        return {
+            "n": 1,
+            'msg': 'Admission applications found successfully.',
+            'data': data
+        }
+
+
+class AdmissionDetails(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        application_id = request_data.get('id')
+
+        if application_id is None or application_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'Application id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        application = AdmissionApplication.objects.filter(
+            id=application_id,
+            isActive=True
+        ).first()
+
+        if application is None:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission application not found.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        candidate_obj = None
+        try:
+            candidate_obj = Candidate.objects.filter(
+                id=UUID(str(application.candidate_id)),
+                isActive=True
+            ).first()
+        except (ValueError, TypeError):
+            candidate_obj = None
+
+        item = AdmissionApplicationSerializer(application).data
+
+        if candidate_obj is not None:
+            item['student'] = CandidateSerializer(
+                candidate_obj
+            ).data
+        else:
+            item['student'] = {}
+
+        education_obj = CandidateEducation.objects.filter(
+            application_id=str(application.id),
+            isActive=True
+        )
+        item['education_details'] = (
+            CandidateEducationSerializer(
+                education_obj,
+                many=True
+            ).data
+        )
+
+        photo_obj = CandidatePhotoSignature.objects.filter(
+            application_id=str(application.id),
+            isActive=True
+        ).first()
+        if photo_obj is not None:
+            item['photo_signature'] = (
+                CandidatePhotoSignatureSerializer(
+                    photo_obj
+                ).data
+            )
+        else:
+            item['photo_signature'] = {}
+
+        response_ = {
+            "n": 1,
+            'msg': 'Admission application details found successfully.',
+            'data': item
+        }
+
+        return self._respond(encryped_header, response_)
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class UpdateAdmission(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        application_id = request_data.get('id')
+
+        if application_id is None or application_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'Application id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        application = AdmissionApplication.objects.filter(
+            id=application_id,
+            isActive=True
+        ).first()
+
+        if application is None:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission application not found.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        candidate = None
+        try:
+            candidate = Candidate.objects.filter(
+                id=UUID(str(application.candidate_id)),
+                isActive=True
+            ).first()
+        except (ValueError, TypeError):
+            candidate = None
+
+        if candidate is None:
+            response_ = {
+                "n": 0,
+                'msg': 'Student not found.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        def _value(key):
+            value = request_data.get(key)
+            if value == "":
+                return None
+            return value
+
+        candidate_fields = [
+            'first_name', 'middle_name', 'last_name', 'email',
+            'mobilenumber', 'alternate_mobilenumber', 'dob',
+            'gender', 'blood_group', 'marital_status',
+            'place_of_birth', 'religion', 'caste', 'category',
+            'mother_tongue', 'domicile_state', 'is_minority',
+            'is_handicapped', 'aadhaar_number', 'abc_id',
+            'nationality', 'mother_name', 'country', 'state',
+            'city', 'pincode', 'address_line_one',
+            'address_line_two', 'local_address', 'local_city',
+            'local_state', 'local_pincode', 'academic_year_id',
+            'college_id', 'department_id', 'program_id',
+            'semester_id', 'class_group_id', 'division',
+            'admission_date', 'admission_status', 'student_status',
+            'admission_number', 'roll_number', 'university_prn',
+            'mentor_faculty_id',
+        ]
+
+        data = {}
+        for field in candidate_fields:
+            if field in request_data:
+                data[field] = _value(field)
+
+        if 'student_status' in data:
+            data['candidate_status'] = data['student_status']
+
+        data['updatedBy'] = str(request.user.id)
+        data['updatedAt'] = timezone.now()
+
+        try:
+            with transaction.atomic():
+                serializer = CandidateSerializer(
+                    candidate,
+                    data=data,
+                    partial=True
+                )
+                if not serializer.is_valid():
+                    first_key, first_value = next(
+                        iter(serializer.errors.items())
+                    )
+                    response_ = {
+                        "n": 0,
+                        'msg': first_key + ' : ' + first_value[0],
+                        'data': serializer.errors
+                    }
+                    return self._respond(encryped_header, response_)
+
+                serializer.save()
+
+                application_fields = [
+                    'academic_year_id', 'program_id',
+                    'class_group_id', 'admission_applying_for',
+                    'admission_applying_class', 'submission_status',
+                    'current_step', 'personal_info_status',
+                    'educational_info_status',
+                    'photo_signature_status',
+                    'subject_selection_status', 'payment_status',
+                    'verification_status',
+                    'admission_confirmation_status',
+                    'rejection_reason',
+                ]
+
+                application_update = {}
+                for field in application_fields:
+                    if field in request_data:
+                        application_update[field] = _value(field)
+
+                if application_update:
+                    application_update['updatedBy'] = str(
+                        request.user.id
+                    )
+                    application_update['updatedAt'] = timezone.now()
+                    AdmissionApplication.objects.filter(
+                        id=application.id
+                    ).update(**application_update)
+
+                if 'education_details' in request_data:
+                    CandidateEducation.objects.filter(
+                        application_id=str(application.id),
+                        isActive=True
+                    ).update(isActive=False)
+
+                    for edu in (
+                        request_data.get('education_details') or []
+                    ):
+                        CandidateEducation.objects.create(
+                            candidate_id=str(candidate.id),
+                            application_id=str(application.id),
+                            previous_exam_passed=edu.get(
+                                'previous_exam_passed'
+                            ),
+                            qualification=edu.get('qualification'),
+                            board_university=edu.get(
+                                'board_university'
+                            ),
+                            institute_name=edu.get('institute_name'),
+                            passing_year=edu.get('passing_year'),
+                            seat_number=edu.get('seat_number'),
+                            percentage=edu.get('percentage'),
+                            cgpa=edu.get('cgpa'),
+                            eligibility_number=edu.get(
+                                'eligibility_number'
+                            ),
+                            createdBy=str(request.user.id),
+                        )
+
+                if (
+                    'photo_url' in request_data
+                    or 'signature_url' in request_data
+                ):
+                    photo_obj = (
+                        CandidatePhotoSignature.objects.filter(
+                            application_id=str(application.id),
+                            isActive=True
+                        ).first()
+                    )
+
+                    if photo_obj is not None:
+                        if 'photo_url' in request_data:
+                            photo_obj.photo_url = _value('photo_url')
+                        if 'signature_url' in request_data:
+                            photo_obj.signature_url = _value(
+                                'signature_url'
+                            )
+                        photo_obj.updatedAt = timezone.now()
+                        photo_obj.updatedBy = str(request.user.id)
+                        photo_obj.save()
+                    else:
+                        CandidatePhotoSignature.objects.create(
+                            candidate_id=str(candidate.id),
+                            application_id=str(application.id),
+                            photo_url=_value('photo_url'),
+                            signature_url=_value('signature_url'),
+                            status='Pending',
+                            createdBy=str(request.user.id),
+                        )
+
+                if (
+                    'parent_name' in request_data
+                    or 'parent_mobile' in request_data
+                    or 'parent_email' in request_data
+                ):
+                    mapping = ParentStudentMapping.objects.filter(
+                        student_id=str(candidate.id),
+                        is_active=True
+                    ).first()
+
+                    parent_obj = None
+                    if mapping is not None:
+                        parent_obj = ParentProfile.objects.filter(
+                            id=mapping.parent_id,
+                            is_active=True
+                        ).first()
+
+                    if parent_obj is not None:
+                        if 'parent_name' in request_data:
+                            parent_obj.first_name = _value(
+                                'parent_name'
+                            )
+                        if 'parent_email' in request_data:
+                            parent_obj.email = _value('parent_email')
+                        if 'parent_mobile' in request_data:
+                            parent_obj.mobile = _value(
+                                'parent_mobile'
+                            )
+                        if 'parent_occupation' in request_data:
+                            parent_obj.occupation = _value(
+                                'parent_occupation'
+                            )
+                        if 'parent_address' in request_data:
+                            parent_obj.address = _value(
+                                'parent_address'
+                            )
+                        parent_obj.save()
+                    else:
+                        parent_obj = ParentProfile.objects.create(
+                            parent_code=(
+                                'PRT'
+                                + str(timezone.now().year)
+                                + str(randint(10000, 99999))
+                            ),
+                            first_name=_value('parent_name'),
+                            email=_value('parent_email'),
+                            mobile=_value('parent_mobile'),
+                            occupation=_value('parent_occupation'),
+                            address=_value('parent_address'),
+                            parent_annual_income=_value(
+                                'parent_annual_income'
+                            ),
+                            parent_government_employee=request_data.get(
+                                'parent_government_employee',
+                                False
+                            ),
+                            parent_relationship=request_data.get(
+                                'relationship',
+                                'Father'
+                            ),
+                            createdBy=str(request.user.id),
+                        )
+                        ParentStudentMapping.objects.create(
+                            parent_id=parent_obj.id,
+                            student_id=str(candidate.id),
+                            relationship=request_data.get(
+                                'relationship',
+                                'Father'
+                            ),
+                            is_primary=True,
+                            createdBy=str(request.user.id),
+                        )
+
+                response_data = CandidateSerializer(
+                    candidate
+                ).data
+                response_data.pop('password', None)
+                response_data['application_id'] = str(
+                    application.id
+                )
+                response_data['application_number'] = (
+                    application.application_number
+                )
+
+                response_ = {
+                    "n": 1,
+                    'msg': 'Admission updated successfully.',
+                    'data': response_data
+                }
+        except Exception as error:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission update failed.',
+                'data': {
+                    'error': str(error)
+                }
+            }
+
+        return self._respond(encryped_header, response_)
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class DeleteAdmission(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        application_id = request_data.get('id')
+
+        if application_id is None or application_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'Application id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        application = AdmissionApplication.objects.filter(
+            id=application_id,
+            isActive=True
+        ).first()
+
+        if application is None:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission application not found.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        try:
+            with transaction.atomic():
+                application.isActive = False
+                application.updatedAt = timezone.now()
+                application.updatedBy = str(request.user.id)
+                application.save()
+
+                CandidateEducation.objects.filter(
+                    application_id=str(application.id),
+                    isActive=True
+                ).update(isActive=False)
+
+                CandidatePhotoSignature.objects.filter(
+                    application_id=str(application.id),
+                    isActive=True
+                ).update(isActive=False)
+
+                candidate = None
+                try:
+                    candidate = Candidate.objects.filter(
+                        id=UUID(str(application.candidate_id)),
+                        isActive=True
+                    ).first()
+                except (ValueError, TypeError):
+                    candidate = None
+
+                if candidate is not None:
+                    candidate.isActive = False
+                    candidate.updatedAt = timezone.now()
+                    candidate.updatedBy = str(request.user.id)
+                    candidate.save()
+
+            response_ = {
+                "n": 1,
+                'msg': 'Admission deleted successfully.',
+                'data': {}
+            }
+        except Exception as error:
+            response_ = {
+                "n": 0,
+                'msg': 'Admission delete failed.',
+                'data': {
+                    'error': str(error)
+                }
+            }
+
+        return self._respond(encryped_header, response_)
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
 
 
 
