@@ -118,6 +118,13 @@ class Candidate(AbstractBaseUser, TrackingModel):
         db_index=True,
     )
 
+    role_code = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
     department_id = models.CharField(
         max_length=255,
         null=True,

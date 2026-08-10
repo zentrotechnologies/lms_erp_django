@@ -74,6 +74,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     member_of = models.CharField(max_length=150, null=True, blank=True, db_index=True)
     joining_date = models.DateField(null=True, blank=True)
     role = models.BigIntegerField(null=True, blank=True, db_index=True)
+    role_code = models.CharField(max_length=50, null=True, blank=True, db_index=True)
 
     # College faculty fields
     staff_id = models.CharField(max_length=100, null=True, blank=True, unique=True)

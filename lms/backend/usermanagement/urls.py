@@ -12,6 +12,16 @@ urlpatterns = [
     path('delete-member',views.DeleteMember.as_view(), name='post'),
     path('update-member',views.UpdateMember.as_view(), name='post'),
 
+    # static roles + unified user management
+    path('roles',views.StaticRoleList.as_view(), name='get'),
+    path('add-user',views.AddUser.as_view(), name='post'),
+    path('user-list',views.UserList.as_view(), name='get'),
+    path('user-details',views.UserDetails.as_view(), name='get'),
+    path('update-user',views.UpdateUser.as_view(), name='post'),
+    path('delete-user',views.DeleteUser.as_view(), name='post'),
+    path('parent-login',views.ParentLogin.as_view(), name='post'),
+    path('parent-logout',views.ParentLogout.as_view(), name='post'),
+
 
     
   
