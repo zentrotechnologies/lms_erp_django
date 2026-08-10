@@ -1,6 +1,9 @@
 from django.shortcuts import render
+from django.db.models import Q
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+import json
+import uuid
 from .models import *
 from usermanagement.serializers import *
 from adminauth.serializers import *
@@ -10,8 +13,517 @@ from adminauth.jwt import UserAdminJWTAuthentication
 from django.contrib.auth.hashers import make_password,check_password
 from adminauth.models import *
 from adminauth.serializers import *
+from candidate.models import *
+from candidate.serializers import *
 
 # Create your views here.
+
+def _encrypted_header(request):
+    if 'encrypted' in request.headers.keys():
+        return request.headers.get('encrypted')
+    return ""
+
+def _final_response(request, response_):
+    encryped_header = _encrypted_header(request)
+    if encryped_header == "1":
+        data_to_serialize = convert_decimals_to_float(response_)
+        encdata = encrypt_data(json.dumps(data_to_serialize))
+        return Response(encdata, status=200)
+    return Response(response_, status=200)
+
+def _error_response(request, msg, data=None, n=0):
+    return _final_response(request, {"n": n, "msg": msg, "data": data if data is not None else {}})
+
+def _requesting_admin(request):
+    return UserAdmin.objects.filter(id=request.user.id, isActive=True).first()
+
+def _requesting_college_id(request):
+    admin_obj = _requesting_admin(request)
+    if admin_obj is not None and admin_obj.college_id is not None:
+        return str(admin_obj.college_id)
+    return None
+
+def _valid_role(role_code):
+    if role_code in (None, ""):
+        return None
+    return Roles.objects.filter(role_code=role_code, is_active=True).first()
+
+
+class StaticRoleList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        obj = Roles.objects.filter(is_active=True).order_by('id')
+        ser = RolesSerializer(obj, many=True)
+        response_ = {
+            "n": 1,
+            'msg': 'Roles found successfully.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class AddUser(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        role_code = request_data.get('role_code')
+        role_obj = _valid_role(role_code)
+        if role_obj is None:
+            return _error_response(request, 'role_code is required or not valid.')
+
+        admin_obj = _requesting_admin(request)
+        if admin_obj is None:
+            return _error_response(request, 'logged in user not found')
+
+        college_id = request_data.get('college_id') or _requesting_college_id(request)
+
+        if role_code in ('admin', 'faculty'):
+            data = {}
+            data['role_code'] = role_code
+            data['first_name'] = request_data.get('first_name')
+            data['middle_name'] = request_data.get('middle_name')
+            data['last_name'] = request_data.get('last_name')
+            data['name'] = request_data.get('name')
+            data['designation'] = request_data.get('designation')
+            data['mobilenumber'] = request_data.get('mobilenumber')
+            data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber')
+            data['email'] = str(request_data.get('email') or '').lower()
+            data['gender'] = request_data.get('gender')
+            data['dob'] = request_data.get('dob')
+            data['city'] = request_data.get('city')
+            data['state'] = request_data.get('state')
+            data['country'] = request_data.get('country')
+            data['pincode'] = request_data.get('pincode')
+            data['address_line_one'] = request_data.get('address_line_one')
+            data['address_line_two'] = request_data.get('address_line_two')
+            data['joining_date'] = request_data.get('joining_date')
+            data['department_id'] = request_data.get('department_id')
+            data['faculty_sub_role'] = request_data.get('faculty_sub_role')
+            data['staff_id'] = request_data.get('staff_id')
+            data['employee_code'] = request_data.get('employee_code')
+            data['employment_type'] = request_data.get('employment_type')
+            data['official_email'] = request_data.get('official_email')
+            data['years_of_experience'] = request_data.get('years_of_experience')
+            data['specialization'] = request_data.get('specialization')
+            data['reporting_to'] = request_data.get('reporting_to')
+            data['status'] = request_data.get('status', True)
+            data['password'] = make_password(request_data.get('password') or 'Default@123')
+            data['og_code'] = admin_obj.og_code or 'SUPER'
+            data['createdBy'] = str(request.user.id)
+
+            data['member_type'] = admin_obj.user_type
+            if admin_obj.member_of is None:
+                data['member_of'] = str(admin_obj.id)
+            else:
+                data['member_of'] = str(admin_obj.member_of)
+
+            if role_code == 'admin':
+                data['user_type'] = request_data.get('user_type') or 3
+            else:
+                data['user_type'] = 5
+                if admin_obj.member_of is None:
+                    data['parent_training_center'] = str(admin_obj.id)
+                else:
+                    data['parent_training_center'] = str(admin_obj.member_of)
+
+            if college_id not in (None, ""):
+                data['college_id'] = int(college_id)
+
+            if data['email'] in (None, ""):
+                return _error_response(request, 'Email is required.')
+            email_object = UserAdmin.objects.filter(isActive=True, email=data['email']).first()
+            if email_object is not None:
+                return _error_response(request, 'Email already exists')
+
+            serializer = UserAdminSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return _final_response(request, {
+                    "n": 1,
+                    'msg': 'User added successfully.',
+                    'data': serializer.data
+                })
+            return _error_response(request, 'User not added.', serializer.errors)
+
+        if role_code == 'student':
+            data = {}
+            data['role_code'] = role_code
+            data['first_name'] = request_data.get('first_name')
+            data['middle_name'] = request_data.get('middle_name')
+            data['last_name'] = request_data.get('last_name')
+            data['email'] = str(request_data.get('email') or '').lower()
+            data['mobilenumber'] = request_data.get('mobilenumber')
+            data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber')
+            data['gender'] = request_data.get('gender')
+            data['dob'] = request_data.get('dob')
+            data['blood_group'] = request_data.get('blood_group')
+            data['aadhaar_number'] = request_data.get('aadhaar_number')
+            data['city'] = request_data.get('city')
+            data['state'] = request_data.get('state')
+            data['country'] = request_data.get('country')
+            data['pincode'] = request_data.get('pincode')
+            data['address_line_one'] = request_data.get('address_line_one')
+            data['address_line_two'] = request_data.get('address_line_two')
+            data['department_id'] = request_data.get('department_id')
+            data['program_id'] = request_data.get('program_id')
+            data['semester_id'] = request_data.get('semester_id')
+            data['class_group_id'] = request_data.get('class_group_id')
+            data['academic_year_id'] = request_data.get('academic_year_id')
+            data['division'] = request_data.get('division')
+            data['admission_number'] = request_data.get('admission_number')
+            data['roll_number'] = request_data.get('roll_number')
+            data['university_prn'] = request_data.get('university_prn')
+            data['admission_status'] = request_data.get('admission_status') or 'Draft'
+            data['student_status'] = request_data.get('student_status') or 'Active'
+            data['college_id'] = college_id
+            data['password'] = make_password(request_data.get('password') or 'Student@123')
+            data['createdBy'] = str(request.user.id)
+
+            if data['email'] in (None, ""):
+                return _error_response(request, 'Email is required.')
+            email_object = Candidate.objects.filter(isActive=True, email=data['email']).first()
+            if email_object is not None:
+                return _error_response(request, 'Email already exists')
+
+            serializer = CandidateSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return _final_response(request, {
+                    "n": 1,
+                    'msg': 'User added successfully.',
+                    'data': serializer.data
+                })
+            return _error_response(request, 'User not added.', serializer.errors)
+
+        if role_code == 'parent':
+            data = {}
+            data['role_code'] = role_code
+            data['parent_code'] = request_data.get('parent_code') or ('PARENT' + uuid.uuid4().hex[:8].upper())
+            data['first_name'] = request_data.get('first_name')
+            data['middle_name'] = request_data.get('middle_name')
+            data['last_name'] = request_data.get('last_name')
+            data['email'] = str(request_data.get('email') or '').lower()
+            data['mobilenumber'] = request_data.get('mobilenumber')
+            data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber')
+            data['gender'] = request_data.get('gender')
+            data['dob'] = request_data.get('dob')
+            data['occupation'] = request_data.get('occupation')
+            data['parent_relationship'] = request_data.get('parent_relationship')
+            data['address_line_one'] = request_data.get('address_line_one')
+            data['address_line_two'] = request_data.get('address_line_two')
+            data['city'] = request_data.get('city')
+            data['state'] = request_data.get('state')
+            data['country'] = request_data.get('country')
+            data['pincode'] = request_data.get('pincode')
+            data['college_id'] = college_id
+            data['student_ids'] = request_data.get('student_ids') or []
+            data['password'] = make_password(request_data.get('password') or 'Parent@123')
+            data['createdBy'] = str(request.user.id)
+
+            if data['email'] in (None, ""):
+                return _error_response(request, 'Email is required.')
+            email_object = Parent.objects.filter(isActive=True, email=data['email']).first()
+            if email_object is not None:
+                return _error_response(request, 'Email already exists')
+
+            serializer = ParentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return _final_response(request, {
+                    "n": 1,
+                    'msg': 'User added successfully.',
+                    'data': serializer.data
+                })
+            return _error_response(request, 'User not added.', serializer.errors)
+
+        return _error_response(request, 'role_code is not valid.')
+
+
+def _user_list_data(request, request_data):
+    college_id = request_data.get('college_id') or _requesting_college_id(request)
+    search = request_data.get('search')
+    role_code = request_data.get('role_code')
+
+    result = []
+
+    def apply_search(qs, fields):
+        if search not in (None, ""):
+            from django.db.models import Q
+            query = Q()
+            for f in fields:
+                query = query | Q(**{f + '__icontains': search})
+            qs = qs.filter(query)
+        return qs
+
+    def apply_college(qs, column):
+        if college_id not in (None, ""):
+            qs = qs.filter(**{column: college_id})
+        return qs
+
+    if role_code in (None, "", 'admin', 'faculty'):
+        qs = UserAdmin.objects.filter(isActive=True, role_code__in=['admin', 'faculty'])
+        if role_code in ('admin', 'faculty'):
+            qs = qs.filter(role_code=role_code)
+        if college_id not in (None, ""):
+            qs = qs.filter(college_id=int(college_id))
+        qs = apply_search(qs, ['first_name', 'last_name', 'name', 'email', 'mobilenumber'])
+        for item in UserAdminSerializer(qs.order_by('-createdAt'), many=True).data:
+            item['role_code'] = item.get('role_code') or role_code
+            if item.get('name') not in (None, ""):
+                item['display_name'] = item['name']
+            else:
+                item['display_name'] = ((item.get('first_name') or '') + ' ' + (item.get('last_name') or '')).strip()
+            result.append(item)
+
+    if role_code in (None, "", 'student'):
+        qs = Candidate.objects.filter(isActive=True, role_code='student')
+        qs = apply_college(qs, 'college_id')
+        qs = apply_search(qs, ['first_name', 'last_name', 'email', 'mobilenumber', 'admission_number', 'roll_number'])
+        for item in CandidateSerializer(qs.order_by('-createdAt'), many=True).data:
+            item['role_code'] = 'student'
+            item['display_name'] = ((item.get('first_name') or '') + ' ' + (item.get('last_name') or '')).strip()
+            result.append(item)
+
+    if role_code in (None, "", 'parent'):
+        qs = Parent.objects.filter(isActive=True, role_code='parent')
+        qs = apply_college(qs, 'college_id')
+        qs = apply_search(qs, ['first_name', 'last_name', 'email', 'mobilenumber'])
+        for item in ParentSerializer(qs.order_by('-createdAt'), many=True).data:
+            item['role_code'] = 'parent'
+            item['display_name'] = ((item.get('first_name') or '') + ' ' + (item.get('last_name') or '')).strip()
+            result.append(item)
+
+    return result
+
+
+class UserList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        response_ = {
+            "n": 1,
+            'msg': 'Users found successfully.',
+            'data': _user_list_data(request, request.GET)
+        }
+        return _final_response(request, response_)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        response_ = {
+            "n": 1,
+            'msg': 'Users found successfully.',
+            'data': _user_list_data(request, request_data)
+        }
+        return _final_response(request, response_)
+
+
+class UserDetails(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        return self._respond(request, request.GET)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        return self._respond(request, request_data)
+
+    def _respond(self, request, request_data):
+        user_id = request_data.get('id')
+        role_code = request_data.get('role_code')
+        if user_id in (None, ""):
+            return _error_response(request, 'id is required.')
+        if role_code in (None, ""):
+            return _error_response(request, 'role_code is required.')
+
+        obj = None
+        if role_code in ('admin', 'faculty'):
+            obj = UserAdmin.objects.filter(id=user_id, isActive=True).first()
+            ser = UserAdminSerializer(obj).data if obj is not None else None
+        elif role_code == 'student':
+            obj = Candidate.objects.filter(id=user_id, isActive=True).first()
+            ser = CandidateSerializer(obj).data if obj is not None else None
+        elif role_code == 'parent':
+            obj = Parent.objects.filter(id=user_id, isActive=True).first()
+            ser = ParentSerializer(obj).data if obj is not None else None
+        else:
+            return _error_response(request, 'role_code is not valid.')
+
+        if ser is None:
+            return _error_response(request, 'User not found.')
+        ser['role_code'] = role_code
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'User details found successfully.',
+            'data': ser
+        })
+
+
+class UpdateUser(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        user_id = request_data.get('id')
+        role_code = request_data.get('role_code')
+        if user_id in (None, ""):
+            return _error_response(request, 'id is required.')
+        if role_code in (None, ""):
+            return _error_response(request, 'role_code is required.')
+
+        data = dict(request_data)
+        data.pop('id', None)
+        data.pop('role_code', None)
+
+        password = data.pop('password', None)
+        if password not in (None, ""):
+            data['password'] = make_password(password)
+
+        if role_code in ('admin', 'faculty'):
+            if 'college_id' in data and data['college_id'] not in (None, ""):
+                data['college_id'] = int(data['college_id'])
+            obj = UserAdmin.objects.filter(id=user_id, isActive=True).first()
+            if obj is None:
+                return _error_response(request, 'User not found.')
+            serializer = UserAdminSerializer(obj, data=data, partial=True)
+        elif role_code == 'student':
+            obj = Candidate.objects.filter(id=user_id, isActive=True).first()
+            if obj is None:
+                return _error_response(request, 'User not found.')
+            serializer = CandidateSerializer(obj, data=data, partial=True)
+        elif role_code == 'parent':
+            obj = Parent.objects.filter(id=user_id, isActive=True).first()
+            if obj is None:
+                return _error_response(request, 'User not found.')
+            serializer = ParentSerializer(obj, data=data, partial=True)
+        else:
+            return _error_response(request, 'role_code is not valid.')
+
+        if serializer.is_valid():
+            serializer.save()
+            return _final_response(request, {
+                "n": 1,
+                'msg': 'User updated successfully.',
+                'data': serializer.data
+            })
+        return _error_response(request, 'User not updated.', serializer.errors)
+
+
+class DeleteUser(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        user_id = request_data.get('id')
+        role_code = request_data.get('role_code')
+        if user_id in (None, ""):
+            return _error_response(request, 'id is required.')
+        if role_code in (None, ""):
+            return _error_response(request, 'role_code is required.')
+
+        obj = None
+        if role_code in ('admin', 'faculty'):
+            obj = UserAdmin.objects.filter(id=user_id, isActive=True).first()
+        elif role_code == 'student':
+            obj = Candidate.objects.filter(id=user_id, isActive=True).first()
+        elif role_code == 'parent':
+            obj = Parent.objects.filter(id=user_id, isActive=True).first()
+        else:
+            return _error_response(request, 'role_code is not valid.')
+
+        if obj is None:
+            return _error_response(request, 'User not found.')
+
+        obj.isActive = False
+        obj.save()
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'User deleted successfully.',
+            'data': {}
+        })
+
+
+class ParentLogin(GenericAPIView):
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        username = request_data.get('username')
+        password = request_data.get('password')
+        if username in (None, ""):
+            return _error_response(request, 'Username is required')
+        if password in (None, ""):
+            return _error_response(request, 'Password is required')
+
+        user_object = Parent.objects.filter(
+            Q(isActive=True, username=username) | Q(isActive=True, email=username)
+        ).first()
+        if user_object is None:
+            return _error_response(request, 'User not found')
+
+        check_user_password = check_password(password, user_object.password)
+        if check_user_password is False:
+            return _error_response(request, 'Incorrect password')
+
+        ParentToken.objects.filter(user_id=user_object.id).update(isActive=False)
+        user_token = ParentToken.objects.create(user_id=user_object.id, authToken=user_object.token)
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'User logged in successfully',
+            "token": user_token.authToken,
+            "data": ParentSerializer(user_object).data
+        })
+
+
+class ParentLogout(GenericAPIView):
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        token = request_data.get('token')
+        if token in (None, ""):
+            return _error_response(request, 'token required')
+
+        token_obj = ParentToken.objects.filter(authToken=token, isActive=True).first()
+        if token_obj is None:
+            return _error_response(request, 'token not found')
+
+        token_obj.isActive = False
+        token_obj.save()
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Logout Successful!',
+            'data': []
+        })
 
 class AddRole(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
