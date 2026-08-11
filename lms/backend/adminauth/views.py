@@ -14,7 +14,6 @@ from master.serializers import *
 from django.core.files.storage import default_storage
 from django.http import QueryDict
 import re
-from course.models import TrainingMode
 from usermanagement.models import *
 from usermanagement.serializers import *
 from course.models import *
@@ -80,6 +79,7 @@ class AddAdmin(GenericAPIView):
         data['status'] = True
         data['source'] = 'admin'
         data['user_type'] = 1
+        data['role']=1
         data['og_code'] = 'SUPER'
         
         email_object = UserAdmin.objects.filter(isActive=True,email=data['email']).first()
@@ -339,6 +339,7 @@ class AddOrganisation(GenericAPIView):
         data['mobilenumber'] = request_data.get('mobilenumber')
         data['password'] = make_password(request_data.get('password'))
         data['email'] = str(request_data.get('email')).lower()
+        data['is_organisation'] = True
         data['status'] = True
         data['source'] = 'admin'
         data['user_type'] = 2
@@ -467,7 +468,6 @@ class AddTrainingCenter(GenericAPIView):
         data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None
         data['createdBy'] = str(request.user.id)
 
-        
         # data['parent_training_center'] = ''
         data['og_code'] = str(request.user.og_code)
 
@@ -540,7 +540,7 @@ class AddTrainingCenter(GenericAPIView):
 
             response_={
                         "n": 1,
-                        "msg": 'Training center added successfully',
+                        "msg": 'College added successfully',
                         "data":serializer.data                        
                     }
             if encryped_header == "1" :
@@ -553,7 +553,7 @@ class AddTrainingCenter(GenericAPIView):
             print("error",serializer.errors)
             response_={
                         "n": 0,
-                        "msg": 'Training center not registered',
+                        "msg": 'College not registered',
                         "data":[]                     
                     }
             if encryped_header == "1" :
@@ -595,7 +595,7 @@ class UpdateTrainingCenter(GenericAPIView):
         if user_object is None:
             response_={
                         "n": 0,                    
-                        "msg": 'Training center not Found',
+                        "msg": 'College not Found',
                         "data":[],                  
                     }
             if encryped_header == "1" :
@@ -684,7 +684,7 @@ class UpdateTrainingCenter(GenericAPIView):
                     )
             response_={
                         "n": 1,
-                        "msg": 'Training center updated successfully',
+                        "msg": 'College updated successfully',
                         "data":serializer.data                        
                     }
             if encryped_header == "1" :
@@ -697,7 +697,7 @@ class UpdateTrainingCenter(GenericAPIView):
             print("error",serializer.errors)
             response_={
                         "n": 0,
-                        "msg": 'Training center not updated',
+                        "msg": 'College not updated',
                         "data":[]                     
                     }
             if encryped_header == "1" :
@@ -739,7 +739,7 @@ class DeleteTrainingCenter(GenericAPIView):
         if user_object is None:
             response_={
                         "n": 0,                    
-                        "msg": 'Training center not Found',
+                        "msg": 'College not Found',
                         "data":[],                  
                     }
             if encryped_header == "1" :
@@ -763,7 +763,7 @@ class DeleteTrainingCenter(GenericAPIView):
             serializer.save()
             response_={
                         "n": 1,
-                        "msg": 'Training center deleted successfully',
+                        "msg": 'College deleted successfully',
                         "data":serializer.data                        
                     }
             if encryped_header == "1" :
@@ -776,7 +776,7 @@ class DeleteTrainingCenter(GenericAPIView):
             print("error",serializer.errors)
             response_={
                         "n": 0,
-                        "msg": 'Training center not deleted',
+                        "msg": 'College not deleted',
                         "data":[]                     
                     }
             if encryped_header == "1" :
@@ -891,7 +891,7 @@ class TrainingCenterList(GenericAPIView):
         
         response_={
                     "n": 1,
-                    "msg": 'Training center fetched successfully',
+                    "msg": 'College fetched successfully',
                     "data":user_admin_ser.data                        
                 }
         if encryped_header == "1" :
@@ -926,7 +926,7 @@ class AllTrainingCenterList(GenericAPIView):
         
         response_={
                     "n": 1,
-                    "msg": 'Training center fetched successfully',
+                    "msg": 'College fetched successfully',
                     "data":user_admin_ser.data                        
                 }
         if encryped_header == "1" :
@@ -962,7 +962,7 @@ class OrgAllTrainingCenterList(GenericAPIView):
         
         response_={
                     "n": 1,
-                    "msg": 'Training center fetched successfully',
+                    "msg": 'College fetched successfully',
                     "data":user_admin_ser.data                        
                 }
         if encryped_header == "1" :
@@ -1010,7 +1010,7 @@ class ParentAndSubTrainingCenterList(GenericAPIView):
         
         response_={
                     "n": 1,
-                    "msg": 'Training center fetched successfully',
+                    "msg": 'College fetched successfully',
                     "data":user_admin_ser.data                        
                 }
         if encryped_header == "1" :
@@ -2194,7 +2194,7 @@ class GetTrainingCenterCourses(GenericAPIView):
         else:
             response_={
                     "n": 0,
-                    'msg':'Training center id not provided.',
+                    'msg':'College id not provided.',
                     'data':{}
                 }
             if encryped_header == "1" :

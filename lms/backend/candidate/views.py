@@ -441,7 +441,6 @@ class AddCandidate(GenericAPIView):
         data['address_line_one'] = request_data.get('address_line_one')
         data['address_line_two'] = request_data.get('address_line_two')
         # 
-        data['vessel_name'] = request_data.get('vessel_name')
         data['next_vessel'] = request_data.get('next_vessel')
         data['sign_on_date'] = request_data.get('sign_on_date')
         data['sign_of_date'] = request_data.get('sign_of_date')
@@ -1240,7 +1239,6 @@ class UpdateDetailsCandidatePage(GenericAPIView):
         id = request_data.get('id')
         if id is not None:
             # 
-            data['vessel_name'] = request_data.get('vessel_name')
             data['next_vessel'] = request_data.get('next_vessel')
             data['sign_on_date'] = request_data.get('sign_on_date')
             data['sign_of_date'] = request_data.get('sign_of_date')

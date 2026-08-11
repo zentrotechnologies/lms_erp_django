@@ -39,7 +39,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     status = models.BooleanField(default=False)
     source = models.CharField(max_length=50, null=True, blank=True)
 
-    # Legacy training-center fields retained for data migration
+    # Legacy college fields retained for data migration
     accreditation_number = models.CharField(max_length=150, null=True, blank=True)
     is_parent_training_center = models.BooleanField(default=False)
     parent_training_center = models.CharField(max_length=150, null=True, blank=True)
@@ -93,7 +93,8 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     og_code = models.CharField(max_length=150, null=True, blank=True)
     og_id = models.CharField(max_length=150, null=True, blank=True)
     deactivate = models.BooleanField(default=False)
-
+    is_organisation=models.BooleanField(default=False)
+    
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -240,6 +241,6 @@ class Permissions(TrackingModel):
         ]
 
 
-class TrainingCenterCourses(TrackingModel):
+class CollegeCourses(TrackingModel):
     course_id = models.IntegerField(db_index=True)
     training_center_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)

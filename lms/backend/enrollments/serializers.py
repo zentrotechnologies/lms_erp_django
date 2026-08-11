@@ -12,3 +12,8 @@ class EnrollPaymentSerializer(serializers.ModelSerializer):
         model = EnrollPayment
         fields = "__all__"
 
+
+class CandidateSubjectSelectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CandidateSubjectSelection
+        fields = "__all__"

@@ -18,7 +18,6 @@ class Program(TrackingModel):
                 fields=["department_id", "program_code"], name="uniq_department_program"
             )
         ]
-
 # course category
 class Category(TrackingModel):
     category_name = models.CharField(max_length=255, null=True, blank=True)
@@ -55,21 +54,15 @@ class AcademicYear(TrackingModel):
     def __str__(self):
         return self.academic_year_name or ""
 class Department(TrackingModel):
-    college_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    og_code = models.CharField(max_length=50, null=True, blank=True)
     department_code = models.CharField(max_length=50, null=True, blank=True)
     department_name = models.CharField(max_length=255)
     hod_faculty_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     tags = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["college_id", "department_code"], name="uniq_college_department"
-            )
-        ]
+
 class Semester(TrackingModel):
-    program_id = models.BigIntegerField(db_index=True)
     semester_number = models.PositiveSmallIntegerField()
     semester_name = models.CharField(max_length=100)
     status = models.BooleanField(default=True)

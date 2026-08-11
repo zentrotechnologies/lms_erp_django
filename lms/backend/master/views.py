@@ -2086,7 +2086,7 @@ class AddDepartment(GenericAPIView):
             return error_response
         
         data = {
-                "college_id": request_data.get("college_id"),
+                "og_code": str(request.user.og_code),
                 "department_code": request_data.get(
                     "department_code"
                 ),
@@ -2100,18 +2100,9 @@ class AddDepartment(GenericAPIView):
                 "status": request_data.get("status", True),
                 "createdBy": str(request.user.id),
             }
-        college = College.objects.filter(
-            id=data["college_id"],
-            isActive=True,
-            status=True,
-        ).first()
 
-        if college is None:
-            return phase_one_response(request, {
-                "n": 0,
-                "msg": "Active college not found.",
-                "data": {},
-            })
+
+
         if data['department_name'] is not None and data['department_name'] !="":
             obj = Department.objects.filter(isActive=True)
             ser = DepartmentSerializer(obj,many=True)

@@ -49,16 +49,16 @@ urlpatterns = [
 
     # College student API aliases. These reuse the existing candidate code paths while
     # accepting the new student fields added to the Candidate model.
-    path('student-login',views.StudentLogin.as_view(), name='post'),
-    path('student-logout',views.StudentLogout.as_view(), name='post'),
-    path('add-student',views.AddStudent.as_view(), name='post'),
-    path('student-list',views.StudentList.as_view(), name='post'),
-    path('student-details',views.StudentDetails.as_view(), name='get'),
-    path('update-student',views.UpdateStudent.as_view(), name='post'),
-    path('delete-student',views.DeleteStudent.as_view(), name='post'),
-    path('register-student',views.RegisterStudent.as_view(), name='post'),
-    path('student-profile-details',views.StudentProfileDetails.as_view(), name='get'),
-    path('update-student-profile',views.UpdateStudentProfile.as_view(), name='post'),
+    # path('student-login',views.StudentLogin.as_view(), name='post'),
+    # path('student-logout',views.StudentLogout.as_view(), name='post'),
+    # path('add-student',views.AddStudent.as_view(), name='post'),
+    # path('student-list',views.StudentList.as_view(), name='post'),
+    # path('student-details',views.StudentDetails.as_view(), name='get'),
+    # path('update-student',views.UpdateStudent.as_view(), name='post'),
+    # path('delete-student',views.DeleteStudent.as_view(), name='post'),
+    # path('register-student',views.RegisterStudent.as_view(), name='post'),
+    # path('student-profile-details',views.StudentProfileDetails.as_view(), name='get'),
+    # path('update-student-profile',views.UpdateStudentProfile.as_view(), name='post'),
 
     path('add-admission',views.AddAdmission.as_view(), name='post'),
     path('admission-list',views.AdmissionList.as_view(), name='post'),
