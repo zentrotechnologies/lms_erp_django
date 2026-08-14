@@ -13,6 +13,10 @@ from enrollments.serializers import *
 from .serializers import *
 from master.serializers import *
 from lms.settings import *
+
+
+def _is_course_active(status):
+    return str(status or '').lower() in ('true', '1', 'active', 'approved', 't', 'yes')
 from django.contrib.auth.hashers import make_password,check_password
 from adminauth.jwt import *
 from helpers.validations import *
@@ -126,7 +130,7 @@ class TrainingCenterCourseFilterList(GenericAPIView):
             return error_response
         course_status = request_data.get('course_status')
         if course_status is not None and course_status != '':
-            courselistobj = Course.objects.filter(course_status=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
+            courselistobj = Course.objects.filter(course_status__iexact=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
         else:
             courselistobj = Course.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
 
@@ -135,9 +139,18 @@ class TrainingCenterCourseFilterList(GenericAPIView):
 
             page4 = self.paginate_queryset(courselistobj)
             serializer =  CourseSerializer(page4,many=True)
+
+            creator_ids = {
+                s['createdBy'] for s in serializer.data if s.get('createdBy')
+            }
+            user_map = {
+                str(u.id): u
+                for u in UserAdmin.objects.filter(id__in=creator_ids, isActive=True)
+            }
+
             for s in serializer.data:
-                cretby = UserAdmin.objects.filter(id=s['createdBy']).first()
-                if cretby is not None and cretby != '':
+                cretby = user_map.get(str(s.get('createdBy')))
+                if cretby is not None:
                     if cretby.user_type == 5:
                         addedby = str(cretby.first_name) + " " +str(cretby.last_name)
                     else:
@@ -191,8 +204,8 @@ class DeactivateCourse(GenericAPIView):
         if course_id is not None or course_id !='':
             course_idobj = Course.objects.filter(id=course_id).first()
             if course_idobj is not None:
-                if course_idobj.course_status is True:
-                    course_idobj.course_status = False
+                if _is_course_active(course_idobj.course_status):
+                    course_idobj.course_status = 'Inactive'
                     course_idobj.save()
 
                     response_={
@@ -261,8 +274,8 @@ class ActivateCourse(GenericAPIView):
         if course_id is not None or course_id !='':
             course_idobj = Course.objects.filter(id=course_id).first()
             if course_idobj is not None:
-                if course_idobj.course_status is False:
-                    course_idobj.course_status = True
+                if not _is_course_active(course_idobj.course_status):
+                    course_idobj.course_status = 'Active'
                     course_idobj.save()
 
                     response_={

@@ -53,7 +53,7 @@ class Course(TrackingModel):
     course_code = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     pricing = models.CharField(max_length=12, null=True, blank=True)
     description = models.TextField(default="", blank=True)
-    course_status = models.BooleanField(default=True)
+    course_status = models.CharField(max_length=50, default='Pending')
     languages = models.JSONField(default=list, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
     og_approved = models.BooleanField(default=False)

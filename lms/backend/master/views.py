@@ -7247,6 +7247,66 @@ class AcademicYearList(GenericAPIView):
         )
 
 
+class AcademicYearListByActive(GenericAPIView):
+    """
+    Simple academic year list filtered by isActive.
+
+    POST /api/master/academic-year-list
+
+    Request Body (optional):
+    {
+        "is_active": "active"    # "active" (default) | "inactive" | "all"
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Academic years found successfully.",
+        "data": [ ...AcademicYear... ]
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = request.headers.get("encrypted", "")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        is_active = request_data.get('is_active')
+
+        academic_year_obj = AcademicYear.objects.all().order_by(
+            '-is_current',
+            '-start_date',
+            '-id'
+        )
+
+        if str(is_active).lower() in ("inactive", "false", "0"):
+            academic_year_obj = academic_year_obj.filter(isActive=False)
+        elif str(is_active).lower() not in ("all", "none"):
+            academic_year_obj = academic_year_obj.filter(isActive=True)
+
+        serializer = AcademicYearSerializer(
+            academic_year_obj,
+            many=True
+        )
+
+        response_ = {
+            "n": 1,
+            "msg": "Academic years found successfully.",
+            "data": serializer.data
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
 # ============================================================
 # Update Academic Year
 # ============================================================

@@ -63,6 +63,7 @@ class Department(TrackingModel):
 
 
 class Semester(TrackingModel):
+    program_id = models.BigIntegerField(db_index=True)
     semester_number = models.PositiveSmallIntegerField()
     semester_name = models.CharField(max_length=100)
     status = models.BooleanField(default=True)

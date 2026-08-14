@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import *
 from datetime import datetime, time
-from master.models import Branch
+from master.models import Branch, ClassGroup, Semester
 from course.models import *
+from adminauth.models import UserAdmin
 
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -149,3 +150,58 @@ class UniqueScheduleSerializer(serializers.Serializer):
                         })
 
         return unique_schedules
+
+
+class TimetableTemplateListSerializer(serializers.ModelSerializer):
+    """List serializer for TimetableTemplate.
+
+    All lookups are resolved in bulk by the view and passed via ``context``:
+    ``class_group_map``, ``semester_map``, ``user_map`` and ``slot_count_map``.
+    This removes the per-template N+1 queries.
+    """
+    class_name = serializers.SerializerMethodField()
+    semister = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
+    created_date = serializers.SerializerMethodField()
+    total_lectures = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TimetableTemplate
+        fields = ['id', 'template_name', 'class_name', 'semister', 'total_lectures', 'created_by_name', 'created_date']
+
+    def get_class_name(self, obj):
+        """Get class name from ClassGroup"""
+        class_group = self.context.get('class_group_map', {}).get(obj.class_group_id)
+        if class_group:
+            return f"{class_group.class_name} {class_group.division or ''}".strip()
+        return ""
+
+    def get_semister(self, obj):
+        """Get semester name from ClassGroup -> Semester"""
+        class_group = self.context.get('class_group_map', {}).get(obj.class_group_id)
+        if class_group and class_group.semester_id:
+            semester = self.context.get('semester_map', {}).get(class_group.semester_id)
+            if semester:
+                return semester.semester_name
+        return ""
+
+    def get_created_by_name(self, obj):
+        """Get creator's name from createdBy field"""
+        creator_id = obj.created_by or obj.createdBy
+        if creator_id:
+            user = self.context.get('user_map', {}).get(str(creator_id))
+            if user:
+                if user.user_type == 5:  # Faculty
+                    return f"{user.first_name or ''} {user.last_name or ''}".strip()
+                return user.name or f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username or ""
+        return ""
+
+    def get_created_date(self, obj):
+        """Format created date"""
+        if obj.createdAt:
+            return obj.createdAt.strftime("%d/%m/%Y")
+        return ""
+
+    def get_total_lectures(self, obj):
+        """Count total lecture slots for this template"""
+        return self.context.get('slot_count_map', {}).get(obj.id, 0)

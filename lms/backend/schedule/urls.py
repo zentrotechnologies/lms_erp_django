@@ -12,7 +12,13 @@ urlpatterns = [
     path('filter-schedule-api',v.ScheduleFilterApi.as_view(),name='filter-schedule-api'),
     path('schedule-calender-events',v.ScheduleCalenderEvents.as_view(),name='schedule-calender-events'),
 
-
+    path('timetable-template-list',v.TimetableTemplateListByYearSemester.as_view(),name='timetable-template-list'),
+    path('timetable-by-filters',v.TimetableTimeTableByFilters.as_view(),name='timetable-by-filters'),
+    path('semester-list-by-program',v.SemesterListByProgram.as_view(),name='semester-list-by-program'),
+    path('semester-list-by-course',v.SemesterListByCourse.as_view(),name='semester-list-by-course'),
+    path('template-edit',v.TemplateSlotEdit.as_view(),name='template-edit'),
+    path('template-details',v.TemplateDetails.as_view(),name='template-details'),
+    path('add-template',v.AddTemplate.as_view(),name='add-template'),
 
 
     
@@ -32,6 +38,8 @@ urlpatterns = [
     
     path('get-schedule-attendance',v.GetScheduleAttendance.as_view(),name='get-schedule-attendance'),
     path('get-schedule-candidates-attendance',v.GetScheduleCandidatesAttendance.as_view(),name='get-schedule-candidates-attendance'),
+
+    path('class-list-by-course',v.ClassListByCourse.as_view(),name='post'),
 
 
 ]

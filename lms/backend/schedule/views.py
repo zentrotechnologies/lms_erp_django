@@ -1,3 +1,5 @@
+import uuid
+
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
@@ -9,8 +11,11 @@ from adminauth.jwt import *
 from helpers.validations import *
 from rest_framework import permissions
 from course.models import *
+from master.models import ClassGroup, AcademicYear, Department, Program, Semester
+from master.serializers import ClassGroupSerializer
 # Create your views here.
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.core.exceptions import ValidationError
 from candidate.models import *
 from candidate.serializers import *
 
@@ -19,7 +24,30 @@ from enrollments.serializers import *
 
 from attendance.models import *
 from attendance.serializers import *
-from datetime import date
+from datetime import date, timedelta
+from django.utils import timezone
+
+def resolve_faculty_name(faculty_id):
+    if faculty_id in (None, ''):
+        return ""
+
+    faculty_value = str(faculty_id).strip()
+    if not faculty_value:
+        return ""
+
+    try:
+        uuid.UUID(faculty_value)
+    except (AttributeError, TypeError, ValueError):
+        return ""
+
+    faculty_obj = UserAdmin.objects.filter(id=faculty_value, isActive=True).first()
+    if faculty_obj is None:
+        return ""
+
+    if getattr(faculty_obj, 'user_type', None) == 5:
+        return f"{faculty_obj.first_name or ''} {faculty_obj.last_name or ''}".strip()
+    return faculty_obj.name or ""
+
 
 def calculate_days_difference(start_date_str, end_date_str):
     # Convert string dates to date objects
@@ -2052,7 +2080,1357 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                 return Response(response_,status=200)
 
 
+class ClassListByCourse(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
 
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        return self._list_classes(request, request_data)
+
+    def _list_classes(self, request, request_data):
+        encryped_header = ""
+
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        course_id = request_data.get('course_id')
+
+        if course_id is None or course_id == "":
+            response_ = {
+                "n": 0,
+                "msg": "Course id is required.",
+                "data": {}
+            }
+            return self._respond(response_, encryped_header)
+
+        course_obj = Course.objects.filter(
+            id=course_id,
+            isActive=True
+        ).first()
+
+        if course_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Course not found.",
+                "data": {}
+            }
+            return self._respond(response_, encryped_header)
+
+        mapped_class_ids = CourseClass.objects.filter(
+            course_id=course_id,
+            isActive=True
+        ).values_list('class_id', flat=True)
+
+        if not mapped_class_ids:
+            response_ = {
+                "n": 1,
+                "msg": "No classes found for the course.",
+                "data": []
+            }
+            return self._respond(response_, encryped_header)
+
+        class_group_obj = ClassGroup.objects.filter(
+            id__in=mapped_class_ids,
+            isActive=True
+        )
+
+        academic_year_id = request_data.get(
+            'academic_year_id'
+        )
+        department_id = request_data.get(
+            'department_id'
+        )
+        program_id = request_data.get(
+            'program_id'
+        )
+        semester_id = request_data.get(
+            'semester_id'
+        )
+
+        if academic_year_id is not None and academic_year_id != "":
+            class_group_obj = class_group_obj.filter(
+                academic_year_id=academic_year_id
+            )
+
+        if department_id is not None and department_id != "":
+            class_group_obj = class_group_obj.filter(
+                department_id=department_id
+            )
+
+        if program_id is not None and program_id != "":
+            class_group_obj = class_group_obj.filter(
+                program_id=program_id
+            )
+
+        if semester_id is not None and semester_id != "":
+            class_group_obj = class_group_obj.filter(
+                semester_id=semester_id
+            )
+
+        class_group_obj = class_group_obj.order_by(
+            'academic_year_id',
+            'class_name',
+            'division'
+        )
+
+        serializer = ClassGroupSerializer(
+            class_group_obj,
+            many=True
+        )
+
+        class_group_data = serializer.data
+
+        academic_year_ids = {item['academic_year_id'] for item in class_group_data}
+        department_ids = {item['department_id'] for item in class_group_data}
+        program_ids = {item['program_id'] for item in class_group_data}
+        semester_ids = {item['semester_id'] for item in class_group_data}
+
+        academic_year_map = {
+            obj.id: obj for obj in AcademicYear.objects.filter(
+                id__in=academic_year_ids, isActive=True
+            )
+        }
+        department_map = {
+            obj.id: obj for obj in Department.objects.filter(
+                id__in=department_ids, isActive=True
+            )
+        }
+        program_map = {
+            obj.id: obj for obj in Program.objects.filter(
+                id__in=program_ids, isActive=True
+            )
+        }
+        semester_map = {
+            obj.id: obj for obj in Semester.objects.filter(
+                id__in=semester_ids, isActive=True
+            )
+        }
+
+        for item in class_group_data:
+            item['course_id'] = course_obj.id
+            item['course_name'] = course_obj.course_name
+            item['course_code'] = course_obj.course_code
+
+            academic_year_obj = academic_year_map.get(item['academic_year_id'])
+            if academic_year_obj is not None:
+                item['academic_year_name'] = (
+                    academic_year_obj.academic_year_name
+                )
+            else:
+                item['academic_year_name'] = ""
+
+            department_obj = department_map.get(item['department_id'])
+            if department_obj is not None:
+                item['department_name'] = (
+                    department_obj.department_name
+                )
+                item['department_code'] = (
+                    department_obj.department_code
+                )
+            else:
+                item['department_name'] = ""
+                item['department_code'] = ""
+
+            program_obj = program_map.get(item['program_id'])
+            if program_obj is not None:
+                item['program_name'] = (
+                    program_obj.program_name
+                )
+                item['program_code'] = (
+                    program_obj.program_code
+                )
+            else:
+                item['program_name'] = ""
+                item['program_code'] = ""
+
+            semester_obj = semester_map.get(item['semester_id'])
+            if semester_obj is not None:
+                item['semester_name'] = (
+                    semester_obj.semester_name
+                )
+                item['semester_number'] = (
+                    semester_obj.semester_number
+                )
+            else:
+                item['semester_name'] = ""
+                item['semester_number'] = ""
+
+        response_ = {
+            "n": 1,
+            "msg": "Classes found successfully.",
+            "data": class_group_data
+        }
+
+        return self._respond(response_, encryped_header)
+
+    def _respond(self, response_, encryped_header):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
+class TimetableTemplateListByYearSemester(GenericAPIView):
+    """
+    API endpoint to list timetable templates filtered by academic year and semester.
+    
+    POST /api/schedule/timetable-template-list/
+    
+    Request Body:
+    {
+        "academic_year_id": 1,  # Required
+        "semister_id": 1        # Required
+    }
+    
+    Response:
+    {
+        "n": 1,
+        "msg": "Templates retrieved successfully",
+        "data": [
+            {
+                "id": 1,
+                "template_name": "Template 1",
+                "class_name": "F.Y.B.Sc.",
+                "total_lectures": 7,
+                "created_by_name": "Mr. Satyavan M. Kunjir",
+                "created_date": "09/08/2026"
+            }
+        ]
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        academic_year_id = request_data.get('academic_year_id')
+        semister_id = request_data.get('semister_id')
+        course_id = request_data.get('course_id')
+
+        # Validate required fields
+        if not academic_year_id:
+            response_ = {
+                "n": 0,
+                "msg": "academic_year_id is required",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        if not semister_id:
+            response_ = {
+                "n": 0,
+                "msg": "semister_id is required",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        # Filter timetable templates by year and semester (class group -> semester)
+        class_ids = ClassGroup.objects.filter(
+            semester_id=semister_id,
+            isActive=True
+        ).values_list('id', flat=True)
+
+        templates_queryset = TimetableTemplate.objects.filter(
+            academic_year_id=academic_year_id,
+            class_group_id__in=class_ids,
+            is_active=True
+        ).order_by('-createdAt')
+
+        # Optional course filter: only templates that have at least one slot for this course
+        if course_id not in (None, ''):
+            slot_template_ids = TimetableSlot.objects.filter(
+                course_id=course_id,
+                is_active=True
+            ).values_list('timetable_template_id', flat=True)
+            templates_queryset = templates_queryset.filter(id__in=slot_template_ids)
+
+        if templates_queryset.exists():
+            page = self.paginate_queryset(templates_queryset)
+
+            class_group_map = {
+                cg.id: cg
+                for cg in ClassGroup.objects.filter(
+                    id__in={t.class_group_id for t in page},
+                    isActive=True
+                )
+            }
+            semester_map = {
+                s.id: s
+                for s in Semester.objects.filter(
+                    id__in={cg.semester_id for cg in class_group_map.values() if cg.semester_id},
+                    isActive=True
+                )
+            }
+            creator_ids = {
+                t.created_by or t.createdBy for t in page
+                if (t.created_by or t.createdBy)
+            }
+            valid_creator_ids = set()
+            for creator_id in creator_ids:
+                try:
+                    uuid.UUID(str(creator_id))
+                except (AttributeError, TypeError, ValueError):
+                    continue
+                valid_creator_ids.add(str(creator_id))
+            user_map = {
+                str(u.id): u
+                for u in UserAdmin.objects.filter(id__in=valid_creator_ids, isActive=True)
+            }
+            slot_count_map = {
+                row['timetable_template_id']: row['total']
+                for row in TimetableSlot.objects.filter(
+                    timetable_template_id__in=[t.id for t in page],
+                    is_active=True
+                ).values('timetable_template_id').annotate(total=Count('id'))
+            }
+
+            serializer = TimetableTemplateListSerializer(
+                page,
+                many=True,
+                context={
+                    'class_group_map': class_group_map,
+                    'semester_map': semester_map,
+                    'user_map': user_map,
+                    'slot_count_map': slot_count_map,
+                }
+            )
+
+            response_ = {
+                "n": 1,
+                "msg": "Templates retrieved successfully",
+                "data": serializer.data
+            }
+
+            if encryped_header == "1":
+                paginated_response = self.get_paginated_response(serializer.data)
+                data_to_serialize = convert_decimals_to_float(paginated_response)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(self.get_paginated_response(serializer.data), status=200)
+        else:
+            response_ = {
+                "n": 1,
+                "msg": "No templates found",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+
+class TemplateSlotEdit(GenericAPIView):
+    """
+    API to edit a single lecture slot of a timetable template by template id, lecture day and lecture no.
+
+    POST /api/schedule/template-edit/
+
+    Request Body:
+    {
+        "template_id": 1,       # Required
+        "lecture_day": 0,       # Required (0 = Monday)
+        "lecture_no": 1,        # Required (period number)
+        "start_time": "09:00 AM",
+        "end_time": "10:00 AM",
+        "course_id": 9,
+        "faculty_id": "1",
+        "room_number": "101",
+        "entry_for": "lecture",
+        "lecture_type": "THEORY"
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Template lecture updated successfully",
+        "data": { ...updated slot... }
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        lecture_day = request_data.get('lecture_day')
+        lecture_no = request_data.get('lecture_no')
+
+        msg = ''
+        validation_status = True
+
+        if template_id in (None, ''):
+            msg = 'template_id is required'
+            validation_status = False
+        if lecture_day in (None, ''):
+            msg = 'lecture_day is required'
+            validation_status = False
+        if lecture_no in (None, ''):
+            msg = 'lecture_no is required'
+            validation_status = False
+
+        try:
+            lecture_day = int(lecture_day)
+            lecture_no = int(lecture_no)
+        except (TypeError, ValueError):
+            msg = 'lecture_day and lecture_no must be integers'
+            validation_status = False
+
+        if validation_status and not (0 <= lecture_day <= 6):
+            msg = 'lecture_day must be between 0 and 6'
+            validation_status = False
+
+        if validation_status and lecture_no < 1:
+            msg = 'lecture_no must be a positive integer'
+            validation_status = False
+
+        if not validation_status:
+            response_ = {
+                "n": 0,
+                "msg": msg,
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        if not TimetableTemplate.objects.filter(id=template_id, isActive=True).exists():
+            response_ = {
+                "n": 0,
+                "msg": "Template not found",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        slot_obj = TimetableSlot.objects.filter(
+            timetable_template_id=template_id,
+            day_of_week=lecture_day,
+            period_number=lecture_no
+        ).first()
+
+        if slot_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Lecture not found for this template",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        editable_fields = ['start_time', 'end_time', 'course_id', 'faculty_id', 'room_number', 'entry_for', 'lecture_type']
+        for field in editable_fields:
+            if field in request_data and request_data[field] not in (None, ''):
+                setattr(slot_obj, field, request_data[field])
+
+        slot_obj.updatedAt = timezone.now()
+        if request.user:
+            slot_obj.updatedBy = str(request.user.id)
+        slot_obj.save()
+
+        response_ = {
+            "n": 1,
+            "msg": "Template lecture updated successfully",
+            "data": {
+                "id": slot_obj.id,
+                "template_id": slot_obj.timetable_template_id,
+                "lecture_day": slot_obj.day_of_week,
+                "lecture_no": slot_obj.period_number,
+                "start_time": slot_obj.start_time,
+                "end_time": slot_obj.end_time,
+                "course_id": slot_obj.course_id,
+                "faculty_id": slot_obj.faculty_id,
+                "room_number": slot_obj.room_number,
+                "entry_for": slot_obj.entry_for,
+                "lecture_type": slot_obj.lecture_type
+            }
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        else:
+            return Response(response_, status=200)
+
+
+class SemesterListByProgram(GenericAPIView):
+    """
+    API to list semesters of a program with timetable template counts.
+
+    POST /api/schedule/semester-list-by-program
+
+    Request Body:
+    {
+        "program_id": 2,        # Required
+        "academic_year_id": 1   # Optional (template count for a specific year)
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Semester list found successfully",
+        "data": [
+            {
+                "id": 1,
+                "semester_name": "Semester I",
+                "semester_number": 1,
+                "program_id": 2,
+                "template_count": 2
+            }
+        ]
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        program_id = request_data.get('program_id')
+        academic_year_id = request_data.get('academic_year_id')
+
+        if program_id in (None, ''):
+            response_ = {
+                "n": 0,
+                "msg": "program_id is required",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            program_id=program_id,
+            isActive=True
+        ).order_by('semester_number')
+
+        semester_data = []
+        for sem in semester_obj:
+            class_ids = ClassGroup.objects.filter(
+                semester_id=sem.id,
+                isActive=True
+            ).values_list('id', flat=True)
+
+            template_qs = TimetableTemplate.objects.filter(
+                class_group_id__in=class_ids,
+                is_active=True
+            )
+            if academic_year_id not in (None, ''):
+                template_qs = template_qs.filter(
+                    academic_year_id=academic_year_id
+                )
+
+            semester_data.append({
+                "id": sem.id,
+                "semester_name": sem.semester_name,
+                "semester_number": sem.semester_number,
+                "program_id": sem.program_id,
+                "template_count": template_qs.count()
+            })
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester list found successfully",
+            "data": semester_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        else:
+            return Response(response_, status=200)
+
+
+class SemesterListByCourse(GenericAPIView):
+    """
+    API to list semesters of a course based on the course's semister_count
+    with timetable template counts.
+
+    Only the first `semister_count` semesters are returned. Example:
+    semister_count = 3 -> Semester I, II, III. If semister_count is
+    None/0/absent, all semesters of the course's program(s) are returned.
+
+    POST /api/schedule/semester-list-by-course
+
+    Request Body:
+    {
+        "course_id": 9,         # Required
+        "academic_year_id": 1   # Optional (template count for a specific year)
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Semester list found successfully",
+        "data": [
+            {
+                "id": 1,
+                "semester_name": "Semester I",
+                "semester_number": 1,
+                "program_id": 2,
+                "template_count": 2
+            }
+        ]
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        course_id = request_data.get('course_id')
+        academic_year_id = request_data.get('academic_year_id')
+
+        if course_id in (None, ''):
+            response_ = {
+                "n": 0,
+                "msg": "course_id is required",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        course_obj = Course.objects.filter(
+            id=course_id,
+            isActive=True
+        ).first()
+
+        if course_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Course not found.",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        semister_count = course_obj.semister_count
+
+        mapped_class_ids = CourseClass.objects.filter(
+            course_id=course_id,
+            isActive=True
+        ).values_list('class_id', flat=True)
+
+        program_ids = ClassGroup.objects.filter(
+            id__in=mapped_class_ids,
+            isActive=True
+        ).values_list('program_id', flat=True).distinct()
+
+        if not program_ids:
+            response_ = {
+                "n": 1,
+                "msg": "No semesters found for the course.",
+                "data": []
+            }
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        semester_obj = Semester.objects.filter(
+            program_id__in=program_ids,
+            isActive=True
+        ).order_by('semester_number')
+
+        if semister_count:
+            semester_obj = semester_obj[:int(semister_count)]
+
+        semester_data = []
+        for sem in semester_obj:
+            class_ids = ClassGroup.objects.filter(
+                semester_id=sem.id,
+                isActive=True
+            ).values_list('id', flat=True)
+
+            template_qs = TimetableTemplate.objects.filter(
+                class_group_id__in=class_ids,
+                is_active=True
+            )
+            if academic_year_id not in (None, ''):
+                template_qs = template_qs.filter(
+                    academic_year_id=academic_year_id
+                )
+
+            semester_data.append({
+                "id": sem.id,
+                "semester_name": sem.semester_name,
+                "semester_number": sem.semester_number,
+                "program_id": sem.program_id,
+                "template_count": template_qs.count()
+            })
+
+        response_ = {
+            "n": 1,
+            "msg": "Semester list found successfully",
+            "data": semester_data
+        }
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        else:
+            return Response(response_, status=200)
+
+
+class TimetableTimeTableByFilters(GenericAPIView):
+    """
+    Fetch timetable rows by template / academic year / semester / class / course.
+    This matches the actual DB schema in schedule.models.TimetableTemplate:
+    - academic_year_id
+    - class_group_id
+    - template_name
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        academic_year_id = request_data.get('academic_year_id')
+        semister_id = request_data.get('semister_id')
+        class_id = request_data.get('class_id')
+        course_id = request_data.get('course_id')
+
+        template_queryset = TimetableTemplate.objects.filter(isActive=True)
+
+        if template_id not in (None, ''):
+            template_queryset = template_queryset.filter(id=template_id)
+        if academic_year_id not in (None, ''):
+            template_queryset = template_queryset.filter(academic_year_id=academic_year_id)
+        if semister_id not in (None, ''):
+            class_group_ids = ClassGroup.objects.filter(semester_id=semister_id, isActive=True).values_list('id', flat=True)
+            template_queryset = template_queryset.filter(class_group_id__in=list(class_group_ids))
+        if class_id not in (None, ''):
+            template_queryset = template_queryset.filter(class_group_id=class_id)
+
+        if not template_queryset.exists():
+            response_ = {
+                "n": 0,
+                "msg": "No timetable template found for the given filters",
+                "data": []
+            }
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        result = []
+        templates = list(template_queryset.order_by('-createdAt'))
+
+        class_group_map = {
+            cg.id: cg
+            for cg in ClassGroup.objects.filter(
+                id__in={t.class_group_id for t in templates},
+                isActive=True
+            )
+        }
+        semester_map = {
+            s.id: s
+            for s in Semester.objects.filter(
+                id__in={cg.semester_id for cg in class_group_map.values() if cg.semester_id},
+                isActive=True
+            )
+        }
+        year_map = {
+            y.id: y
+            for y in AcademicYear.objects.filter(
+                id__in={t.academic_year_id for t in templates},
+                isActive=True
+            )
+        }
+
+        slots_qs = TimetableSlot.objects.filter(
+            timetable_template_id__in=[t.id for t in templates],
+            isActive=True
+        ).order_by('day_of_week', 'period_number')
+        if course_id not in (None, ''):
+            slots_qs = slots_qs.filter(course_id=course_id)
+
+        slot_list = list(slots_qs)
+
+        course_map = {
+            c.id: c
+            for c in Course.objects.filter(
+                id__in={s.course_id for s in slot_list},
+                isActive=True
+            )
+        }
+
+        faculty_ids = set()
+        for slot in slot_list:
+            if slot.faculty_id in (None, ''):
+                continue
+            try:
+                uuid.UUID(str(slot.faculty_id).strip())
+            except (AttributeError, TypeError, ValueError):
+                continue
+            faculty_ids.add(str(slot.faculty_id))
+
+        user_map = {
+            str(u.id): u
+            for u in UserAdmin.objects.filter(id__in=faculty_ids, isActive=True)
+        }
+
+        def faculty_name(faculty_id):
+            if faculty_id in (None, ''):
+                return ""
+            user = user_map.get(str(faculty_id))
+            if user is None:
+                return ""
+            if getattr(user, 'user_type', None) == 5:
+                return f"{user.first_name or ''} {user.last_name or ''}".strip()
+            return user.name or ""
+
+        slots_by_template = {}
+        for slot in slot_list:
+            slots_by_template.setdefault(slot.timetable_template_id, []).append(slot)
+
+        for template_obj in templates:
+            class_group = class_group_map.get(template_obj.class_group_id)
+            semester_obj = None
+            if class_group is not None:
+                semester_obj = semester_map.get(class_group.semester_id)
+            year_obj = year_map.get(template_obj.academic_year_id)
+
+            template_slots = slots_by_template.get(template_obj.id, [])
+
+            slots_by_day = {}
+            for slot in template_slots:
+                day_index = slot.day_of_week
+                if day_index not in slots_by_day:
+                    slots_by_day[day_index] = []
+
+                course_obj = course_map.get(slot.course_id)
+
+                slots_by_day[day_index].append({
+                    "id": slot.id,
+                    "period_number": slot.period_number,
+                    "start_time": slot.start_time,
+                    "end_time": slot.end_time,
+                    "course_id": slot.course_id,
+                    "course_name": course_obj.course_name if course_obj else "",
+                    "faculty_id": slot.faculty_id,
+                    "faculty_name": faculty_name(slot.faculty_id),
+                    "entry_for": slot.entry_for,
+                    "lecture_type": slot.lecture_type,
+                })
+
+            timetable_rows = []
+            for day in range(7):
+                lectures = slots_by_day.get(day, [])
+                timetable_rows.append({
+                    "day_of_week": day,
+                    "day_name": day_names[day] if 0 <= day < len(day_names) else "",
+                    "lectures": lectures
+                })
+
+            class_name = ""
+            if class_group:
+                class_name = " ".join(part for part in [class_group.class_name, class_group.division] if part).strip()
+
+            result.append({
+                "template_id": template_obj.id,
+                "template_name": template_obj.template_name,
+                "academic_year_id": template_obj.academic_year_id,
+                "academic_year_name": year_obj.academic_year_name if year_obj else "",
+                "semister_id": class_group.semester_id if class_group else None,
+                "semister_name": semester_obj.semester_name if semester_obj else "",
+                "class_id": template_obj.class_group_id,
+                "class_name": class_name,
+                "slots": timetable_rows,
+                "total_lectures": sum(len(v) for v in slots_by_day.values())
+            })
+
+        response_ = {
+            "n": 1,
+            "msg": "Timetable found successfully",
+            "data": result[0] if len(result) == 1 else result
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+class TemplateDetails(GenericAPIView):
+    """Backward-compatible template detail API using actual DB fields."""
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id is required", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        template_obj = TimetableTemplate.objects.filter(id=template_id, isActive=True).first()
+        if template_obj is None:
+            response_ = {"n": 0, "msg": "Template not found", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        class_group = ClassGroup.objects.filter(id=template_obj.class_group_id, isActive=True).first()
+        semester_obj = None
+        if class_group is not None:
+            semester_obj = Semester.objects.filter(id=class_group.semester_id, isActive=True).first()
+        year_obj = AcademicYear.objects.filter(id=template_obj.academic_year_id, isActive=True).first()
+
+        class_name = ""
+        if class_group:
+            class_name = " ".join(part for part in [class_group.class_name, class_group.division] if part).strip()
+
+        slots_qs = TimetableSlot.objects.filter(timetable_template_id=template_obj.id, isActive=True).order_by('day_of_week', 'period_number')
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        day_map = {idx: [] for idx in range(7)}
+
+        slot_list = list(slots_qs)
+
+        course_map = {
+            c.id: c
+            for c in Course.objects.filter(
+                id__in={s.course_id for s in slot_list},
+                isActive=True
+            )
+        }
+
+        faculty_ids = set()
+        for slot in slot_list:
+            if slot.faculty_id in (None, ''):
+                continue
+            try:
+                uuid.UUID(str(slot.faculty_id).strip())
+            except (AttributeError, TypeError, ValueError):
+                continue
+            faculty_ids.add(str(slot.faculty_id))
+
+        user_map = {
+            str(u.id): u
+            for u in UserAdmin.objects.filter(id__in=faculty_ids, isActive=True)
+        }
+
+        for slot in slot_list:
+            course_obj = course_map.get(slot.course_id)
+            faculty_name = ""
+            user = user_map.get(str(slot.faculty_id))
+            if user is not None:
+                if getattr(user, 'user_type', None) == 5:
+                    faculty_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+                else:
+                    faculty_name = user.name or ""
+
+            day_map.setdefault(slot.day_of_week, []).append({
+                "id": slot.id,
+                "period_number": slot.period_number,
+                "start_time": slot.start_time,
+                "end_time": slot.end_time,
+                "course_id": slot.course_id,
+                "course_name": course_obj.course_name if course_obj else "",
+                "faculty_id": slot.faculty_id,
+                "faculty_name": faculty_name,
+                "entry_for": slot.entry_for,
+                "lecture_type": slot.lecture_type,
+            })
+
+        slots_data = [{
+            "day_of_week": day,
+            "day_name": day_names[day] if 0 <= day < len(day_names) else "",
+            "lectures": day_map.get(day, [])
+        } for day in range(7) if day_map.get(day)]
+
+        response_ = {
+            "n": 1,
+            "msg": "Template details found successfully",
+            "data": {
+                "template_id": template_obj.id,
+                "template_name": template_obj.template_name,
+                "academic_year_id": template_obj.academic_year_id,
+                "academic_year_name": year_obj.academic_year_name if year_obj else "",
+                "semister_id": class_group.semester_id if class_group else None,
+                "semister_name": semester_obj.semester_name if semester_obj else "",
+                "class_id": template_obj.class_group_id,
+                "class_name": class_name,
+                "total_lectures": len(slot_list),
+                "slots": slots_data,
+            }
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+def parse_period_time(value):
+    """Parse a time string (24h 'HH:MM' or 12h 'hh:mm AM/PM') into datetime.time."""
+    value = str(value or "").strip()
+    for fmt in ("%I:%M %p", "%I:%M%p", "%H:%M", "%H:%M:%S"):
+        try:
+            return datetime.strptime(value, fmt).time()
+        except ValueError:
+            continue
+    raise ValueError("Invalid time format")
+
+
+def build_period_times(start_time_str, duration_minutes, count):
+    """Return a list of (start_time, end_time) 'HH:MM' strings for `count` periods."""
+    base = datetime.combine(date.today(), parse_period_time(start_time_str))
+    times = []
+    for i in range(count):
+        start_dt = base + timedelta(minutes=i * duration_minutes)
+        end_dt = start_dt + timedelta(minutes=duration_minutes)
+        times.append((start_dt.strftime("%H:%M"), end_dt.strftime("%H:%M")))
+    return times
+
+
+class AddTemplate(GenericAPIView):
+    """
+    Create a timetable template and auto-generate its weekly slot grid.
+
+    POST /api/schedule/add-template
+
+    Request Body:
+    {
+        "template_name": "Regular Week 1",      # Required
+        "academic_year_id": 1,                  # Required
+        "class_group_id": 1,                    # Required
+        "effective_from": "2026-07-01",         # Required
+        "effective_to": "2026-12-31",           # Optional
+        "periods_per_day": 7,                   # Required
+        "days": [0, 1, 2, 3, 4, 5],            # Required (0=Monday .. 6=Sunday)
+        "start_time": "09:00",                  # Optional, default 09:00
+        "period_duration_minutes": 60           # Optional, default 60
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Template created successfully",
+        "data": { ...template metadata, "slots_count": N, "slots": [...] }
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_name = request_data.get('template_name')
+        academic_year_id = request_data.get('academic_year_id')
+        class_group_id = request_data.get('class_group_id')
+        effective_from = request_data.get('effective_from')
+        effective_to = request_data.get('effective_to')
+        periods_per_day = request_data.get('periods_per_day')
+        days = request_data.get('days')
+        start_time = request_data.get('start_time') or "09:00"
+        try:
+            period_duration_minutes = int(request_data.get('period_duration_minutes') or 60)
+        except (TypeError, ValueError):
+            period_duration_minutes = 60
+
+        msg = ""
+        validation_status = True
+
+        if template_name in (None, ''):
+            msg = 'template_name is required'
+            validation_status = False
+        elif academic_year_id in (None, ''):
+            msg = 'academic_year_id is required'
+            validation_status = False
+        elif class_group_id in (None, ''):
+            msg = 'class_group_id is required'
+            validation_status = False
+        elif effective_from in (None, ''):
+            msg = 'effective_from is required'
+            validation_status = False
+        elif periods_per_day in (None, ''):
+            msg = 'periods_per_day is required'
+            validation_status = False
+        elif days in (None, ''):
+            msg = 'days is required'
+            validation_status = False
+
+        if validation_status:
+            try:
+                periods_per_day = int(periods_per_day)
+            except (TypeError, ValueError):
+                msg = 'periods_per_day must be an integer'
+                validation_status = False
+
+        if validation_status and periods_per_day < 1:
+            msg = 'periods_per_day must be at least 1'
+            validation_status = False
+
+        if validation_status:
+            if not isinstance(days, (list, tuple)) or not days:
+                msg = 'days must be a non-empty list'
+                validation_status = False
+            else:
+                normalized_days = set()
+                for day in days:
+                    try:
+                        day = int(day)
+                    except (TypeError, ValueError):
+                        msg = 'days must contain valid integers'
+                        validation_status = False
+                        break
+                    if not (0 <= day <= 6):
+                        msg = 'days must be between 0 and 6'
+                        validation_status = False
+                        break
+                    normalized_days.add(day)
+                days = sorted(normalized_days)
+
+        if not validation_status:
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        class_group = ClassGroup.objects.filter(id=class_group_id, isActive=True).first()
+        if class_group is None:
+            response_ = {"n": 0, "msg": "Class not found", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        if not AcademicYear.objects.filter(id=academic_year_id, isActive=True).exists():
+            response_ = {"n": 0, "msg": "Academic year not found", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        try:
+            effective_from_date = date.fromisoformat(str(effective_from))
+        except (TypeError, ValueError):
+            response_ = {"n": 0, "msg": "effective_from must be a valid date (YYYY-MM-DD)", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        effective_to_date = None
+        if effective_to not in (None, ''):
+            try:
+                effective_to_date = date.fromisoformat(str(effective_to))
+            except (TypeError, ValueError):
+                response_ = {"n": 0, "msg": "effective_to must be a valid date (YYYY-MM-DD)", "data": []}
+                if encrypted_header == "1":
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata, status=200)
+                return Response(response_, status=200)
+            if effective_to_date < effective_from_date:
+                response_ = {"n": 0, "msg": "effective_to cannot be before effective_from", "data": []}
+                if encrypted_header == "1":
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata, status=200)
+                return Response(response_, status=200)
+
+        existing = TimetableTemplate.objects.filter(
+            academic_year_id=academic_year_id,
+            class_group_id=class_group_id,
+            template_name=template_name,
+            is_active=True,
+        ).first()
+        if existing is not None:
+            response_ = {"n": 0, "msg": "A template with this name already exists for this class", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        try:
+            period_times = build_period_times(start_time, period_duration_minutes, periods_per_day)
+        except ValueError:
+            response_ = {"n": 0, "msg": "start_time must be a valid time (e.g. 09:00 or 09:00 AM)", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        template_obj = TimetableTemplate.objects.create(
+            academic_year_id=academic_year_id,
+            class_group_id=class_group_id,
+            template_name=template_name,
+            effective_from=effective_from_date,
+            effective_to=effective_to_date,
+            is_published=False,
+            is_active=True,
+            created_by=str(request.user.id) if request.user else "admin",
+            createdBy=str(request.user.id) if request.user else "admin",
+        )
+
+        slot_objs = []
+        for day in days:
+            for i in range(periods_per_day):
+                start_time_str, end_time_str = period_times[i]
+                slot_objs.append(
+                    TimetableSlot(
+                        timetable_template_id=template_obj.id,
+                        day_of_week=day,
+                        period_number=i + 1,
+                        start_time=start_time_str,
+                        end_time=end_time_str,
+                        course_id=0,
+                        faculty_id="",
+                        room_number="",
+                        entry_for="lecture",
+                        lecture_type="THEORY",
+                        is_active=True,
+                    )
+                )
+
+        TimetableSlot.objects.bulk_create(slot_objs)
+
+        slots_data = [{
+            "id": slot.id,
+            "day_of_week": slot.day_of_week,
+            "period_number": slot.period_number,
+            "start_time": slot.start_time,
+            "end_time": slot.end_time,
+            "course_id": slot.course_id,
+        } for slot in slot_objs]
+
+        response_ = {
+            "n": 1,
+            "msg": "Template created successfully",
+            "data": {
+                "template_id": template_obj.id,
+                "template_name": template_obj.template_name,
+                "academic_year_id": template_obj.academic_year_id,
+                "class_group_id": template_obj.class_group_id,
+                "class_name": f"{class_group.class_name} {class_group.division or ''}".strip(),
+                "effective_from": template_obj.effective_from.isoformat(),
+                "effective_to": template_obj.effective_to.isoformat() if template_obj.effective_to else None,
+                "slots_count": len(slot_objs),
+                "slots": slots_data,
+            },
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
 
 
 

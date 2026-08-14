@@ -19,6 +19,7 @@ urlpatterns = [
 
     path('add-academicyear',views.AddAcademicYear.as_view(), name='post'),
     path('academicyear-list',views.AcademicYearList.as_view(), name='post'),
+    path('academic-year-list',views.AcademicYearListByActive.as_view(), name='post'),
     path('update-academicyear',views.UpdateAcademicYear.as_view(), name='post'),
     path('delete-academicyear',views.DeleteAcademicYear.as_view(), name='post'),
     path('change-academicyear-status',views.ChangeAcademicYearStatus.as_view(), name='post'),
