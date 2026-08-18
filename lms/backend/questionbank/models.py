@@ -4,7 +4,7 @@ from helpers.models import TrackingModel
 
 class Question(TrackingModel):
     course = models.JSONField(default=list, blank=True)
-    module = models.JSONField(default=list, blank=True)
+    subject = models.JSONField(default=list, blank=True)
     type_of_question = models.CharField(max_length=50, null=True)
     question_text = models.TextField(null=True)
     correct_option = models.BigIntegerField(null=True)
@@ -29,12 +29,7 @@ class QuestionOption(TrackingModel):
     option_answer = models.TextField(null=True)
     option_image = models.TextField(null=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["question_id", "option"], name="uniq_question_option_number"
-            )
-        ]
+
 
 
 class QuestionImages(TrackingModel):

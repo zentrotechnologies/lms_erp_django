@@ -11,9 +11,9 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
 class CustomScheduleSerializer(serializers.ModelSerializer):
     course_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Course.objects.all())
-    training_center_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Course.objects.all())
+    college_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Course.objects.all())
     course_names = serializers.SerializerMethodField()
-    training_center_names = serializers.SerializerMethodField()
+    college_names = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     formatted_start_date = serializers.SerializerMethodField()
     formatted_end_date = serializers.SerializerMethodField()
@@ -30,9 +30,9 @@ class CustomScheduleSerializer(serializers.ModelSerializer):
         # Fetch all related courses and return their names
         return [course.course_name for course in obj.course_ids.all()]
     
-    def get_training_center_names(self, obj):
+    def get_college_names(self, obj):
         # Fetch all related courses and return their names
-        return [course.name for course in obj.training_center_ids.all()]
+        return [course.name for course in obj.college_ids.all()]
     
     def get_branch_name(self, obj):
         obj_id = obj.branch_id
@@ -113,8 +113,8 @@ class RescheduleLogSerializer(serializers.ModelSerializer):
 class UniqueScheduleSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     schedulename = serializers.CharField()
-    training_center_id = serializers.IntegerField()
-    training_center_name = serializers.CharField()
+    college_id = serializers.IntegerField()
+    college_name = serializers.CharField()
     course_id = serializers.IntegerField()
     course_name = serializers.CharField()
     formatted_start_date = serializers.CharField()
@@ -125,25 +125,25 @@ class UniqueScheduleSerializer(serializers.Serializer):
 
     @classmethod
     def get_unique_pairs(cls, queryset):
-        """Transforms queryset into unique training_center_id & course_id pairs with names"""
+        """Transforms queryset into unique college_id & course_id pairs with names"""
         unique_schedules = []
         seen_pairs = set()
 
         for schedule in queryset:
-            training_centers = schedule.training_center_ids.all()
+            colleges = schedule.college_ids.all()
             courses = schedule.course_ids.all()
 
-            for training_center in training_centers:
+            for college in colleges:
                 for course in courses:
-                    pair = (training_center.id, course.id)
+                    pair = (college.id, course.id)
 
                     if pair not in seen_pairs:
                         seen_pairs.add(pair)
                         unique_schedules.append({
                             "id": schedule.id,
                             "schedulename": schedule.schedulename,
-                            "training_center_id": training_center.id,
-                            "training_center_name": training_center.name,
+                            "college_id": college.id,
+                            "college_name": college.name,
                             "course_id": course.id,
                             "course_name": course.course_name
                         })

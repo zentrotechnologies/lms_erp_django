@@ -8,7 +8,7 @@ from datetime import datetime, date
 hostURL = "http://127.0.0.1:8000"
 frontURL = "http://127.0.0.1:8002"
 candidateURL = "http://127.0.0.1:8002"
-trainingcenterURL = "http://127.0.0.1:8001"
+collegeURL = "http://127.0.0.1:8001"
 
 
 

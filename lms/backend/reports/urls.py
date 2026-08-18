@@ -4,8 +4,8 @@ from django.urls import include, path
 
 urlpatterns = [
 
-    path('filter-training-center-report-api',views.FilterTrainingCenterReportApi.as_view(), name='post'),
-    path('get-training-center-report-counts-api',views.GetTrainingCenterReportCountsApi.as_view(), name='post'),
+    path('filter-college-report-api',views.FilterCollegeReportApi.as_view(), name='post'),
+    path('get-college-report-counts-api',views.GetCollegeReportCountsApi.as_view(), name='post'),
 
     path('filter-courses-schedules-report-api',views.FilterCoursesScheduleReportApi.as_view(), name='post'),
     path('get-courses-schedules-report-counts-api',views.GetCoursesScheduleReportCountsApi.as_view(), name='post'),

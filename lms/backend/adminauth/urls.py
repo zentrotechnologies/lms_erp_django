@@ -8,22 +8,24 @@ urlpatterns = [
     path('add-admin',views.AddAdmin.as_view(), name='post'),
     
     path('add-oraganisation',views.AddOrganisation.as_view(), name='post'),
-    path('add-training-center',views.AddTrainingCenter.as_view(), name='post'),
-    path('update-training-center',views.UpdateTrainingCenter.as_view(), name='post'),
-    path('delete-training-center',views.DeleteTrainingCenter.as_view(), name='post'),
+    path('add-college',views.AddCollege.as_view(), name='post'),
+    path('update-college',views.UpdateCollege.as_view(), name='post'),
+    path('delete-college',views.DeleteCollege.as_view(), name='post'),
     path('delete-document',views.DeleteDocument.as_view(), name='post'),
 
 
-    path('training-center-list',views.TrainingCenterList.as_view(), name='post'),
-    path('all-training-center-list',views.AllTrainingCenterList.as_view(), name='post'),
-    path('org-all-training-center-list',views.OrgAllTrainingCenterList.as_view(), name='post'),
-    path('parent-and-sub-training-center-list',views.ParentAndSubTrainingCenterList.as_view(), name='post'),
+    path('college-list',views.CollegeList.as_view(), name='post'),
+    path('all-college-list',views.AllCollegeList.as_view(), name='post'),
+    path('org-all-college-list',views.OrgAllCollegeList.as_view(), name='post'),
+    path('parent-and-sub-college-list',views.ParentAndSubCollegeList.as_view(), name='post'),
     
     path('user-details',views.UserDetails.as_view(), name='post'),
-    path('training-center-details',views.TrainingCenterDetails.as_view(), name='post'),
+    path('college-details',views.CollegeDetails.as_view(), name='post'),
     
     #country
     path('search-cities',views.SearchCities.as_view(), name='post'),
+    path('search-states',views.SearchStates.as_view(), name='post'),
+    path('search-country',views.SearchCountry.as_view(), name='post'),
     path('add-country-eligibility',views.AddCountryEligibility.as_view(), name='post'),
 
     #faculty
@@ -31,15 +33,8 @@ urlpatterns = [
     path('faculty-list',views.FacultyList.as_view(), name='get'),
     path('user-list',views.userList.as_view(), name='get'),
     path('update-faculty',views.UpdateFaculty.as_view(), name='post'),
-    path('deletefaculty',views.DeleteFaculty.as_view(), name='post'),
-    path('add-hod',views.AddHOD.as_view(), name='post'),
-    path('add-teacher',views.AddTeacher.as_view(), name='post'),
-    path('add-staff',views.AddStaff.as_view(), name='post'),
-    path('hod-list',views.HODList.as_view(), name='get'),
-    path('teacher-list',views.TeacherList.as_view(), name='get'),
-    path('staff-list',views.StaffList.as_view(), name='get'),
-    path('faculty-profile-details',views.FacultyProfileDetails.as_view(), name='post'),
-    path('update-faculty-profile',views.UpdateFacultyProfile.as_view(), name='post'),
+    path('delete-faculty',views.DeleteFaculty.as_view(), name='post'),
+
 
     path('check-decrypt-data',views.CheckAndDecyptData.as_view(), name='post'),
     path('get-public-key',views.GetPublicKey.as_view(), name='post'),
@@ -55,6 +50,6 @@ urlpatterns = [
     
     #user docs
     path('delete-user-documents',views.DeleteUserDocuments.as_view(), name='post'),
-    path('get-training-center-courses',views.GetTrainingCenterCourses.as_view(), name='post'),
+    path('get-college-courses',views.GetCollegeCourses.as_view(), name='post'),
     
 ]

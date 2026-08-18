@@ -6,7 +6,7 @@ from .import views as v
 urlpatterns = [
 
         path('add-course',v.AddCourse.as_view(),name='post'),
-        path('college-course-filter-list',v.TrainingCenterCourseFilterList.as_view(),name='post'),
+        path('college-course-filter-list',v.CollegeCourseFilterList.as_view(),name='post'),
         path('deactivate-course',v.DeactivateCourse.as_view(),name='post'),
         path('activate-course',v.ActivateCourse.as_view(),name='post'),
         path('delete-course',v.DeleteCourse.as_view(),name='post'),

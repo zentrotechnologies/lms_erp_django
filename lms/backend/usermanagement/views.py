@@ -107,7 +107,6 @@ class AddUser(GenericAPIView):
             data['joining_date'] = request_data.get('joining_date')
             data['department_id'] = request_data.get('department_id')
             data['faculty_sub_role'] = request_data.get('faculty_sub_role')
-            data['staff_id'] = request_data.get('staff_id')
             data['employee_code'] = request_data.get('employee_code')
             data['employment_type'] = request_data.get('employment_type')
             data['official_email'] = request_data.get('official_email')
@@ -130,9 +129,9 @@ class AddUser(GenericAPIView):
             else:
                 data['user_type'] = 5
                 if admin_obj.member_of is None:
-                    data['parent_training_center'] = str(admin_obj.id)
+                    data['parent_college'] = str(admin_obj.id)
                 else:
-                    data['parent_training_center'] = str(admin_obj.member_of)
+                    data['parent_college'] = str(admin_obj.member_of)
 
             if college_id not in (None, ""):
                 data['college_id'] = int(college_id)
@@ -941,7 +940,7 @@ class AddMember(GenericAPIView):
             data['joining_date'] = request_data.get('joining_date')
             data['is_member'] = True
             data['user_type'] =  data['member_type']
-            # data['parent_training_center'] =  ''
+            # data['parent_college'] =  ''
 
             
             # data['member_type'] = 3

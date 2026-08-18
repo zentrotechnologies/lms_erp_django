@@ -116,12 +116,12 @@ class AddSchedule(GenericAPIView):
 
         request_data['course_ids']=course_ids
         
-        training_center_ids=json.loads(request_data.get('training_center_ids'))
-        if training_center_ids is None or training_center_ids =='':
+        college_ids=json.loads(request_data.get('college_ids'))
+        if college_ids is None or college_ids =='':
             msg="Please provide training center ids"
             validation_status=False 
             
-        request_data['training_center_ids']=training_center_ids
+        request_data['college_ids']=college_ids
             
 
         
@@ -274,12 +274,12 @@ class UpdateSchedule(GenericAPIView):
             validation_status=False 
 
         request_data['course_ids']=course_ids
-        training_center_ids=json.loads(request_data.get('training_center_ids'))
-        if training_center_ids is None or training_center_ids =='':
+        college_ids=json.loads(request_data.get('college_ids'))
+        if college_ids is None or college_ids =='':
             msg="Please provide training center ids"
             validation_status=False 
             
-        request_data['training_center_ids']=training_center_ids
+        request_data['college_ids']=college_ids
             
             
 
@@ -573,14 +573,14 @@ class ScheduleFilterApi(GenericAPIView):
         else:
             member_of = str(adminobj.member_of)
         
-        schedule_objs=Schedule.objects.filter(training_center_ids=member_of,isActive=True).exclude(action_status='Decline')
+        schedule_objs=Schedule.objects.filter(college_ids=member_of,isActive=True).exclude(action_status='Decline')
         course_id=request_data.get('course')
         if course_id is not None and course_id !='':
             schedule_objs=schedule_objs.filter(course_ids__in=[course_id]) 
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             'branch_id': request_data.get('branch_id'),
             'faculty_id': request_data.get('faculty_id'),
         }
@@ -590,9 +590,9 @@ class ScheduleFilterApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
         branch_id=request_data.get('branch_id')
@@ -682,7 +682,7 @@ class ScheduleCalenderEvents(GenericAPIView):
             return error_response
         
 
-        schedule_objs = Schedule.objects.filter(isActive=True,training_center_ids__in=[str(request.user.id)])
+        schedule_objs = Schedule.objects.filter(isActive=True,college_ids__in=[str(request.user.id)])
 
         start_date=request_data.get('startdate')
         if start_date is not None and start_date !='':
@@ -717,7 +717,7 @@ class ScheduleCalenderEvents(GenericAPIView):
                     
                     event = {
                         "id": schedule.id,
-                        "title": f"{serializer.data['schedulename']}  - {', '.join(serializer.data['training_center_names'])} - {', '.join(serializer.data['course_names'])} - {serializer.data['faculty_name']}",
+                        "title": f"{serializer.data['schedulename']}  - {', '.join(serializer.data['college_names'])} - {', '.join(serializer.data['course_names'])} - {serializer.data['faculty_name']}",
                         "start": str(start_dt).split(' ')[0],  # Using isoformat for standard datetime string
                         "end": str(end_dt).split(' ')[0],
                         "allDay": not (schedule.start_time and schedule.end_time),  # Simplified allDay logic
@@ -799,7 +799,7 @@ class FilterFacultySchedulePendingRequestsListApi(GenericAPIView):
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             # 'branch_id': request_data.get('branch_id'),
             # 'faculty_id': request_data.get('faculty_id'),
         }
@@ -809,9 +809,9 @@ class FilterFacultySchedulePendingRequestsListApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
 
@@ -905,7 +905,7 @@ class FilterFacultyScheduleApprovedRequestsListApi(GenericAPIView):
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             # 'branch_id': request_data.get('branch_id'),
             # 'faculty_id': request_data.get('faculty_id'),
         }
@@ -915,9 +915,9 @@ class FilterFacultyScheduleApprovedRequestsListApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
 
@@ -1013,7 +1013,7 @@ class FilterFacultyScheduleDeclineRequestsListApi(GenericAPIView):
 
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             # 'branch_id': request_data.get('branch_id'),
             # 'faculty_id': request_data.get('faculty_id'),
         }
@@ -1023,9 +1023,9 @@ class FilterFacultyScheduleDeclineRequestsListApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
 
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
 
@@ -1374,14 +1374,14 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
     def expand_schedule_objects(self, schedule_objs):
-        """Expand schedule objects to unique training_center_id and course_id combinations"""
+        """Expand schedule objects to unique college_id and course_id combinations"""
         expanded_schedules = []
 
         for schedule in schedule_objs:
             branch = Branch.objects.filter(id=schedule.branch_id, isActive=True).values('name').first()
             branch_name = branch['name'] if branch else None  # Extract name safely
 
-            for training_center in schedule.training_center_ids.all():
+            for college in schedule.college_ids.all():
                 for course in schedule.course_ids.all():
                     start_time = (
                         datetime.strptime(schedule.start_time, "%H:%M").strftime("%I:%M %p")
@@ -1395,8 +1395,8 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
                     expanded_schedules.append({
                         "id": schedule.id,
                         "schedulename": schedule.schedulename,
-                        "training_center_id": training_center.id,
-                        "training_center_name": training_center.name,
+                        "college_id": college.id,
+                        "college_name": college.name,
                         "course_id": course.id,
                         "course_name": course.course_name,
                         "mode": schedule.mode,
@@ -1425,7 +1425,7 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             'branch_id': request_data.get('branch_id'),
             'faculty_id': request_data.get('faculty_id'),
         }
@@ -1435,9 +1435,9 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
         branch_id=request_data.get('branch_id')
@@ -1507,14 +1507,14 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
     def expand_schedule_objects(self, schedule_objs):
-        """Expand schedule objects to unique training_center_id and course_id combinations"""
+        """Expand schedule objects to unique college_id and course_id combinations"""
         expanded_schedules = []
 
         for schedule in schedule_objs:
             branch = Branch.objects.filter(id=schedule.branch_id, isActive=True).values('name').first()
             branch_name = branch['name'] if branch else None  # Extract name safely
 
-            for training_center in schedule.training_center_ids.all():
+            for college in schedule.college_ids.all():
                 for course in schedule.course_ids.all():
                     start_time = (
                         datetime.strptime(schedule.start_time, "%H:%M").strftime("%I:%M %p")
@@ -1528,8 +1528,8 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
                     expanded_schedules.append({
                         "id": schedule.id,
                         "schedulename": schedule.schedulename,
-                        "training_center_id": training_center.id,
-                        "training_center_name": training_center.name,
+                        "college_id": college.id,
+                        "college_name": college.name,
                         "course_id": course.id,
                         "course_name": course.course_name,
                         "mode": schedule.mode,
@@ -1559,7 +1559,7 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             'branch_id': request_data.get('branch_id'),
             'faculty_id': request_data.get('faculty_id'),
         }
@@ -1569,9 +1569,9 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
         branch_id=request_data.get('branch_id')
@@ -1640,14 +1640,14 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
     def expand_schedule_objects(self, schedule_objs):
-        """Expand schedule objects to unique training_center_id and course_id combinations"""
+        """Expand schedule objects to unique college_id and course_id combinations"""
         expanded_schedules = []
 
         for schedule in schedule_objs:
             branch = Branch.objects.filter(id=schedule.branch_id, isActive=True).values('name').first()
             branch_name = branch['name'] if branch else None  # Extract name safely
 
-            for training_center in schedule.training_center_ids.all():
+            for college in schedule.college_ids.all():
                 for course in schedule.course_ids.all():
                     start_time = (
                         datetime.strptime(schedule.start_time, "%H:%M").strftime("%I:%M %p")
@@ -1661,8 +1661,8 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
                     expanded_schedules.append({
                         "id": schedule.id,
                         "schedulename": schedule.schedulename,
-                        "training_center_id": training_center.id,
-                        "training_center_name": training_center.name,
+                        "college_id": college.id,
+                        "college_name": college.name,
                         "course_id": course.id,
                         "course_name": course.course_name,
                         "mode": schedule.mode,
@@ -1692,7 +1692,7 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
         # Apply non-empty filters
         filters = {
             'course_ids__in': [request_data.get('course')] if request_data.get('course') else None,
-            'training_center_ids__in': [request_data.get('trainingcenters')] if request_data.get('trainingcenters') else None,
+            'college_ids__in': [request_data.get('colleges')] if request_data.get('colleges') else None,
             'branch_id': request_data.get('branch_id'),
             'faculty_id': request_data.get('faculty_id'),
         }
@@ -1702,9 +1702,9 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
                 schedule_objs = schedule_objs.filter(**{key: value})
         
         
-        training_center_id=request_data.get('trainingcenters')
-        if training_center_id is not None and training_center_id !='':
-            schedule_objs=schedule_objs.filter(training_center_ids__in=[training_center_id]) 
+        college_id=request_data.get('colleges')
+        if college_id is not None and college_id !='':
+            schedule_objs=schedule_objs.filter(college_ids__in=[college_id]) 
         
         
         branch_id=request_data.get('branch_id')
@@ -1815,8 +1815,8 @@ class GetScheduleAttendance(GenericAPIView):
         #     msg="Please provide course id"
         #     validation_status=False 
 
-        training_center_id=request_data.get('training_center_id')
-        # if training_center_id is None or training_center_id =='':
+        college_id=request_data.get('college_id')
+        # if college_id is None or college_id =='':
             # msg="Please provide training center id"
             # validation_status=False 
         faculty_id=str(request.user.id)
@@ -1839,8 +1839,8 @@ class GetScheduleAttendance(GenericAPIView):
                 if course_id is None or course_id =='':
                     course_id=new_serializer['course_ids'][0]
 
-                if training_center_id is None or training_center_id =='':
-                    training_center_id=new_serializer['training_center_ids'][0]
+                if college_id is None or college_id =='':
+                    college_id=new_serializer['college_ids'][0]
 
                 schedule_list_obj=Schedule.objects.filter(faculty_id=faculty_id,start_date__lte=schedule_date,end_date__gte=schedule_date,isActive=True).exclude(action_status="Decline")
                 schedule_list_serializer=CustomScheduleSerializer(schedule_list_obj,many=True)
@@ -1854,7 +1854,7 @@ class GetScheduleAttendance(GenericAPIView):
                 for candidate in candidate_serializer.data:
                     candidate['candidate_name']=candidate['first_name']+' '+candidate['middle_name']+' '+candidate['last_name']
 
-                    attendance_obj=CandidateAttendance.objects.filter(candidate_id=candidate['id'],schedule_id=serializer.data['id'],course_id=course_id,training_center_id=training_center_id,faculty_id=faculty_id,attendance_date=schedule_date).first()
+                    attendance_obj=CandidateAttendance.objects.filter(candidate_id=candidate['id'],schedule_id=serializer.data['id'],course_id=course_id,college_id=college_id,faculty_id=faculty_id,attendance_date=schedule_date).first()
                     candidate['checkin_time']=''
                     candidate['checkout_time']=''
                     candidate['absent']=False
@@ -1866,7 +1866,7 @@ class GetScheduleAttendance(GenericAPIView):
                     
 
                     candidate['course_id']=course_id
-                    candidate['training_center_id']=training_center_id
+                    candidate['college_id']=college_id
 
                     schedule_attendance.append(candidate)
 
@@ -1942,8 +1942,8 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
             msg="Please provide course id"
             validation_status=False 
 
-        training_center_id=request_data.get('training_center_id')
-        if training_center_id is None or training_center_id =='':
+        college_id=request_data.get('college_id')
+        if college_id is None or college_id =='':
             msg="Please provide training center id"
             validation_status=False 
         faculty_id=str(request.user.id)
@@ -1951,7 +1951,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                
         if validation_status:
             schedule_obj=Schedule.objects.filter(id=schedule_id,isActive=True,
-                    # training_center_ids__in=[str(training_center_id)],course_ids__in=[course_id]
+                    # college_ids__in=[str(college_id)],course_ids__in=[course_id]
                                                  ).first()
 
             if schedule_obj is not None:
@@ -1960,9 +1960,9 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                 new_serializer['total_days']=calculate_days_difference(new_serializer['start_date'],new_serializer['end_date'])
                 candidate_ids=list(Enrollments.objects.filter(course=course_id,schedule=serializer.data['id'],isActive=True).order_by('candidate').distinct("candidate").values_list('candidate',flat=True))
 
-                new_serializer['training_center_name']=''
-                # training_center_obj = UserAdmin.objects.filter(id=str(training_center_id), isActive=True).values('name').first()
-                # new_serializer['training_center_name'] = training_center_obj['name'] if training_center_obj else None  # Extract name safely
+                new_serializer['college_name']=''
+                # college_obj = UserAdmin.objects.filter(id=str(college_id), isActive=True).values('name').first()
+                # new_serializer['college_name'] = college_obj['name'] if college_obj else None  # Extract name safely
 
                 course_obj = Course.objects.filter(id=course_id, isActive=True).values('course_name').first()
                 new_serializer['course_name'] = course_obj['course_name'] if course_obj else None  # Extract name safely
@@ -1976,7 +1976,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                 for candidate in candidate_serializer.data:
                     candidate['candidate_name']=candidate['first_name']+' '+candidate['middle_name']+' '+candidate['last_name']
                     candidate['course_id']=course_id
-                    candidate['training_center_id']=training_center_id
+                    candidate['college_id']=college_id
                     candidate['total_days']=new_serializer['total_days']
                     
 
@@ -2002,7 +2002,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
 
 
                     
-                    candidate['present_count']=CandidateAttendance.objects.filter(candidate_id=candidate['id'],schedule_id=serializer.data['id'],course_id=course_id,training_center_id=training_center_id,faculty_id=faculty_id,attendance_date__gte=new_serializer['start_date'],attendance_date__lte=new_serializer['end_date']).exclude(absent=True).count()
+                    candidate['present_count']=CandidateAttendance.objects.filter(candidate_id=candidate['id'],schedule_id=serializer.data['id'],course_id=course_id,college_id=college_id,faculty_id=faculty_id,attendance_date__gte=new_serializer['start_date'],attendance_date__lte=new_serializer['end_date']).exclude(absent=True).count()
                     sum_of_attendance+=int(candidate['present_count'])
 
                     schedule_attendance.append(candidate)

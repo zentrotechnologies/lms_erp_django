@@ -12,12 +12,7 @@ class Program(TrackingModel):
     total_semesters = models.PositiveSmallIntegerField(default=1)
     status = models.BooleanField(default=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["department_id", "program_code"], name="uniq_department_program"
-            )
-        ]
+
 # course category
 class Category(TrackingModel):
     category_name = models.CharField(max_length=255, null=True, blank=True)
@@ -53,8 +48,10 @@ class AcademicYear(TrackingModel):
 
     def __str__(self):
         return self.academic_year_name or ""
+
 class Department(TrackingModel):
     og_code = models.CharField(max_length=50, null=True, blank=True)
+    college_id = models.CharField(max_length=50, null=True, blank=True)
     department_code = models.CharField(max_length=50, null=True, blank=True)
     department_name = models.CharField(max_length=255)
     hod_faculty_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
@@ -67,45 +64,18 @@ class Semester(TrackingModel):
     semester_name = models.CharField(max_length=100)
     status = models.BooleanField(default=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["program_id", "semester_number"], name="uniq_program_semester"
-            )
-        ]
+
 class ClassGroup(TrackingModel):
-    academic_year_id = models.BigIntegerField(db_index=True)
-    department_id = models.BigIntegerField(db_index=True)
-    program_id = models.BigIntegerField(db_index=True)
-    semester_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
+    semester_ids = models.JSONField(default=list, blank=True)
     class_name = models.CharField(max_length=150)
     division = models.CharField(max_length=30, null=True, blank=True)
-    batch_name = models.CharField(max_length=100, null=True, blank=True)
-    class_teacher_id = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        db_index=True,
-    )
     capacity = models.PositiveIntegerField(default=0)
     status = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "academic_year_id",
-                    "program_id",
-                    "semester_id",
-                    "class_name",
-                    "division",
-                ],
-                name="uniq_academic_class_group",
-            )
-        ]
 
-    def __str__(self):
-        return f"{self.class_name} {self.division or ''}".strip()
+
 
 
 
@@ -168,7 +138,7 @@ class Specialization(TrackingModel):
 
 class Branch(TrackingModel):
     name = models.CharField(max_length=255, null=True, blank=True)
-    training_center = models.CharField(max_length=255, null=True, blank=True)
+    college = models.CharField(max_length=255, null=True, blank=True)
     mobilenumber = models.CharField(max_length=20, null=True, blank=True)
     alternate_mobilenumber = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)

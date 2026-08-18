@@ -709,11 +709,11 @@ class AddExamSet(GenericAPIView):
         # print("request.user.member_of",request.user.member_of)
         
         if request.user.member_of is not None and request.user.member_of != '' :
-            training_center =str(request.user.member_of)
+            college =str(request.user.member_of)
         else:
-            training_center=str(request.user.id)
+            college=str(request.user.id)
 
-        data['training_center'] = training_center
+        data['college'] = college
         data['createdBy'] = str(request.user.id)
         
         check_exam_existence_object = ExamSet.objects.filter(isActive=True,name__iexact = data['name']).first()
@@ -1246,11 +1246,11 @@ class ExamList(GenericAPIView):
             return error_response
 
         if request.user.member_of is not None and request.user.member_of != '' :
-            training_center =str(request.user.member_of)
+            college =str(request.user.member_of)
         else:
-            training_center=str(request.user.id)
+            college=str(request.user.id)
 
-        exam_object = ExamSet.objects.filter(isActive=True,training_center=training_center).order_by('createdAt')
+        exam_object = ExamSet.objects.filter(isActive=True,college=college).order_by('createdAt')
         examname=request_data.get('examname')
         if examname is not None and examname !='':
             exam_object=exam_object.filter(name__icontains=examname)
@@ -1309,10 +1309,10 @@ class GetScheduleandSetonbasisofCourse(GenericAPIView):
         
         course_id = request_data.get('course_id')
         
-        schedule_object = Schedule.objects.filter(isActive=True,course_ids__in=[course_id],training_center_ids__in=[str(request.user.id)])
+        schedule_object = Schedule.objects.filter(isActive=True,course_ids__in=[course_id],college_ids__in=[str(request.user.id)])
         schedule_ser = ScheduleSerializer(schedule_object,many=True)
         
-        exam_set_object = ExamSet.objects.filter(isActive=True,course=course_id,training_center=str(request.user.id))
+        exam_set_object = ExamSet.objects.filter(isActive=True,course=course_id,college=str(request.user.id))
         exam_set_ser = ExamSetSerializer(exam_set_object,many=True)
         response_={
                     "n": 1,
@@ -1357,12 +1357,12 @@ class AddScheduleExam(GenericAPIView):
         data['candidates'] =  request_data.get('candidates')
         # print("data['candidates']",data['candidates'])
         if request.user.member_of is not None and request.user.member_of != '' :
-            training_center =str(request.user.member_of)
+            college =str(request.user.member_of)
         else:
-            training_center=str(request.user.id)
+            college=str(request.user.id)
 
 
-        data['training_center'] =  training_center
+        data['college'] =  college
         enrolled_students_objects_list = list(Enrollments.objects.filter(isActive=True,schedule=data['schedule'],candidate__in=data['candidates']).values_list('candidate',flat=True))
         exam_set_object_list = list(QuestionExamSet.objects.filter(isActive=True,exam_id = data['exam_set']).values_list('id',flat=True))
         
@@ -1380,7 +1380,7 @@ class AddScheduleExam(GenericAPIView):
                 return Response(response_,status=200)
         
 
-        # already_scheduled_exam = ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],training_center=training_center,course=data['course'],exam_mode=data['exam_mode'],attempt=data['attempt']).first()
+        # already_scheduled_exam = ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],college=college,course=data['course'],exam_mode=data['exam_mode'],attempt=data['attempt']).first()
 
         # if already_scheduled_exam is not None:
         #     response_={
@@ -1398,7 +1398,7 @@ class AddScheduleExam(GenericAPIView):
         current_date = datetime.now().date()
         previous_attempt = int(data['attempt']) - 1 if int(data['attempt']) > 1 else 0
         if previous_attempt > 0:
-            previous_scheduled_exam = ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],training_center=training_center,course=data['course'],attempt=previous_attempt).first()
+            previous_scheduled_exam = ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],college=college,course=data['course'],attempt=previous_attempt).first()
             if previous_scheduled_exam is not None:
                 previous_exam_date = previous_scheduled_exam.schedule_exam_date
                 # if previous_exam_date > current_date:
@@ -1415,8 +1415,8 @@ class AddScheduleExam(GenericAPIView):
                 #         return Response(response_,status=200)
 
 
-        # print("data['exam_set']",data['course'],data['schedule'],data['exam_set'],training_center,)
-        # validate_attempt_no=ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],training_center=training_center,course=data['course']).count()
+        # print("data['exam_set']",data['course'],data['schedule'],data['exam_set'],college,)
+        # validate_attempt_no=ScheduleExam.objects.filter(isActive=True,exam_set=data['exam_set'],schedule=data['schedule'],college=college,course=data['course']).count()
         # if int(int(validate_attempt_no)+1) != int(data['attempt']):
         #     response_={
         #                 "n": 0,
@@ -1493,7 +1493,7 @@ class AddScheduleExam(GenericAPIView):
                                 course= exam_obj.course,
                                 exam_schedule_id = exam_serializer.data['id'],
                                 exam_id = data['exam_set'],
-                                training_center= training_center,
+                                college= college,
                                 no_of_questions= data['no_of_questions'],
                                 exam_duration= data['exam_duration'],
                                 mandatory_questions=data['mandatory_questions'],
@@ -1536,7 +1536,7 @@ class AddScheduleExam(GenericAPIView):
                         candidate_object = Candidate.objects.filter(isActive=True,id=exam_link_object.candidate_id).first()
                         if candidate_object is not None:
                             
-                            # 'exam_link': trainingcenterURL+'/exam/candidate-exam-instructions/'+encrypt_base_test_examination_link,
+                            # 'exam_link': collegeURL+'/exam/candidate-exam-instructions/'+encrypt_base_test_examination_link,
 
                             dicti = {
                                 'email': candidate_object.email,
@@ -1634,11 +1634,11 @@ class ScheduleExamList(GenericAPIView):
         #     return error_response
 
         if request.user.member_of is not None and request.user.member_of != '' :
-            training_center =str(request.user.member_of)
+            college =str(request.user.member_of)
         else:
-            training_center=str(request.user.id)
+            college=str(request.user.id)
         
-        exam_object = ScheduleExam.objects.filter(isActive=True,training_center=training_center).order_by('createdAt')
+        exam_object = ScheduleExam.objects.filter(isActive=True,college=college).order_by('createdAt')
         paginate_object = self.paginate_queryset(exam_object)
         serializer =  ScheduleExamSerializer(paginate_object,many=True)
         for i in serializer.data:
@@ -2324,7 +2324,7 @@ class GetCandidatesResults(GenericAPIView):
                 tc_id=str(request.user.id)
 
             candidate_ids=list(cand_obj.filter(
-                Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(trainingcenter_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id').values_list('id',flat=True))
+                Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(college_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id').values_list('id',flat=True))
 
 
 
@@ -2417,7 +2417,7 @@ class GetCandidatesResultsCounts(GenericAPIView):
             else:
                 tc_id=str(request.user.id)
             
-            candidate_ids=list(cand_obj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(trainingcenter_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id').values_list('id',flat=True))
+            candidate_ids=list(cand_obj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(college_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id').values_list('id',flat=True))
 
 
 
@@ -2731,7 +2731,7 @@ class AddTemplate(GenericAPIView):
         if already_exist is not None:
             response_={
                 "n": 0,
-                "msg": 'Template already exist for this Training center',
+                "msg": 'Template already exist for this college',
                 "data":[]                     
             }
             if encryped_header == "1" :
@@ -2837,7 +2837,7 @@ class UpdateTemplate(GenericAPIView):
         if already_exist_training is not None:
             response_={
                 "n": 0,
-                "msg": 'Template already exist for this Training center',
+                "msg": 'Template already exist for this College',
                 "data":[]                     
             }
             if encryped_header == "1" :
@@ -3058,18 +3058,18 @@ class ViewAllCertificate(GenericAPIView):
                 i['exam_total_marks'] = i['exam_result_question_ser_data']['exam_detail_data']['total_marks']
                 i['exam_passing_marks'] = i['exam_result_question_ser_data']['exam_detail_data']['passing_marks']
                 i['schedule_exam_date_convert_date'] = i['exam_result_question_ser_data']['exam_schedule_data']['schedule_exam_date_convert_date']
-                training_center_id = i['exam_result_question_ser_data']['exam_schedule_data']['training_center']
-                user_object = UserAdmin.objects.filter(id = training_center_id).first()
+                college_id = i['exam_result_question_ser_data']['exam_schedule_data']['college']
+                user_object = UserAdmin.objects.filter(id = college_id).first()
                 if user_object is not None:
-                    i['training_center_name'] = user_object.name
+                    i['college_name'] = user_object.name
                 else:
-                    i['training_center_name'] = ""
+                    i['college_name'] = ""
                 # if isinstance(exam_result_question_ser_data.get("tags"), str):
                 #     exam_result_question_ser_data["tags"] = json.loads(exam_result_question_ser_data["tags"])
 
             except Exception as e:
                 i['exam_result_question_ser_data'] = {}
-                i['training_center_name'] = ""
+                i['college_name'] = ""
                 
         
         response_={
@@ -3114,18 +3114,18 @@ class CandidateResultList(GenericAPIView):
                 i['exam_total_marks'] = i['exam_result_question_ser_data']['exam_detail_data']['total_marks']
                 i['exam_passing_marks'] = i['exam_result_question_ser_data']['exam_detail_data']['passing_marks']
                 i['schedule_exam_date_convert_date'] = i['exam_result_question_ser_data']['exam_schedule_data']['schedule_exam_date_convert_date']
-                training_center_id = i['exam_result_question_ser_data']['exam_schedule_data']['training_center']
-                user_object = UserAdmin.objects.filter(id = training_center_id).first()
+                college_id = i['exam_result_question_ser_data']['exam_schedule_data']['college']
+                user_object = UserAdmin.objects.filter(id = college_id).first()
                 if user_object is not None:
-                    i['training_center_name'] = user_object.name
+                    i['college_name'] = user_object.name
                 else:
-                    i['training_center_name'] = ""
+                    i['college_name'] = ""
                 # if isinstance(exam_result_question_ser_data.get("tags"), str):
                 #     exam_result_question_ser_data["tags"] = json.loads(exam_result_question_ser_data["tags"])
 
             except Exception as e:
                 i['exam_result_question_ser_data'] = {}
-                i['training_center_name'] = ""
+                i['college_name'] = ""
                 
         response_={
             "n": 1,
@@ -4050,10 +4050,10 @@ class GetCourseNonAttemptExamCandidates(GenericAPIView):
         course_id =  request_data.get('course_id')
         enrolled_candidate_objs=Enrollments.objects.filter(isActive=True,enrollments_status='2',).order_by('candidate').distinct('candidate')
         if request.user.member_of is not None and request.user.member_of != '' :
-            training_center =str(request.user.member_of)
+            college =str(request.user.member_of)
         else:
-            training_center=str(request.user.id)
-        request_data['training_center']=training_center
+            college=str(request.user.id)
+        request_data['college']=college
 
         if course_id is not None and course_id !='':
             enrolled_candidate_objs=enrolled_candidate_objs.filter(course=course_id)
@@ -4070,7 +4070,7 @@ class GetCourseNonAttemptExamCandidates(GenericAPIView):
         candidate_objs=Candidate.objects.filter(id__in=candidate_ids,isActive=True).order_by('first_name','middle_name','last_name')
         # print("data",request_data)
         if course_id is not None and course_id !='' and schedule_id is not None and schedule_id !='' and exam_set_id is not None and exam_set_id !='' and schedule_exam_attempt is not None and schedule_exam_attempt !='':
-            schedule_already_attempted_candidates=ScheduleExam.objects.filter(course=course_id,training_center=training_center,schedule=schedule_id,exam_set=exam_set_id,attempt=schedule_exam_attempt).first()
+            schedule_already_attempted_candidates=ScheduleExam.objects.filter(course=course_id,college=college,schedule=schedule_id,exam_set=exam_set_id,attempt=schedule_exam_attempt).first()
             # print("schedule_already_attempted_candidates",schedule_already_attempted_candidates)
             if schedule_already_attempted_candidates is not None:
                 exclude_candidates_ids=list(ExamCandidateSetRelation.objects.filter(exam_schedule_id=schedule_already_attempted_candidates.id).order_by('candidate_id').distinct('candidate_id').values_list('candidate_id',flat=True))

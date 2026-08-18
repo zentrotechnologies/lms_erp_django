@@ -313,7 +313,7 @@ class CandidateExamPortalLogin(GenericAPIView):
 
 
 
-                    encrypt_base_test_examination_link1 = trainingcenterURL+'/exam/candidate-exam-instructions/'+encrypt_base_test_examination_link
+                    encrypt_base_test_examination_link1 = collegeURL+'/exam/candidate-exam-instructions/'+encrypt_base_test_examination_link
 
 
 
@@ -928,7 +928,7 @@ class PaginationCandidateList(GenericAPIView):
             else:
                 tc_id=str(request.user.id)
             
-            userobj=userobj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(trainingcenter_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id')
+            userobj=userobj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(college_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id')
 
 
 
@@ -2218,7 +2218,7 @@ class getcertificates(GenericAPIView):
                     else:
                         c['mode'] = 'Offline'
 
-                    adminobj = UserAdmin.objects.filter(id=modeschobj.training_center).first()
+                    adminobj = UserAdmin.objects.filter(id=modeschobj.college).first()
                     if adminobj is not None:
                         c['inst_name'] = adminobj.name
                     else:
@@ -2322,7 +2322,7 @@ class getresults(GenericAPIView):
                         else:
                             c['mode'] = 'Offline'
 
-                        adminobj = UserAdmin.objects.filter(id=modeschobj.training_center).first()
+                        adminobj = UserAdmin.objects.filter(id=modeschobj.college).first()
                         if adminobj is not None:
                             c['inst_name'] = adminobj.name
                         else:
@@ -3676,13 +3676,13 @@ class GetCandidateInstitutesCourseDetails(GenericAPIView):
         candidateobj = Candidate.objects.filter(id=cand).first()
         if candidateobj is not None:
             # cand_ser =CandidateSerializer(candidateobj)
-            institutes_ids = list(Enrollments.objects.filter(isActive=True,candidate=cand,enrollments_status='2').order_by('trainingcenter_id').distinct('trainingcenter_id').values_list('trainingcenter_id',flat=True))
+            institutes_ids = list(Enrollments.objects.filter(isActive=True,candidate=cand,enrollments_status='2').order_by('college_id').distinct('college_id').values_list('college_id',flat=True))
 
             institutes_obj=UserAdmin.objects.filter(id__in=institutes_ids,isActive=True)
             institutes_ser = UserAdminSerializer(institutes_obj,many=True)
             for institute in institutes_ser.data:
                 institute['courses'] = []
-                candidate_enrolled_courses = list(Enrollments.objects.filter(isActive=True,trainingcenter_id=institute['id'],candidate=cand,enrollments_status='2').order_by('course').distinct('course').values_list('course',flat=True))
+                candidate_enrolled_courses = list(Enrollments.objects.filter(isActive=True,college_id=institute['id'],candidate=cand,enrollments_status='2').order_by('course').distinct('course').values_list('course',flat=True))
                 course_obj=Course.objects.filter(id__in=candidate_enrolled_courses,isActive=True)
                 course_ser = CourseSerializer(course_obj,many=True)
                 institute['courses']=course_ser.data

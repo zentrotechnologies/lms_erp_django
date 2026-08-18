@@ -7,7 +7,7 @@ class CandidateAttendance(TrackingModel):
     candidate_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     schedule_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     course_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    training_center_id = models.CharField(max_length=255, null=True, blank=True)
+    college_id = models.CharField(max_length=255, null=True, blank=True)
     faculty_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     attendance_date = models.DateField(null=True, blank=True, db_index=True)
     checkin_time = models.CharField(max_length=255, null=True, blank=True)
@@ -40,13 +40,7 @@ class LectureAttendanceDetail(TrackingModel):
     marked_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["attendance_session_id", "student_id"],
-                name="uniq_student_lecture_attendance",
-            )
-        ]
+
 
 
 class FacultyAttendance(TrackingModel):
@@ -57,13 +51,7 @@ class FacultyAttendance(TrackingModel):
     attendance_status = models.CharField(max_length=20, db_index=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["faculty_id", "attendance_date"],
-                name="uniq_faculty_daily_attendance",
-            )
-        ]
+
 
 
 class LeaveApplication(TrackingModel):

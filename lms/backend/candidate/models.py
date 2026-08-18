@@ -165,13 +165,7 @@ class ParentStudentMapping(TrackingModel):
     can_view_attendance = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["parent_id", "student_id", "relationship"],
-                name="uniq_parent_student_relation",
-            )
-        ]
+
 
 
 class candidatelog(TrackingModel):

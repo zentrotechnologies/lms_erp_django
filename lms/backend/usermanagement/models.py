@@ -104,9 +104,3 @@ class RoleModulePermission(TrackingModel):
     can_approve = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["role_id", "module_code"], name="uniq_role_module_permission"
-            )
-        ]

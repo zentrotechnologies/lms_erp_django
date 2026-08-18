@@ -49,8 +49,8 @@ class MarkCandidateAttendance(GenericAPIView):
             validation_status=False 
 
 
-        training_center_id=request_data.get('training_center_id')
-        if training_center_id is None or training_center_id =='':
+        college_id=request_data.get('college_id')
+        if college_id is None or college_id =='':
             msg="Please provide training center id "
             validation_status=False 
 
@@ -62,7 +62,7 @@ class MarkCandidateAttendance(GenericAPIView):
             validation_status=False 
 
 
-        attendance_obj=CandidateAttendance.objects.filter(attendance_date=attendance_date,schedule_id=schedule_id,candidate_id=candidate_id,course_id=course_id,training_center_id=training_center_id).first()
+        attendance_obj=CandidateAttendance.objects.filter(attendance_date=attendance_date,schedule_id=schedule_id,candidate_id=candidate_id,course_id=course_id,college_id=college_id).first()
 
         checkin_time=request_data.get('checkin_time')
         checkout_time=request_data.get('checkout_time')
@@ -88,7 +88,7 @@ class MarkCandidateAttendance(GenericAPIView):
             data['absent']=absent
             data['present']=present
             data['faculty_id']=faculty_id
-            data['training_center_id']=training_center_id
+            data['college_id']=college_id
             data['course_id']=course_id
             data['schedule_id']=schedule_id
             data['candidate_id']=candidate_id

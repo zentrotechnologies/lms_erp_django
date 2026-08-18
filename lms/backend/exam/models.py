@@ -15,7 +15,7 @@ class ExamSet(TrackingModel):
     no_of_questions = models.PositiveIntegerField(default=0)
     no_of_sets = models.PositiveIntegerField(default=0)
     module_list = models.TextField(null=True)
-    training_center = models.CharField(max_length=255, null=True, blank=True)
+    college = models.CharField(max_length=255, null=True, blank=True)
     easy_questions_percentage = models.PositiveIntegerField(default=0)
     medium_questions_percentage = models.PositiveIntegerField(default=0)
     hard_questions_percentage = models.PositiveIntegerField(default=0)
@@ -36,7 +36,7 @@ class QuestionExamSet(TrackingModel):
 
 
 class ScheduleExam(TrackingModel):
-    training_center = models.CharField(max_length=255, null=True, blank=True)
+    college = models.CharField(max_length=255, null=True, blank=True)
     course = models.BigIntegerField(null=True, db_index=True)
     schedule = models.BigIntegerField(null=True, db_index=True)
     exam_set = models.BigIntegerField(null=True, db_index=True)
@@ -76,13 +76,6 @@ class ExamCandidateResult(TrackingModel):
     is_verified = models.BooleanField(default=False)
     verified_by = models.CharField(max_length=255, null=True, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["exam_schedule_id", "candidate_id"],
-                name="uniq_exam_schedule_candidate_result",
-            )
-        ]
 
 
 class ExamCandidateResultAnswer(TrackingModel):
@@ -121,7 +114,7 @@ class MockExamQuestionSet(TrackingModel):
     course = models.BigIntegerField(null=True, db_index=True)
     exam_schedule_id = models.BigIntegerField(null=True, db_index=True)
     exam_id = models.BigIntegerField(null=True, db_index=True)
-    training_center = models.CharField(max_length=255, null=True, blank=True)
+    college = models.CharField(max_length=255, null=True, blank=True)
     no_of_questions = models.PositiveIntegerField(default=0)
     exam_duration = models.PositiveIntegerField(default=0)
     mandatory_questions = models.PositiveIntegerField(default=0)

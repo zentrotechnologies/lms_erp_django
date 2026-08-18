@@ -40,9 +40,8 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     source = models.CharField(max_length=50, null=True, blank=True)
 
     # Legacy college fields retained for data migration
-    accreditation_number = models.CharField(max_length=150, null=True, blank=True)
-    is_parent_training_center = models.BooleanField(default=False)
-    parent_training_center = models.CharField(max_length=150, null=True, blank=True)
+    is_parent_college = models.BooleanField(default=False)
+    parent_college = models.CharField(max_length=150, null=True, blank=True)
     no_of_classroom = models.PositiveIntegerField(default=0)
 
     # Faculty profile
@@ -56,7 +55,6 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     years_of_experience = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     previous_institute = models.CharField(max_length=255, null=True, blank=True)
     teaching_experience = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    preferred_teaching_mode = models.CharField(max_length=50, null=True, blank=True)
     specialization = models.TextField(null=True, blank=True)
     languages = models.JSONField(default=list, blank=True)
 
@@ -75,23 +73,25 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     role_code = models.CharField(max_length=50, null=True, blank=True, db_index=True)
 
     # College faculty fields
-    staff_id = models.CharField(max_length=100, null=True, blank=True, unique=True)
-    faculty_sub_role = models.CharField(
-        max_length=20, choices=FACULTY_SUB_ROLE_CHOICES, null=True, blank=True, db_index=True
-    )
-    college_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    marital_status = models.CharField(max_length=100, null=True, blank=True)
+    blood_group = models.CharField(max_length=100, null=True, blank=True)
+    religion  = models.CharField(max_length=250, null=True, blank=True)
+    pan_number  = models.CharField(max_length=250, null=True, blank=True)
+    adhar_number  = models.CharField(max_length=250, null=True, blank=True)
+    faculty_sub_role = models.CharField(max_length=20, choices=FACULTY_SUB_ROLE_CHOICES, null=True, blank=True, db_index=True)
+    college_id = models.CharField(max_length=250, null=True, blank=True)
     department_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     work_group = models.CharField(max_length=100, null=True, blank=True)
     work_category = models.CharField(max_length=100, null=True, blank=True)
     employment_type = models.CharField(max_length=50, null=True, blank=True)
     official_email = models.EmailField(_("official email address"), null=True, blank=True)
-    current_status = models.CharField(max_length=50, null=True, blank=True, db_index=True)
     pf_no = models.CharField(max_length=100, null=True, blank=True)
     employee_code = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    bank_name  = models.CharField(max_length=250, null=True, blank=True)
+    account_number  = models.CharField(max_length=250, null=True, blank=True)
 
     user_type = models.BigIntegerField(null=True, blank=True, db_index=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
-    og_id = models.CharField(max_length=150, null=True, blank=True)
     deactivate = models.BooleanField(default=False)
     is_organisation=models.BooleanField(default=False)
     
@@ -235,12 +235,9 @@ class Permissions(TrackingModel):
     delete = models.BooleanField(default=False)
     approve = models.BooleanField(default=False)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["role_id", "menu_id"], name="uniq_role_menu_permission")
-        ]
+
 
 
 class CollegeCourses(TrackingModel):
     course_id = models.IntegerField(db_index=True)
-    training_center_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    college_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)

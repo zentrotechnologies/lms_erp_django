@@ -25,12 +25,12 @@ class FeedbackForm(TrackingModel):
 
 class FeedbackActivation(TrackingModel):
     course = models.CharField(max_length=255, db_index=True)
-    training_center = models.CharField(max_length=255, null=True, blank=True)
+    college = models.CharField(max_length=255, null=True, blank=True)
     schedule = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     class_group_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     candidate_feedbackform = models.TextField(null=True, blank=True)
     faculty_feedbackform = models.TextField(null=True, blank=True)
-    training_center_feedbackform = models.TextField(null=True, blank=True)
+    college_feedbackform = models.TextField(null=True, blank=True)
     send_via = models.CharField(max_length=50, null=True, blank=True)
     certification_choice = models.BooleanField(default=False)
 

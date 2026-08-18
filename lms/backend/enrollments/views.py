@@ -37,7 +37,7 @@ class AddEnrollments(GenericAPIView):
         
         data['course'] = request_data.get('course')
         data['schedule'] = request_data.get('schedule')
-        data['trainingcenter_id'] = str(request.user.id)
+        data['college_id'] = str(request.user.id)
         data['enrollments_status'] = 1
         
         if request_data.get('candidate') is not None and request_data.get('candidate') !="":
@@ -54,7 +54,7 @@ class AddEnrollments(GenericAPIView):
                             'course':data['course'],
                             'schedule':data['schedule'],
                             'id':fser.data['id'],
-                            'trainingcenter_id':data['trainingcenter_id']
+                            'college_id':data['college_id']
                         }
                         base_data_to_serialize = convert_decimals_to_float(payment_array)
                         encrypt_base_test_examination_link = encrypt_data(json.dumps(base_data_to_serialize))
@@ -170,9 +170,9 @@ class EnrollmentsList(GenericAPIView):
             member_of = str(adminobj.member_of)
              
         # obj = Enrollments.objects.filter(isActive=True,candidate__in = list(Candidate.objects.filter(enrollments_status=enroll_status).values_list('id',flat=True)))
-        obj = Enrollments.objects.filter(isActive=True,trainingcenter_id=member_of,enrollments_status=enroll_status,id__in=list(EnrollPayment.objects.filter(isActive=True).values_list('enrollment_id',flat=True)))
+        obj = Enrollments.objects.filter(isActive=True,college_id=member_of,enrollments_status=enroll_status,id__in=list(EnrollPayment.objects.filter(isActive=True).values_list('enrollment_id',flat=True)))
         if enroll_status == '3':
-            obj = Enrollments.objects.filter(isActive=True,trainingcenter_id=member_of,enrollments_status=enroll_status).order_by('-updatedAt')
+            obj = Enrollments.objects.filter(isActive=True,college_id=member_of,enrollments_status=enroll_status).order_by('-updatedAt')
         ser = EnrollmentsSerializer(obj,many=True)
         
         for c in ser.data:
@@ -293,7 +293,7 @@ class AdmissionRequestList(GenericAPIView):
         else:
             member_of = str(adminobj.member_of)
         
-        obj = Enrollments.objects.filter(isActive=True,trainingcenter_id=member_of,enrollments_status='1')
+        obj = Enrollments.objects.filter(isActive=True,college_id=member_of,enrollments_status='1')
         
         ser = EnrollmentsSerializer(obj,many=True)
         for c in ser.data:
@@ -515,7 +515,7 @@ class PaymentEnrollments(GenericAPIView):
         data={}
         data['course_id'] = request_data.get('course_id')
         data['schedule'] = request_data.get('schedule')
-        data['trainingcenter_id'] = request_data.get('trainingcenter_id')
+        data['college_id'] = request_data.get('college_id')
         data['billing_address'] = request_data.get('billing_address')
         data['city'] = request_data.get('city')
         data['state'] = request_data.get('schedule')
@@ -537,7 +537,7 @@ class PaymentEnrollments(GenericAPIView):
                 EnrollPayment.objects.create(
                     course_id = data['course_id'],
                     schedule = data['schedule'],
-                    trainingcenter_id = data['trainingcenter_id'],
+                    college_id = data['college_id'],
                     billing_address = data['billing_address'],
                     city = data['city'],
                     state = data['state'],
@@ -606,7 +606,7 @@ class SendPaymentLink(GenericAPIView):
         data = {}
         data['email'] = request_data.get('email')
         data['course_id'] = request_data.get('course_id')
-        data['trainingcenter_id'] = request_data.get('trainingcenter_id')
+        data['college_id'] = request_data.get('college_id')
         
         canobj = Candidate.objects.filter(email=data['email'],isActive=True).first()
         if not canobj:
@@ -662,7 +662,7 @@ class SavePayment(GenericAPIView):
         data={}
         data['course'] = request_data.get('courseid')
         data['schedule'] = request_data.get('scheduleid')
-        data['trainingcenter_id'] = request_data.get('trainingcenter_id')
+        data['college_id'] = request_data.get('college_id')
         data['candidate'] = request_data.get('candidateid')
         data['enrollments_status'] = '2'
         data['source'] = 'Candidate website'
@@ -681,7 +681,7 @@ class SavePayment(GenericAPIView):
         
 
         if request_data.get('candidateid') is not None and request_data.get('candidateid') !="":
-            enrollser = Enrollments.objects.filter(candidate=data['candidate'],isActive=True,schedule=data['schedule'],trainingcenter_id = data['trainingcenter_id'],course=data['course'],enrollments_status='2').first()
+            enrollser = Enrollments.objects.filter(candidate=data['candidate'],isActive=True,schedule=data['schedule'],college_id = data['college_id'],course=data['course'],enrollments_status='2').first()
             if enrollser is not None:
                 response_={
                     "n": 0,
@@ -725,7 +725,7 @@ class SavePayment(GenericAPIView):
                 EnrollPayment.objects.create(
                     course_id = data['course'],
                     schedule_id = data['schedule'],
-                    trainingcenter_id = data['trainingcenter_id'],
+                    college_id = data['college_id'],
                     billing_address = '',
                     city = None,
                     state = stateid,

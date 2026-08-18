@@ -18,6 +18,7 @@ from adminauth.common import convertcreationdate,convertcreationtime
 # Create your views here.
 import json
 from django.utils import timezone
+from course.models import *
 def phase_one_response(request, response_data):
     encrypted_header = request.headers.get("encrypted", "")
 
@@ -25,7 +26,7 @@ def phase_one_response(request, response_data):
         data_to_serialize = convert_decimals_to_float(response_data)
         encrypted_data = encrypt_data(
             json.dumps(data_to_serialize)
-        )
+)
         return Response(encrypted_data, status=200)
 
     return Response(response_data, status=200)
@@ -63,11 +64,11 @@ class AddProgram(GenericAPIView):
         data['duration_years'] = request_data.get(
             'duration_years',
             1
-        )
+)
         data['total_semesters'] = request_data.get(
             'total_semesters',
             1
-        )
+)
         data['status'] = request_data.get('status', True)
         data['createdBy'] = str(request.user.id)
 
@@ -75,7 +76,7 @@ class AddProgram(GenericAPIView):
         if (
             data['department_id'] is None
             or data['department_id'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Department id is required.",
@@ -84,11 +85,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -97,7 +98,7 @@ class AddProgram(GenericAPIView):
             id=data['department_id'],
             isActive=True,
             status=True
-        ).first()
+).first()
 
         if department_obj is None:
             response_ = {
@@ -108,11 +109,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -121,7 +122,7 @@ class AddProgram(GenericAPIView):
         if (
             data['program_code'] is None
             or data['program_code'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program code is required.",
@@ -130,11 +131,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -143,7 +144,7 @@ class AddProgram(GenericAPIView):
         if (
             data['program_name'] is None
             or data['program_name'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program name is required.",
@@ -152,11 +153,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -165,7 +166,7 @@ class AddProgram(GenericAPIView):
         if (
             data['program_type'] is None
             or data['program_type'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program type is required.",
@@ -174,11 +175,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -187,7 +188,7 @@ class AddProgram(GenericAPIView):
         try:
             data['duration_years'] = int(
                 data['duration_years']
-            )
+    )
 
             if data['duration_years'] <= 0:
                 raise ValueError
@@ -196,19 +197,19 @@ class AddProgram(GenericAPIView):
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Duration years must be a positive "
-                    "number."
-                ),
+"Duration years must be a positive "
+"number."
+),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -217,7 +218,7 @@ class AddProgram(GenericAPIView):
         try:
             data['total_semesters'] = int(
                 data['total_semesters']
-            )
+    )
 
             if data['total_semesters'] <= 0:
                 raise ValueError
@@ -226,59 +227,59 @@ class AddProgram(GenericAPIView):
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Total semesters must be a positive "
-                    "number."
-                ),
+"Total semesters must be a positive "
+"number."
+),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         data['program_code'] = str(
             data['program_code']
-        ).strip().upper()
+).strip().upper()
 
         data['program_name'] = str(
             data['program_name']
-        ).strip()
+).strip()
 
         data['program_type'] = str(
             data['program_type']
-        ).strip().upper()
+).strip().upper()
 
         # Duplicate program code in the same department
         duplicate_program = Program.objects.filter(
             department_id=data['department_id'],
             program_code__iexact=data['program_code'],
             isActive=True
-        ).first()
+).first()
 
         if duplicate_program is not None:
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Program code already exists for "
-                    "this department."
-                ),
+"Program code already exists for "
+"this department."
+),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -288,25 +289,25 @@ class AddProgram(GenericAPIView):
             department_id=data['department_id'],
             program_name__iexact=data['program_name'],
             isActive=True
-        ).first()
+).first()
 
         if duplicate_name is not None:
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Program name already exists for "
-                    "this department."
-                ),
+"Program name already exists for "
+"this department."
+),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -324,11 +325,11 @@ class AddProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -342,10 +343,10 @@ class AddProgram(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -363,7 +364,7 @@ class ProgramList(GenericAPIView):
 
         program_obj = Program.objects.filter(
             isActive=True
-        ).order_by('program_name')
+).order_by('program_name')
 
         department_id = request.GET.get('department_id')
         status = request.GET.get('status')
@@ -371,10 +372,10 @@ class ProgramList(GenericAPIView):
         if (
             department_id is not None
             and department_id != ""
-        ):
+):
             program_obj = program_obj.filter(
                 department_id=department_id
-            )
+    )
 
         if status is not None and status != "":
             if str(status).lower() in [
@@ -383,8 +384,8 @@ class ProgramList(GenericAPIView):
                 "active"
             ]:
                 program_obj = program_obj.filter(
-                    status=True
-                )
+status=True
+)
 
             elif str(status).lower() in [
                 "false",
@@ -392,13 +393,13 @@ class ProgramList(GenericAPIView):
                 "inactive"
             ]:
                 program_obj = program_obj.filter(
-                    status=False
-                )
+status=False
+)
 
         serializer = ProgramSerializer(
             program_obj,
             many=True
-        )
+)
 
         program_data = serializer.data
 
@@ -406,15 +407,15 @@ class ProgramList(GenericAPIView):
             department_obj = Department.objects.filter(
                 id=item['department_id'],
                 isActive=True
-            ).first()
+    ).first()
 
             if department_obj is not None:
                 item['department_name'] = (
-                    department_obj.department_name
-                )
+department_obj.department_name
+)
                 item['department_code'] = (
-                    department_obj.department_code
-                )
+department_obj.department_code
+)
             else:
                 item['department_name'] = ""
                 item['department_code'] = ""
@@ -428,10 +429,10 @@ class ProgramList(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -444,7 +445,7 @@ class ProgramList(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -460,11 +461,11 @@ class ProgramList(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -472,7 +473,7 @@ class ProgramList(GenericAPIView):
         program_obj = Program.objects.filter(
             id=program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is None:
             response_ = {
@@ -483,11 +484,11 @@ class ProgramList(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -498,15 +499,15 @@ class ProgramList(GenericAPIView):
         department_obj = Department.objects.filter(
             id=program_obj.department_id,
             isActive=True
-        ).first()
+).first()
 
         if department_obj is not None:
             program_data['department_name'] = (
                 department_obj.department_name
-            )
+    )
             program_data['department_code'] = (
                 department_obj.department_code
-            )
+    )
         else:
             program_data['department_name'] = ""
             program_data['department_code'] = ""
@@ -520,10 +521,10 @@ class ProgramList(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -536,7 +537,7 @@ class ProgramDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -546,45 +547,45 @@ class ProgramDetails(GenericAPIView):
         if (
             program_id is None
             or program_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
-                    "n": 0,
-                    "msg": "Program id is required.",
-                    "data": {}
+"n": 0,
+"msg": "Program id is required.",
+"data": {}
                 }
-            )
+    )
 
         program_obj = Program.objects.filter(
             id=program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is None:
             return phase_one_response(
                 request,
                 {
-                    "n": 0,
-                    "msg": "Program not found.",
-                    "data": {}
+"n": 0,
+"msg": "Program not found.",
+"data": {}
                 }
-            )
+    )
 
         program_data = ProgramSerializer(program_obj).data
 
         department_obj = Department.objects.filter(
             id=program_obj.department_id,
             isActive=True
-        ).first()
+).first()
 
         if department_obj is not None:
             program_data['department_name'] = (
                 department_obj.department_name
-            )
+    )
             program_data['department_code'] = (
                 department_obj.department_code
-            )
+    )
         else:
             program_data['department_name'] = ""
             program_data['department_code'] = ""
@@ -596,7 +597,7 @@ class ProgramDetails(GenericAPIView):
                 "msg": "Program details found successfully.",
                 "data": program_data
             }
-        )
+)
 
 
 class UpdateProgram(GenericAPIView):
@@ -611,7 +612,7 @@ class UpdateProgram(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -627,11 +628,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -639,7 +640,7 @@ class UpdateProgram(GenericAPIView):
         program_obj = Program.objects.filter(
             id=program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is None:
             response_ = {
@@ -650,11 +651,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -664,31 +665,31 @@ class UpdateProgram(GenericAPIView):
         data['department_id'] = request_data.get(
             'department_id',
             program_obj.department_id
-        )
+)
         data['program_code'] = request_data.get(
             'program_code',
             program_obj.program_code
-        )
+)
         data['program_name'] = request_data.get(
             'program_name',
             program_obj.program_name
-        )
+)
         data['program_type'] = request_data.get(
             'program_type',
             program_obj.program_type
-        )
+)
         data['duration_years'] = request_data.get(
             'duration_years',
             program_obj.duration_years
-        )
+)
         data['total_semesters'] = request_data.get(
             'total_semesters',
             program_obj.total_semesters
-        )
+)
         data['status'] = request_data.get(
             'status',
             program_obj.status
-        )
+)
         data['updatedBy'] = str(request.user.id)
         data['updatedAt'] = timezone.now()
 
@@ -696,7 +697,7 @@ class UpdateProgram(GenericAPIView):
             id=data['department_id'],
             isActive=True,
             status=True
-        ).first()
+).first()
 
         if department_obj is None:
             response_ = {
@@ -707,11 +708,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -719,7 +720,7 @@ class UpdateProgram(GenericAPIView):
         if (
             data['program_code'] is None
             or data['program_code'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program code is required.",
@@ -728,11 +729,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -740,7 +741,7 @@ class UpdateProgram(GenericAPIView):
         if (
             data['program_name'] is None
             or data['program_name'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program name is required.",
@@ -749,11 +750,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -761,7 +762,7 @@ class UpdateProgram(GenericAPIView):
         if (
             data['program_type'] is None
             or data['program_type'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Program type is required.",
@@ -770,11 +771,11 @@ class UpdateProgram(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -782,7 +783,7 @@ class UpdateProgram(GenericAPIView):
         try:
             data['duration_years'] = int(
                 data['duration_years']
-            )
+    )
 
             if data['duration_years'] <= 0:
                 raise ValueError
@@ -791,19 +792,19 @@ class UpdateProgram(GenericAPIView):
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Duration years must be a positive "
-                    "number."
-                ),
+"Duration years must be a positive "
+"number."
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -811,7 +812,7 @@ class UpdateProgram(GenericAPIView):
         try:
             data['total_semesters'] = int(
                 data['total_semesters']
-            )
+    )
 
             if data['total_semesters'] <= 0:
                 raise ValueError
@@ -820,58 +821,58 @@ class UpdateProgram(GenericAPIView):
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Total semesters must be a positive "
-                    "number."
-                ),
+"Total semesters must be a positive "
+"number."
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         data['program_code'] = str(
             data['program_code']
-        ).strip().upper()
+).strip().upper()
 
         data['program_name'] = str(
             data['program_name']
-        ).strip()
+).strip()
 
         data['program_type'] = str(
             data['program_type']
-        ).strip().upper()
+).strip().upper()
 
         duplicate_code = Program.objects.filter(
             department_id=data['department_id'],
             program_code__iexact=data['program_code'],
             isActive=True
-        ).exclude(id=program_id).first()
+).exclude(id=program_id).first()
 
         if duplicate_code is not None:
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Program code already exists for "
-                    "this department."
-                ),
+"Program code already exists for "
+"this department."
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -880,25 +881,25 @@ class UpdateProgram(GenericAPIView):
             department_id=data['department_id'],
             program_name__iexact=data['program_name'],
             isActive=True
-        ).exclude(id=program_id).first()
+).exclude(id=program_id).first()
 
         if duplicate_name is not None:
             response_ = {
                 "n": 0,
                 "msg": (
-                    "Program name already exists for "
-                    "this department."
-                ),
+"Program name already exists for "
+"this department."
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+        )
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -907,7 +908,7 @@ class UpdateProgram(GenericAPIView):
             program_obj,
             data=data,
             partial=True
-        )
+)
 
         if serializer.is_valid():
             serializer.save()
@@ -921,10 +922,10 @@ class UpdateProgram(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -938,10 +939,10 @@ class UpdateProgram(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -959,7 +960,7 @@ class DeleteProgram(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -976,10 +977,10 @@ class DeleteProgram(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -987,7 +988,7 @@ class DeleteProgram(GenericAPIView):
         program_obj = Program.objects.filter(
             id=program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is None:
             response_ = {
@@ -999,10 +1000,10 @@ class DeleteProgram(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -1010,7 +1011,7 @@ class DeleteProgram(GenericAPIView):
         semester_exists = Semester.objects.filter(
             program_id=program_obj.id,
             isActive=True
-        ).exists()
+).exists()
 
         if semester_exists:
             response_ = {
@@ -1018,17 +1019,17 @@ class DeleteProgram(GenericAPIView):
                 "msg": (
                     "Program cannot be deleted because "
                     "semesters exist."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -1036,7 +1037,7 @@ class DeleteProgram(GenericAPIView):
         class_group_exists = ClassGroup.objects.filter(
             program_id=program_obj.id,
             isActive=True
-        ).exists()
+).exists()
 
         if class_group_exists:
             response_ = {
@@ -1044,17 +1045,17 @@ class DeleteProgram(GenericAPIView):
                 "msg": (
                     "Program cannot be deleted because "
                     "class groups exist."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -1073,10 +1074,10 @@ class DeleteProgram(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -1094,7 +1095,7 @@ class ChangeProgramStatus(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -1111,10 +1112,10 @@ class ChangeProgramStatus(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -1122,7 +1123,7 @@ class ChangeProgramStatus(GenericAPIView):
         program_obj = Program.objects.filter(
             id=program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is None:
             response_ = {
@@ -1134,10 +1135,10 @@ class ChangeProgramStatus(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -1159,10 +1160,10 @@ class ChangeProgramStatus(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -1613,7 +1614,7 @@ class CategoryDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -1623,7 +1624,7 @@ class CategoryDetails(GenericAPIView):
         if (
             category_id is None
             or category_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
@@ -1631,12 +1632,12 @@ class CategoryDetails(GenericAPIView):
                     "msg": "Category id is required.",
                     "data": {}
                 }
-            )
+    )
 
         category_obj = Category.objects.filter(
             id=category_id,
             isActive=True
-        ).first()
+).first()
 
         if category_obj is None:
             return phase_one_response(
@@ -1646,7 +1647,7 @@ class CategoryDetails(GenericAPIView):
                     "msg": "Category not found.",
                     "data": {}
                 }
-            )
+    )
 
         return phase_one_response(
             request,
@@ -1655,7 +1656,7 @@ class CategoryDetails(GenericAPIView):
                 "msg": "Category details found successfully.",
                 "data": CategorySerializer(category_obj).data
             }
-        )
+)
 
 
 # Sub_Category
@@ -2025,7 +2026,7 @@ class SubCategoryDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -2035,7 +2036,7 @@ class SubCategoryDetails(GenericAPIView):
         if (
             sub_category_id is None
             or sub_category_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
@@ -2043,12 +2044,12 @@ class SubCategoryDetails(GenericAPIView):
                     "msg": "Sub category id is required.",
                     "data": {}
                 }
-            )
+    )
 
         sub_category_obj = Sub_Category.objects.filter(
             id=sub_category_id,
             isActive=True
-        ).first()
+).first()
 
         if sub_category_obj is None:
             return phase_one_response(
@@ -2058,7 +2059,7 @@ class SubCategoryDetails(GenericAPIView):
                     "msg": "Sub category not found.",
                     "data": {}
                 }
-            )
+    )
 
         return phase_one_response(
             request,
@@ -2067,7 +2068,7 @@ class SubCategoryDetails(GenericAPIView):
                 "msg": "Sub category details found successfully.",
                 "data": Sub_CategorySerializer(sub_category_obj).data
             }
-        )
+)
 
 
         
@@ -2084,18 +2085,35 @@ class AddDepartment(GenericAPIView):
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
+        print("request.user.role_id",request.user.role)
+        if request.user.role is not None and request.user.role not in [3,4] :
+            response_={
+                "n": 0,
+                'msg':"Only College Admin Can Add Departments",
+                'data':{}
+            }    
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+
         
         data = {
                 "og_code": str(request.user.og_code),
+                "college_id":str(request.user.id),
                 "department_code": request_data.get(
                     "department_code"
-                ),
+        ),
                 "department_name": request_data.get(
                     "department_name"
-                ),
+        ),
                 "hod_faculty_id": request_data.get(
                     "hod_faculty_id"
-                ),
+        ),
                 "tags": request_data.get("tags"),
                 "status": request_data.get("status", True),
                 "createdBy": str(request.user.id),
@@ -2104,7 +2122,7 @@ class AddDepartment(GenericAPIView):
 
 
         if data['department_name'] is not None and data['department_name'] !="":
-            obj = Department.objects.filter(isActive=True)
+            obj = Department.objects.filter(isActive=True,og_code=data['og_code'])
             ser = DepartmentSerializer(obj,many=True)
             for c in ser.data:
                 if (c['department_name']).lower() == (data['department_name']).lower():
@@ -2238,7 +2256,7 @@ class DepartmentDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -2248,7 +2266,7 @@ class DepartmentDetails(GenericAPIView):
         if (
             department_id is None
             or department_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
@@ -2256,12 +2274,12 @@ class DepartmentDetails(GenericAPIView):
                     "msg": "Department id is required.",
                     "data": {}
                 }
-            )
+    )
 
         department_obj = Department.objects.filter(
             id=department_id,
             isActive=True
-        ).first()
+).first()
 
         if department_obj is None:
             return phase_one_response(
@@ -2271,7 +2289,7 @@ class DepartmentDetails(GenericAPIView):
                     "msg": "Department not found.",
                     "data": {}
                 }
-            )
+    )
 
         return phase_one_response(
             request,
@@ -2280,7 +2298,7 @@ class DepartmentDetails(GenericAPIView):
                 "msg": "Department details found successfully.",
                 "data": DepartmentSerializer(department_obj).data
             }
-        )
+)
 
 
 class UpdateDepartment(GenericAPIView):
@@ -3819,7 +3837,7 @@ class AddBranch(GenericAPIView):
         
         data = {}
         data['name'] = request_data.get('name')
-        data['training_center'] = request_data.get('training_center')
+        data['college'] = request_data.get('college')
         data['mobilenumber'] = request_data.get('mobilenumber')
         data['email'] = str(request_data.get('email')).lower()      
         data['address_line_one'] = request_data.get('address_line_one')
@@ -3839,9 +3857,9 @@ class AddBranch(GenericAPIView):
         number_object = Branch.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).first()
         if email_object is not None:
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'Email already exists',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3851,9 +3869,9 @@ class AddBranch(GenericAPIView):
                 return Response(response_,status=200)
         if number_object is not None:
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'Mobile number already exists',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3874,7 +3892,7 @@ class AddBranch(GenericAPIView):
                         coordinator_number = i['coordinator_number'],
                         coordinator_email = i['coordinator_email'],
                         coordinator_designation = i['coordinator_designation'],
-                    )
+            )
             response_={
                         "n": 1,
                         "msg": 'Branch added successfully',
@@ -3917,9 +3935,9 @@ class UpdateBranch(GenericAPIView):
         updated_of_user_id =request_data.get('id')
         if updated_of_user_id is None or updated_of_user_id == "":
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'User id is required',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3931,9 +3949,9 @@ class UpdateBranch(GenericAPIView):
         user_object = Branch.objects.filter(id=updated_of_user_id).first()
         if user_object is None:
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'Branch not Found',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3946,11 +3964,10 @@ class UpdateBranch(GenericAPIView):
 
  
         data['name'] = request_data.get('name')
-        data['training_center'] = request_data.get('training_center')
+        data['college'] = request_data.get('college')
         data['mobilenumber'] = request_data.get('mobilenumber')   
         data['email'] = str(request_data.get('email')).lower()
         data['source'] = request_data.get('source')
-        data['accreditation_number'] = request_data.get('accreditation_number')      
         data['no_of_classroom'] = request_data.get('no_of_classroom')
         data['address_line_one'] = request_data.get('address_line_one')
         data['address_line_two'] = request_data.get('address_line_two')
@@ -3968,9 +3985,9 @@ class UpdateBranch(GenericAPIView):
         number_object = Branch.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).exclude(id=updated_of_user_id).first()
         if email_object is not None:
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'Email already exists',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3980,9 +3997,9 @@ class UpdateBranch(GenericAPIView):
                 return Response(response_,status=200)
         if number_object is not None:
             response_={
-                        "n": 0,                    
+                        "n": 0,        
                         "msg": 'Mobile number already exists',
-                        "data":[],                  
+                        "data":[],      
                     }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -4004,7 +4021,7 @@ class UpdateBranch(GenericAPIView):
                         coordinator_number = i['coordinator_number'],
                         coordinator_email = i['coordinator_email'],
                         coordinator_designation = i['coordinator_designation'],
-                    )
+            )
             response_={
                         "n": 1,
                         "msg": 'Branch updated successfully',
@@ -4077,7 +4094,7 @@ class UploadBranchDocumentFormData(GenericAPIView):
                 document_name = i['doc_name'],
                 branch_id = i['branch_id'],
                 document_url =file_url
-            )
+    )
 
         
         
@@ -4105,7 +4122,7 @@ class BranchList(GenericAPIView):
             encryped_header = request.headers.get('encrypted')
 
 
-        branchobject = Branch.objects.filter(isActive=True,training_center=str(request.user.id)).order_by('-createdAt')
+        branchobject = Branch.objects.filter(isActive=True,college=str(request.user.id)).order_by('-createdAt')
         branch_ser = BranchSerializer(branchobject,many=True)
         for i in branch_ser.data:
             country_object = Country.objects.filter(id=i['country']).first()
@@ -4177,11 +4194,11 @@ class BranchDetails(GenericAPIView):
         documents_required_object = Documents.objects.filter(isActive=True,role=7)
         documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
         
-        tc_object = UserAdmin.objects.filter(isActive=True,id=serializer.data['training_center']).first()
+        tc_object = UserAdmin.objects.filter(isActive=True,id=serializer.data['college']).first()
         if tc_object is not None:
-            training_center_name = tc_object.name
+            college_name = tc_object.name
         else:
-            training_center_name = ""
+            college_name = ""
         
         for d in documents_required_ser.data:
             doc_object = UserDocuments.objects.filter(isActive=True,branch_id=branch_id,document_id=d['id']).first()
@@ -4215,7 +4232,7 @@ class BranchDetails(GenericAPIView):
             "proof_data":documents_required_ser.data,
             "state_name":state_name,
             "country_name":country_name,
-            "training_center_name":training_center_name,
+            "college_name":college_name,
         })
         response_={
                     "n": 1,
@@ -4261,7 +4278,7 @@ class SaveS3Uploads(GenericAPIView):
                         s3_tags = s3_tags,
                         s3_file = file_url,
                         createdBy = cretby
-                    )
+            )
 
             response_={
                     "n": 0,
@@ -6479,7 +6496,7 @@ class AddCollege(GenericAPIView):
         admin_password = request_data.get(
             "admin_password",
             "Default@123"
-        )
+)
 
         if college_code is None or college_code == "":
             return phase_one_response(request, {
@@ -6512,7 +6529,7 @@ class AddCollege(GenericAPIView):
         duplicate_college = College.objects.filter(
             isActive=True,
             college_code__iexact=str(college_code).strip(),
-        ).first()
+).first()
 
         if duplicate_college is not None:
             return phase_one_response(request, {
@@ -6524,7 +6541,7 @@ class AddCollege(GenericAPIView):
         duplicate_admin = UserAdmin.objects.filter(
             email__iexact=str(admin_email).strip(),
             isActive=True,
-        ).first()
+).first()
 
         if duplicate_admin is not None:
             return phase_one_response(request, {
@@ -6539,19 +6556,19 @@ class AddCollege(GenericAPIView):
                 college_data = {
                     "college_code": str(
                         college_code
-                    ).strip().upper(),
+            ).strip().upper(),
 
                     "college_name": str(
                         college_name
-                    ).strip(),
+            ).strip(),
 
                     "university_name": request_data.get(
                         "university_name"
-                    ),
+            ),
 
                     "affiliation_number": request_data.get(
                         "affiliation_number"
-                    ),
+            ),
 
                     "email": request_data.get("email"),
                     "phone": request_data.get("phone"),
@@ -6560,14 +6577,14 @@ class AddCollege(GenericAPIView):
                     "status": request_data.get(
                         "status",
                         True
-                    ),
+            ),
 
                     "createdBy": str(request.user.id),
                 }
 
                 college_serializer = CollegeSerializer(
                     data=college_data
-                )
+        )
 
                 if not college_serializer.is_valid():
                     return phase_one_response(request, {
@@ -6595,7 +6612,7 @@ class AddCollege(GenericAPIView):
                     og_code=college.college_code,
 
                     createdBy=str(request.user.id),
-                )
+        )
 
                 admin_user.set_password(admin_password)
                 admin_user.save()
@@ -6617,7 +6634,7 @@ class AddCollege(GenericAPIView):
                     "msg": (
                         "College and college admin "
                         "created successfully."
-                    ),
+            ),
                     "data": response_data,
                 })
 
@@ -6636,12 +6653,12 @@ class CollegeList(GenericAPIView):
     def get(self, request):
         queryset = College.objects.filter(
             isActive=True
-        ).order_by("college_name")
+).order_by("college_name")
 
         serializer = CollegeSerializer(
             queryset,
             many=True,
-        )
+)
 
         return phase_one_response(request, {
             "n": 1,
@@ -6667,7 +6684,7 @@ class CollegeList(GenericAPIView):
         college = College.objects.filter(
             id=college_id,
             isActive=True,
-        ).first()
+).first()
 
         if college is None:
             return phase_one_response(request, {
@@ -6913,7 +6930,7 @@ class AddAcademicYear(GenericAPIView):
         duplicate = AcademicYear.objects.filter(
             isActive=True,
             academic_year_name__iexact=str(name).strip(),
-        ).first()
+).first()
 
         if duplicate is not None:
             return phase_one_response(request, {
@@ -6935,7 +6952,7 @@ class AddAcademicYear(GenericAPIView):
             AcademicYear.objects.filter(
                 isActive=True,
                 is_current=True,
-            ).update(is_current=False)
+    ).update(is_current=False)
 
         data = {
             "academic_year_name": str(name).strip(),
@@ -6943,10 +6960,10 @@ class AddAcademicYear(GenericAPIView):
             "end_date": end_date,
             "admission_start_date": request_data.get(
                 "admission_start_date"
-            ),
+    ),
             "admission_end_date": request_data.get(
                 "admission_end_date"
-            ),
+    ),
             "is_current": is_current,
             "status": request_data.get("status", True),
             "createdBy": str(request.user.id),
@@ -6983,7 +7000,7 @@ class SetCurrentAcademicYear(GenericAPIView):
             id=request_data.get("id"),
             isActive=True,
             status=True,
-        ).first()
+).first()
 
         if academic_year is None:
             return phase_one_response(request, {
@@ -6995,7 +7012,7 @@ class SetCurrentAcademicYear(GenericAPIView):
         AcademicYear.objects.filter(
             isActive=True,
             is_current=True,
-        ).update(is_current=False)
+).update(is_current=False)
 
         academic_year.is_current = True
         academic_year.updatedBy = str(request.user.id)
@@ -7007,7 +7024,7 @@ class SetCurrentAcademicYear(GenericAPIView):
             "msg": "Current academic year updated successfully.",
             "data": AcademicYearSerializer(
                 academic_year
-            ).data,
+    ).data,
         })
 
 class CurrentAcademicYear(GenericAPIView):
@@ -7019,7 +7036,7 @@ class CurrentAcademicYear(GenericAPIView):
             isActive=True,
             status=True,
             is_current=True,
-        ).first()
+).first()
 
         if academic_year is None:
             return phase_one_response(request, {
@@ -7033,7 +7050,7 @@ class CurrentAcademicYear(GenericAPIView):
             "msg": "Current academic year fetched successfully.",
             "data": AcademicYearSerializer(
                 academic_year
-            ).data,
+    ).data,
         })
 
 # ============================================================
@@ -7052,11 +7069,11 @@ class AcademicYearList(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             isActive=True
-        ).order_by(
+).order_by(
             '-is_current',
             '-start_date',
             '-id'
-        )
+)
 
         status = request.GET.get('status')
         is_current = request.GET.get('is_current')
@@ -7069,7 +7086,7 @@ class AcademicYearList(GenericAPIView):
             ]:
                 academic_year_obj = academic_year_obj.filter(
                     status=True
-                )
+        )
 
             elif str(status).lower() in [
                 "false",
@@ -7078,7 +7095,7 @@ class AcademicYearList(GenericAPIView):
             ]:
                 academic_year_obj = academic_year_obj.filter(
                     status=False
-                )
+        )
 
         if is_current is not None and is_current != "":
             if str(is_current).lower() in [
@@ -7087,7 +7104,7 @@ class AcademicYearList(GenericAPIView):
             ]:
                 academic_year_obj = academic_year_obj.filter(
                     is_current=True
-                )
+        )
 
             elif str(is_current).lower() in [
                 "false",
@@ -7095,12 +7112,12 @@ class AcademicYearList(GenericAPIView):
             ]:
                 academic_year_obj = academic_year_obj.filter(
                     is_current=False
-                )
+        )
 
         serializer = AcademicYearSerializer(
             academic_year_obj,
             many=True
-        )
+)
 
         response_ = {
             "n": 1,
@@ -7111,21 +7128,21 @@ class AcademicYearList(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
 
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
 
             return Response(
                 encdata,
                 status=200
-            )
+    )
 
         return Response(
             response_,
             status=200
-        )
+)
 
     def post(self, request):
         encryped_header = ""
@@ -7135,7 +7152,7 @@ class AcademicYearList(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -7145,7 +7162,7 @@ class AcademicYearList(GenericAPIView):
         if (
             academic_year_id is None
             or academic_year_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Academic year id is required.",
@@ -7156,29 +7173,29 @@ class AcademicYearList(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
             isActive=True
-        ).first()
+).first()
 
         if academic_year_obj is None:
             response_ = {
@@ -7191,35 +7208,35 @@ class AcademicYearList(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         serializer = AcademicYearSerializer(
             academic_year_obj
-        )
+)
 
         response_ = {
             "n": 1,
             "msg": (
                 "Academic year details "
                 "found successfully."
-            ),
+    ),
             "data": serializer.data
         }
 
@@ -7227,24 +7244,24 @@ class AcademicYearList(GenericAPIView):
             data_to_serialize = (
                 convert_decimals_to_float(
                     response_
-                )
-            )
+        )
+    )
 
             encdata = encrypt_data(
                 json.dumps(
                     data_to_serialize
-                )
-            )
+        )
+    )
 
             return Response(
                 encdata,
                 status=200
-            )
+    )
 
         return Response(
             response_,
             status=200
-        )
+)
 
 
 # ============================================================
@@ -7263,7 +7280,7 @@ class UpdateAcademicYear(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -7273,7 +7290,7 @@ class UpdateAcademicYear(GenericAPIView):
         if (
             academic_year_id is None
             or academic_year_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Academic year id is required.",
@@ -7284,29 +7301,29 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
             isActive=True
-        ).first()
+).first()
 
         if academic_year_obj is None:
             response_ = {
@@ -7319,78 +7336,78 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         data = {}
 
         data['academic_year_name'] = request_data.get(
             'academic_year_name',
             academic_year_obj.academic_year_name
-        )
+)
 
         data['start_date'] = request_data.get(
             'start_date',
             academic_year_obj.start_date
-        )
+)
 
         data['end_date'] = request_data.get(
             'end_date',
             academic_year_obj.end_date
-        )
+)
 
         data['admission_start_date'] = request_data.get(
             'admission_start_date',
             academic_year_obj.admission_start_date
-        )
+)
 
         data['admission_end_date'] = request_data.get(
             'admission_end_date',
             academic_year_obj.admission_end_date
-        )
+)
 
         data['is_current'] = request_data.get(
             'is_current',
             academic_year_obj.is_current
-        )
+)
 
         data['status'] = request_data.get(
             'status',
             academic_year_obj.status
-        )
+)
 
         data['updatedBy'] = str(
             request.user.id
-        )
+)
 
         data['updatedAt'] = timezone.now()
 
         if (
             data['academic_year_name'] is None
             or data['academic_year_name'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": (
                     "Academic year name is "
                     "required."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7398,37 +7415,37 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         data['academic_year_name'] = str(
             data['academic_year_name']
-        ).strip()
+).strip()
 
         duplicate_obj = AcademicYear.objects.filter(
             academic_year_name__iexact=(
                 data['academic_year_name']
-            ),
+    ),
             isActive=True
-        ).exclude(
+).exclude(
             id=academic_year_id
-        ).first()
+).first()
 
         if duplicate_obj is not None:
             response_ = {
@@ -7436,7 +7453,7 @@ class UpdateAcademicYear(GenericAPIView):
                 "msg": (
                     "Academic year already "
                     "exists."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7444,37 +7461,37 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         if (
             data['start_date']
             and data['end_date']
             and str(data['start_date'])
             > str(data['end_date'])
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": (
                     "Start date cannot be "
                     "after end date."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7482,37 +7499,37 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         if (
             data['admission_start_date']
             and data['admission_end_date']
             and str(data['admission_start_date'])
             > str(data['admission_end_date'])
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": (
                     "Admission start date cannot "
                     "be after admission end date."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7520,40 +7537,40 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         if data['is_current']:
             AcademicYear.objects.filter(
                 isActive=True,
                 is_current=True
-            ).exclude(
+    ).exclude(
                 id=academic_year_id
-            ).update(
+    ).update(
                 is_current=False
-            )
+    )
 
         serializer = AcademicYearSerializer(
             academic_year_obj,
             data=data,
             partial=True
-        )
+)
 
         if serializer.is_valid():
             serializer.save()
@@ -7563,7 +7580,7 @@ class UpdateAcademicYear(GenericAPIView):
                 "msg": (
                     "Academic year updated "
                     "successfully."
-                ),
+        ),
                 "data": serializer.data
             }
 
@@ -7571,24 +7588,24 @@ class UpdateAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         response_ = {
             "n": 0,
@@ -7600,24 +7617,24 @@ class UpdateAcademicYear(GenericAPIView):
             data_to_serialize = (
                 convert_decimals_to_float(
                     response_
-                )
-            )
+        )
+    )
 
             encdata = encrypt_data(
                 json.dumps(
                     data_to_serialize
-                )
-            )
+        )
+    )
 
             return Response(
                 encdata,
                 status=200
-            )
+    )
 
         return Response(
             response_,
             status=200
-        )
+)
 
 
 # ============================================================
@@ -7636,7 +7653,7 @@ class DeleteAcademicYear(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -7646,7 +7663,7 @@ class DeleteAcademicYear(GenericAPIView):
         if (
             academic_year_id is None
             or academic_year_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Academic year id is required.",
@@ -7657,29 +7674,29 @@ class DeleteAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
             isActive=True
-        ).first()
+).first()
 
         if academic_year_obj is None:
             response_ = {
@@ -7692,24 +7709,24 @@ class DeleteAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         if academic_year_obj.is_current:
             response_ = {
@@ -7717,7 +7734,7 @@ class DeleteAcademicYear(GenericAPIView):
                 "msg": (
                     "Current academic year "
                     "cannot be deleted."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7725,29 +7742,29 @@ class DeleteAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         class_group_exists = ClassGroup.objects.filter(
             academic_year_id=academic_year_obj.id,
             isActive=True
-        ).exists()
+).exists()
 
         if class_group_exists:
             response_ = {
@@ -7756,7 +7773,7 @@ class DeleteAcademicYear(GenericAPIView):
                     "Academic year cannot be "
                     "deleted because class groups "
                     "exist."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7764,29 +7781,29 @@ class DeleteAcademicYear(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj.isActive = False
         academic_year_obj.updatedBy = str(
             request.user.id
-        )
+)
         academic_year_obj.updatedAt = timezone.now()
         academic_year_obj.save()
 
@@ -7795,7 +7812,7 @@ class DeleteAcademicYear(GenericAPIView):
             "msg": (
                 "Academic year deleted "
                 "successfully."
-            ),
+    ),
             "data": {}
         }
 
@@ -7803,24 +7820,24 @@ class DeleteAcademicYear(GenericAPIView):
             data_to_serialize = (
                 convert_decimals_to_float(
                     response_
-                )
-            )
+        )
+    )
 
             encdata = encrypt_data(
                 json.dumps(
                     data_to_serialize
-                )
-            )
+        )
+    )
 
             return Response(
                 encdata,
                 status=200
-            )
+    )
 
         return Response(
             response_,
             status=200
-        )
+)
 
 
 # ============================================================
@@ -7839,7 +7856,7 @@ class ChangeAcademicYearStatus(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -7849,7 +7866,7 @@ class ChangeAcademicYearStatus(GenericAPIView):
         if (
             academic_year_id is None
             or academic_year_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Academic year id is required.",
@@ -7860,29 +7877,29 @@ class ChangeAcademicYearStatus(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
             isActive=True
-        ).first()
+).first()
 
         if academic_year_obj is None:
             response_ = {
@@ -7895,35 +7912,35 @@ class ChangeAcademicYearStatus(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         if (
             academic_year_obj.is_current
             and academic_year_obj.status
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": (
                     "Current academic year "
                     "cannot be deactivated."
-                ),
+        ),
                 "data": {}
             }
 
@@ -7931,36 +7948,36 @@ class ChangeAcademicYearStatus(GenericAPIView):
                 data_to_serialize = (
                     convert_decimals_to_float(
                         response_
-                    )
-                )
+            )
+        )
 
                 encdata = encrypt_data(
                     json.dumps(
                         data_to_serialize
-                    )
-                )
+            )
+        )
 
                 return Response(
                     encdata,
                     status=200
-                )
+        )
 
             return Response(
                 response_,
                 status=200
-            )
+    )
 
         academic_year_obj.status = (
             not academic_year_obj.status
-        )
+)
 
         academic_year_obj.updatedBy = str(
             request.user.id
-        )
+)
 
         academic_year_obj.updatedAt = (
             timezone.now()
-        )
+)
 
         academic_year_obj.save()
 
@@ -7969,13 +7986,13 @@ class ChangeAcademicYearStatus(GenericAPIView):
             "msg": (
                 "Academic year status changed "
                 "successfully."
-            ),
+    ),
             "data": {
                 "id": academic_year_obj.id,
                 "status": academic_year_obj.status,
                 "is_current": (
                     academic_year_obj.is_current
-                )
+        )
             }
         }
 
@@ -7983,24 +8000,24 @@ class ChangeAcademicYearStatus(GenericAPIView):
             data_to_serialize = (
                 convert_decimals_to_float(
                     response_
-                )
-            )
+        )
+    )
 
             encdata = encrypt_data(
                 json.dumps(
                     data_to_serialize
-                )
-            )
+        )
+    )
 
             return Response(
                 encdata,
                 status=200
-            )
+    )
 
         return Response(
             response_,
             status=200
-        )
+)
 
     
 
@@ -8030,63 +8047,20 @@ class AddSemister(GenericAPIView):
 
         data = {}
 
-        data['program_id'] = request_data.get('program_id')
+        # data['program_id'] = request_data.get('program_id')
         data['semester_number'] = request_data.get('semester_number')
         data['semester_name'] = request_data.get('semester_name')
         data['status'] = request_data.get('status', True)
         data['createdBy'] = str(request.user.id)
 
         # Program id validation
-        if (
-            data['program_id'] is None
-            or data['program_id'] == ""
-        ):
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=data['program_id'],
-            isActive=True,
-            status=True
-        ).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active program not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
+        
 
         # Semester number validation
         if (
             data['semester_number'] is None
             or data['semester_number'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester number is required.",
@@ -8096,10 +8070,10 @@ class AddSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8107,7 +8081,7 @@ class AddSemister(GenericAPIView):
         try:
             data['semester_number'] = int(
                 data['semester_number']
-            )
+    )
 
             if data['semester_number'] <= 0:
                 raise ValueError
@@ -8122,41 +8096,20 @@ class AddSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        # Semester cannot exceed total semesters configured for program
-        if data['semester_number'] > program_obj.total_semesters:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Semester number cannot be greater than "
-                    f"{program_obj.total_semesters} for this program."
-                ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
 
         # Semester name validation
         if (
             data['semester_name'] is None
             or data['semester_name'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester name is required.",
@@ -8166,24 +8119,23 @@ class AddSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         data['semester_name'] = str(
             data['semester_name']
-        ).strip()
+).strip()
 
         # Duplicate semester number for same program
         duplicate_number = Semester.objects.filter(
-            program_id=data['program_id'],
             semester_number=data['semester_number'],
             isActive=True
-        ).first()
+).first()
 
         if duplicate_number is not None:
             response_ = {
@@ -8191,27 +8143,26 @@ class AddSemister(GenericAPIView):
                 "msg": (
                     "Semester number already exists "
                     "for this program."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         # Duplicate semester name for same program
         duplicate_name = Semester.objects.filter(
-            program_id=data['program_id'],
             semester_name__iexact=data['semester_name'],
             isActive=True
-        ).first()
+).first()
 
         if duplicate_name is not None:
             response_ = {
@@ -8219,17 +8170,17 @@ class AddSemister(GenericAPIView):
                 "msg": (
                     "Semester name already exists "
                     "for this program."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8248,10 +8199,10 @@ class AddSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8265,10 +8216,10 @@ class AddSemister(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -8286,22 +8237,13 @@ class SemisterList(GenericAPIView):
 
         semester_obj = Semester.objects.filter(
             isActive=True
-        ).order_by(
-            'program_id',
+).order_by(
             'semester_number'
-        )
+)
 
-        program_id = request.GET.get('program_id')
         status = request.GET.get('status')
 
-        if (
-            program_id is not None
-            and program_id != ""
-        ):
-            semester_obj = semester_obj.filter(
-                program_id=program_id
-            )
-
+       
         if status is not None and status != "":
             if str(status).lower() in [
                 "true",
@@ -8310,7 +8252,7 @@ class SemisterList(GenericAPIView):
             ]:
                 semester_obj = semester_obj.filter(
                     status=True
-                )
+        )
 
             elif str(status).lower() in [
                 "false",
@@ -8319,49 +8261,15 @@ class SemisterList(GenericAPIView):
             ]:
                 semester_obj = semester_obj.filter(
                     status=False
-                )
+        )
 
         serializer = SemesterSerializer(
             semester_obj,
             many=True
-        )
+)
 
         semester_data = serializer.data
 
-        for item in semester_data:
-            program_obj = Program.objects.filter(
-                id=item['program_id'],
-                isActive=True
-            ).first()
-
-            if program_obj is not None:
-                item['program_name'] = (
-                    program_obj.program_name
-                )
-                item['program_code'] = (
-                    program_obj.program_code
-                )
-
-                department_obj = Department.objects.filter(
-                    id=program_obj.department_id,
-                    isActive=True
-                ).first()
-
-                if department_obj is not None:
-                    item['department_id'] = (
-                        department_obj.id
-                    )
-                    item['department_name'] = (
-                        department_obj.department_name
-                    )
-                else:
-                    item['department_id'] = ""
-                    item['department_name'] = ""
-            else:
-                item['program_name'] = ""
-                item['program_code'] = ""
-                item['department_id'] = ""
-                item['department_name'] = ""
 
         response_ = {
             "n": 1,
@@ -8372,10 +8280,10 @@ class SemisterList(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -8388,7 +8296,7 @@ class SemisterList(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -8398,7 +8306,7 @@ class SemisterList(GenericAPIView):
         if (
             semester_id is None
             or semester_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester id is required.",
@@ -8408,10 +8316,10 @@ class SemisterList(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8419,7 +8327,7 @@ class SemisterList(GenericAPIView):
         semester_obj = Semester.objects.filter(
             id=semester_id,
             isActive=True
-        ).first()
+).first()
 
         if semester_obj is None:
             response_ = {
@@ -8431,53 +8339,21 @@ class SemisterList(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         serializer = SemesterSerializer(
             semester_obj
-        )
+)
 
         semester_data = serializer.data
 
-        program_obj = Program.objects.filter(
-            id=semester_obj.program_id,
-            isActive=True
-        ).first()
-
-        if program_obj is not None:
-            semester_data['program_name'] = (
-                program_obj.program_name
-            )
-            semester_data['program_code'] = (
-                program_obj.program_code
-            )
-
-            department_obj = Department.objects.filter(
-                id=program_obj.department_id,
-                isActive=True
-            ).first()
-
-            if department_obj is not None:
-                semester_data['department_id'] = (
-                    department_obj.id
-                )
-                semester_data['department_name'] = (
-                    department_obj.department_name
-                )
-            else:
-                semester_data['department_id'] = ""
-                semester_data['department_name'] = ""
-        else:
-            semester_data['program_name'] = ""
-            semester_data['program_code'] = ""
-            semester_data['department_id'] = ""
-            semester_data['department_name'] = ""
+        
 
         response_ = {
             "n": 1,
@@ -8488,10 +8364,10 @@ class SemisterList(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -8504,7 +8380,7 @@ class SemisterDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -8514,7 +8390,7 @@ class SemisterDetails(GenericAPIView):
         if (
             semester_id is None
             or semester_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
@@ -8522,11 +8398,11 @@ class SemisterDetails(GenericAPIView):
                     "msg": "Semester id is required.",
                     "data": {}
                 }
-            )
+    )
 
         semester_obj = Semester.objects.filter(
             id=semester_id
-        ).first()
+).first()
 
         if semester_obj is None:
             return phase_one_response(
@@ -8536,7 +8412,7 @@ class SemisterDetails(GenericAPIView):
                     "msg": "Semester not found.",
                     "data": {}
                 }
-            )
+    )
 
         semester_data = {
             "id": semester_obj.id,
@@ -8552,7 +8428,7 @@ class SemisterDetails(GenericAPIView):
                 "msg": "Semester details found successfully.",
                 "data": semester_data
             }
-        )
+)
 
 
 class UpdateSemister(GenericAPIView):
@@ -8567,7 +8443,7 @@ class UpdateSemister(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -8577,7 +8453,7 @@ class UpdateSemister(GenericAPIView):
         if (
             semester_id is None
             or semester_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester id is required.",
@@ -8587,10 +8463,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8598,7 +8474,7 @@ class UpdateSemister(GenericAPIView):
         semester_obj = Semester.objects.filter(
             id=semester_id,
             isActive=True
-        ).first()
+).first()
 
         if semester_obj is None:
             response_ = {
@@ -8610,10 +8486,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8623,19 +8499,19 @@ class UpdateSemister(GenericAPIView):
         data['program_id'] = request_data.get(
             'program_id',
             semester_obj.program_id
-        )
+)
         data['semester_number'] = request_data.get(
             'semester_number',
             semester_obj.semester_number
-        )
+)
         data['semester_name'] = request_data.get(
             'semester_name',
             semester_obj.semester_name
-        )
+)
         data['status'] = request_data.get(
             'status',
             semester_obj.status
-        )
+)
         data['updatedBy'] = str(request.user.id)
         data['updatedAt'] = timezone.now()
 
@@ -8643,7 +8519,7 @@ class UpdateSemister(GenericAPIView):
             id=data['program_id'],
             isActive=True,
             status=True
-        ).first()
+).first()
 
         if program_obj is None:
             response_ = {
@@ -8655,10 +8531,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8666,7 +8542,7 @@ class UpdateSemister(GenericAPIView):
         if (
             data['semester_number'] is None
             or data['semester_number'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester number is required.",
@@ -8676,10 +8552,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8687,7 +8563,7 @@ class UpdateSemister(GenericAPIView):
         try:
             data['semester_number'] = int(
                 data['semester_number']
-            )
+    )
 
             if data['semester_number'] <= 0:
                 raise ValueError
@@ -8702,10 +8578,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8716,17 +8592,17 @@ class UpdateSemister(GenericAPIView):
                 "msg": (
                     "Semester number cannot be greater than "
                     f"{program_obj.total_semesters} for this program."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8734,7 +8610,7 @@ class UpdateSemister(GenericAPIView):
         if (
             data['semester_name'] is None
             or data['semester_name'] == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester name is required.",
@@ -8744,25 +8620,24 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         data['semester_name'] = str(
             data['semester_name']
-        ).strip()
+).strip()
 
         duplicate_number = Semester.objects.filter(
-            program_id=data['program_id'],
             semester_number=data['semester_number'],
             isActive=True
-        ).exclude(
+).exclude(
             id=semester_id
-        ).first()
+).first()
 
         if duplicate_number is not None:
             response_ = {
@@ -8770,28 +8645,27 @@ class UpdateSemister(GenericAPIView):
                 "msg": (
                     "Semester number already exists "
                     "for this program."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         duplicate_name = Semester.objects.filter(
-            program_id=data['program_id'],
             semester_name__iexact=data['semester_name'],
             isActive=True
-        ).exclude(
+).exclude(
             id=semester_id
-        ).first()
+).first()
 
         if duplicate_name is not None:
             response_ = {
@@ -8799,17 +8673,17 @@ class UpdateSemister(GenericAPIView):
                 "msg": (
                     "Semester name already exists "
                     "for this program."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8818,7 +8692,7 @@ class UpdateSemister(GenericAPIView):
             semester_obj,
             data=data,
             partial=True
-        )
+)
 
         if serializer.is_valid():
             serializer.save()
@@ -8832,10 +8706,10 @@ class UpdateSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8849,10 +8723,10 @@ class UpdateSemister(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -8870,7 +8744,7 @@ class DeleteSemister(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -8880,7 +8754,7 @@ class DeleteSemister(GenericAPIView):
         if (
             semester_id is None
             or semester_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester id is required.",
@@ -8890,10 +8764,10 @@ class DeleteSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8901,7 +8775,7 @@ class DeleteSemister(GenericAPIView):
         semester_obj = Semester.objects.filter(
             id=semester_id,
             isActive=True
-        ).first()
+).first()
 
         if semester_obj is None:
             response_ = {
@@ -8913,10 +8787,10 @@ class DeleteSemister(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8924,7 +8798,7 @@ class DeleteSemister(GenericAPIView):
         class_group_exists = ClassGroup.objects.filter(
             semester_id=semester_obj.id,
             isActive=True
-        ).exists()
+).exists()
 
         if class_group_exists:
             response_ = {
@@ -8932,17 +8806,17 @@ class DeleteSemister(GenericAPIView):
                 "msg": (
                     "Semester cannot be deleted because "
                     "class groups exist."
-                ),
+        ),
                 "data": {}
             }
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -8961,10 +8835,10 @@ class DeleteSemister(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -8982,7 +8856,7 @@ class ChangeSemisterStatus(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -8992,7 +8866,7 @@ class ChangeSemisterStatus(GenericAPIView):
         if (
             semester_id is None
             or semester_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Semester id is required.",
@@ -9002,10 +8876,10 @@ class ChangeSemisterStatus(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -9013,7 +8887,7 @@ class ChangeSemisterStatus(GenericAPIView):
         semester_obj = Semester.objects.filter(
             id=semester_id,
             isActive=True
-        ).first()
+).first()
 
         if semester_obj is None:
             response_ = {
@@ -9025,10 +8899,10 @@ class ChangeSemisterStatus(GenericAPIView):
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
                     response_
-                )
+        )
                 encdata = encrypt_data(
                     json.dumps(data_to_serialize)
-                )
+        )
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -9050,10 +8924,10 @@ class ChangeSemisterStatus(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -9076,245 +8950,56 @@ class AddClassGroup(GenericAPIView):
 
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
-
         request_data, error_response = handle_request_body(request)
-
         if error_response:
             return error_response
-
         data = {}
-
-        data['academic_year_id'] = request_data.get(
-            'academic_year_id'
-        )
-        data['department_id'] = request_data.get(
-            'department_id'
-        )
-        data['program_id'] = request_data.get(
-            'program_id'
-        )
-        data['semester_id'] = request_data.get(
-            'semester_id'
-        )
-        data['class_name'] = request_data.get(
-            'class_name'
-        )
-        data['division'] = request_data.get(
-            'division'
-        )
-        data['batch_name'] = request_data.get(
-            'batch_name'
-        )
-        data['class_teacher_id'] = request_data.get(
-            'class_teacher_id'
-        )
-        data['capacity'] = request_data.get(
-            'capacity',
-            0
-        )
-        data['status'] = request_data.get(
-            'status',
-            True
-        )
+        data['course_id'] = request_data.get('course_id')
+        data['semester_ids'] = request_data.get('semester_ids')
+        data['class_name'] = request_data.get('class_name')
+        data['division'] = request_data.get('division')
+        data['batch_name'] = request_data.get('batch_name')
+        data['capacity'] = request_data.get('capacity',0)
+        data['status'] = request_data.get('status',True)
         data['createdBy'] = str(request.user.id)
 
-        # Academic year validation
-        if (
-            data['academic_year_id'] is None
-            or data['academic_year_id'] == ""
-        ):
+
+
+        # course validation
+        if (data['course_id'] is None or data['course_id'] == ""):
             response_ = {
                 "n": 0,
-                "msg": "Academic year id is required.",
+                "msg": "course id is required.",
                 "data": {}
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        academic_year_obj = AcademicYear.objects.filter(
-            id=data['academic_year_id'],
-            isActive=True,
-            status=True
-        ).first()
+        course_obj = Course.objects.filter(id=data['course_id'],isActive=True,og_code=str(request.user.og_code)).first()
 
-        if academic_year_obj is None:
+        if course_obj is None:
             response_ = {
                 "n": 0,
-                "msg": "Active academic year not found.",
+                "msg": "Active course not found.",
                 "data": {}
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        # Department validation
-        if (
-            data['department_id'] is None
-            or data['department_id'] == ""
-        ):
-            response_ = {
-                "n": 0,
-                "msg": "Department id is required.",
-                "data": {}
-            }
 
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        department_obj = Department.objects.filter(
-            id=data['department_id'],
-            isActive=True,
-            status=True
-        ).first()
-
-        if department_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active department not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Program validation
-        if (
-            data['program_id'] is None
-            or data['program_id'] == ""
-        ):
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=data['program_id'],
-            department_id=data['department_id'],
-            isActive=True,
-            status=True
-        ).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Program does not belong to the "
-                    "selected department."
-                ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Semester validation
-        if (
-            data['semester_id'] is None
-            or data['semester_id'] == ""
-        ):
-            response_ = {
-                "n": 0,
-                "msg": "Semester id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        semester_obj = Semester.objects.filter(
-            id=data['semester_id'],
-            program_id=data['program_id'],
-            isActive=True,
-            status=True
-        ).first()
-
-        if semester_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Semester does not belong to the "
-                    "selected program."
-                ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
 
         # Class name validation
-        if (
-            data['class_name'] is None
-            or data['class_name'] == ""
-        ):
+        if (data['class_name'] is None  or data['class_name'] == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class name is required.",
@@ -9322,47 +9007,28 @@ class AddClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        data['class_name'] = str(
-            data['class_name']
-        ).strip()
-
-        if (
-            data['division'] is not None
-            and data['division'] != ""
-        ):
-            data['division'] = str(
-                data['division']
-            ).strip().upper()
+        data['class_name'] = str(data['class_name']).strip()
+        if (data['division'] is not None and data['division'] != ""):
+            data['division'] = str(data['division']).strip().upper()
         else:
             data['division'] = None
 
-        if (
-            data['batch_name'] is not None
-            and data['batch_name'] != ""
-        ):
-            data['batch_name'] = str(
-                data['batch_name']
-            ).strip()
+        if (data['batch_name'] is not None   and data['batch_name'] != ""):
+            data['batch_name'] = str(data['batch_name']).strip()
         else:
             data['batch_name'] = None
+        data['og_code'] = str(request.user.og_code)
 
         # Capacity validation
         try:
             data['capacity'] = int(data['capacity'])
-
             if data['capacity'] < 0:
                 raise ValueError
-
         except (TypeError, ValueError):
             response_ = {
                 "n": 0,
@@ -9371,36 +9037,20 @@ class AddClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
         duplicate_query = ClassGroup.objects.filter(
-            academic_year_id=data['academic_year_id'],
-            department_id=data['department_id'],
-            program_id=data['program_id'],
-            semester_id=data['semester_id'],
-            class_name__iexact=data['class_name'],
+            course_id=data['course_id'],
+            class_name=data['class_name'],
+            og_code=str(request.user.og_code),
             isActive=True
         )
 
-        if data['division'] is None:
-            duplicate_query = duplicate_query.filter(
-                division__isnull=True
-            )
-        else:
-            duplicate_query = duplicate_query.filter(
-                division__iexact=data['division']
-            )
 
         duplicate_obj = duplicate_query.first()
-
         if duplicate_obj is not None:
             response_ = {
                 "n": 0,
@@ -9409,21 +9059,14 @@ class AddClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
-
         serializer = ClassGroupSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
-
             response_ = {
                 "n": 1,
                 "msg": "Class group added successfully.",
@@ -9431,14 +9074,9 @@ class AddClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
         response_ = {
@@ -9448,14 +9086,9 @@ class AddClassGroup(GenericAPIView):
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-            )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-            )
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
-
         return Response(response_, status=200)
 
 
@@ -9469,143 +9102,67 @@ class ClassGroupList(GenericAPIView):
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
 
-        class_group_obj = ClassGroup.objects.filter(
-            isActive=True
-        ).order_by(
-            'academic_year_id',
-            'class_name',
-            'division'
-        )
+        class_group_obj = ClassGroup.objects.filter(isActive=True).order_by('academic_year_id','class_name','division')
 
-        academic_year_id = request.GET.get(
-            'academic_year_id'
-        )
-        department_id = request.GET.get(
-            'department_id'
-        )
-        program_id = request.GET.get(
-            'program_id'
-        )
-        semester_id = request.GET.get(
-            'semester_id'
-        )
+        academic_year_id = request.GET.get('academic_year_id')
+        department_id = request.GET.get('department_id')
+        program_id = request.GET.get('program_id')
+        semester_id = request.GET.get('semester_id')
         status = request.GET.get('status')
 
-        if (
-            academic_year_id is not None
-            and academic_year_id != ""
-        ):
-            class_group_obj = class_group_obj.filter(
-                academic_year_id=academic_year_id
-            )
+        if (academic_year_id is not None and academic_year_id != ""):
+            class_group_obj = class_group_obj.filter(academic_year_id=academic_year_id)
 
-        if (
-            department_id is not None
-            and department_id != ""
-        ):
-            class_group_obj = class_group_obj.filter(
-                department_id=department_id
-            )
+        if (department_id is not None and department_id != ""):
+            class_group_obj = class_group_obj.filter(department_id=department_id)
 
-        if (
-            program_id is not None
-            and program_id != ""
-        ):
-            class_group_obj = class_group_obj.filter(
-                program_id=program_id
-            )
+        if (program_id is not None and program_id != ""):
+            class_group_obj = class_group_obj.filter(program_id=program_id)
 
-        if (
-            semester_id is not None
-            and semester_id != ""
-        ):
-            class_group_obj = class_group_obj.filter(
-                semester_id=semester_id
-            )
+        if (semester_id is not None and semester_id != ""):
+            class_group_obj = class_group_obj.filter(semester_id=semester_id)
 
         if status is not None and status != "":
-            if str(status).lower() in [
-                "true",
-                "1",
-                "active"
-            ]:
-                class_group_obj = class_group_obj.filter(
-                    status=True
-                )
+            if str(status).lower() in ["true""1""active"]:
+                class_group_obj = class_group_obj.filter(status=True)
+            elif str(status).lower() in ["false""0""inactive"]:
+                class_group_obj = class_group_obj.filter(status=False)
 
-            elif str(status).lower() in [
-                "false",
-                "0",
-                "inactive"
-            ]:
-                class_group_obj = class_group_obj.filter(
-                    status=False
-                )
-
-        serializer = ClassGroupSerializer(
-            class_group_obj,
-            many=True
-        )
+        serializer = ClassGroupSerializer(class_group_obj,many=True)
 
         class_group_data = serializer.data
 
         for item in class_group_data:
-            academic_year_obj = AcademicYear.objects.filter(
-                id=item['academic_year_id'],
-                isActive=True
-            ).first()
+            academic_year_obj = AcademicYear.objects.filter(id=item['academic_year_id'],isActive=True).first()
 
             if academic_year_obj is not None:
-                item['academic_year_name'] = (
-                    academic_year_obj.academic_year_name
-                )
+                item['academic_year_name'] = (academic_year_obj.academic_year_name)
             else:
                 item['academic_year_name'] = ""
 
-            department_obj = Department.objects.filter(
-                id=item['department_id'],
-                isActive=True
-            ).first()
+            department_obj = Department.objects.filter(id=item['department_id'],isActive=True).first()
 
             if department_obj is not None:
-                item['department_name'] = (
-                    department_obj.department_name
-                )
-                item['department_code'] = (
-                    department_obj.department_code
-                )
+                item['department_name'] = (department_obj.department_name)
+                item['department_code'] = (department_obj.department_code)
             else:
                 item['department_name'] = ""
                 item['department_code'] = ""
 
-            program_obj = Program.objects.filter(
-                id=item['program_id'],
-                isActive=True
-            ).first()
+            program_obj = Program.objects.filter(id=item['program_id'],isActive=True).first()
 
             if program_obj is not None:
-                item['program_name'] = (
-                    program_obj.program_name
-                )
-                item['program_code'] = (
-                    program_obj.program_code
-                )
+                item['program_name'] = (program_obj.program_name)                
+                item['program_code'] = (program_obj.program_code)
             else:
                 item['program_name'] = ""
                 item['program_code'] = ""
 
-            semester_obj = Semester.objects.filter(
-                id=item['semester_id'],
-                isActive=True
-            ).first()
+            semester_obj = Semester.objects.filter(id=item['semester_id'],isActive=True).first()
 
             if semester_obj is not None:
-                item['semester_name'] = (
-                    semester_obj.semester_name
-                )
-                item['semester_number'] = (
-                    semester_obj.semester_number
-                )
+                item['semester_name'] = (semester_obj.semester_name)
+                item['semester_number'] = (semester_obj.semester_number)
             else:
                 item['semester_name'] = ""
                 item['semester_number'] = ""
@@ -9617,35 +9174,21 @@ class ClassGroupList(GenericAPIView):
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-            )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-            )
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
 
     def post(self, request):
         encryped_header = ""
-
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-        )
-
+        request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
-
         class_group_id = request_data.get('id')
-
-        if (
-            class_group_id is None
-            or class_group_id == ""
-        ):
+        if (class_group_id is None or class_group_id == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class group id is required.",
@@ -9653,21 +9196,13 @@ class ClassGroupList(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        class_group_obj = ClassGroup.objects.filter(
-            id=class_group_id,
-            isActive=True
-        ).first()
-
+        class_group_obj = ClassGroup.objects.filter(id=class_group_id,isActive=True).first()
         if class_group_obj is None:
             response_ = {
                 "n": 0,
@@ -9676,78 +9211,42 @@ class ClassGroupList(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
-
-        serializer = ClassGroupSerializer(
-            class_group_obj
-        )
-
+        serializer = ClassGroupSerializer(class_group_obj)
         class_group_data = serializer.data
-
-        academic_year_obj = AcademicYear.objects.filter(
-            id=class_group_obj.academic_year_id,
-            isActive=True
-        ).first()
+        academic_year_obj = AcademicYear.objects.filter(id=class_group_obj.academic_year_id,isActive=True).first()
 
         if academic_year_obj is not None:
-            class_group_data['academic_year_name'] = (
-                academic_year_obj.academic_year_name
-            )
+            class_group_data['academic_year_name'] = (                academic_year_obj.academic_year_name    )
         else:
             class_group_data['academic_year_name'] = ""
 
-        department_obj = Department.objects.filter(
-            id=class_group_obj.department_id,
-            isActive=True
-        ).first()
+        department_obj = Department.objects.filter(            id=class_group_obj.department_id,            isActive=True).first()
 
         if department_obj is not None:
-            class_group_data['department_name'] = (
-                department_obj.department_name
-            )
-            class_group_data['department_code'] = (
-                department_obj.department_code
-            )
+            class_group_data['department_name'] = (                department_obj.department_name    )
+            class_group_data['department_code'] = (                department_obj.department_code    )
         else:
             class_group_data['department_name'] = ""
             class_group_data['department_code'] = ""
 
-        program_obj = Program.objects.filter(
-            id=class_group_obj.program_id,
-            isActive=True
-        ).first()
+        program_obj = Program.objects.filter(            id=class_group_obj.program_id,            isActive=True).first()
 
         if program_obj is not None:
-            class_group_data['program_name'] = (
-                program_obj.program_name
-            )
-            class_group_data['program_code'] = (
-                program_obj.program_code
-            )
+            class_group_data['program_name'] = (                program_obj.program_name    )
+            class_group_data['program_code'] = (                program_obj.program_code    )
         else:
             class_group_data['program_name'] = ""
             class_group_data['program_code'] = ""
 
-        semester_obj = Semester.objects.filter(
-            id=class_group_obj.semester_id,
-            isActive=True
-        ).first()
+        semester_obj = Semester.objects.filter(            id=class_group_obj.semester_id,            isActive=True).first()
 
         if semester_obj is not None:
-            class_group_data['semester_name'] = (
-                semester_obj.semester_name
-            )
-            class_group_data['semester_number'] = (
-                semester_obj.semester_number
-            )
+            class_group_data['semester_name'] = (                semester_obj.semester_name    )
+            class_group_data['semester_number'] = (                semester_obj.semester_number    )
         else:
             class_group_data['semester_name'] = ""
             class_group_data['semester_number'] = ""
@@ -9759,12 +9258,8 @@ class ClassGroupList(GenericAPIView):
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-            )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-            )
+            data_to_serialize = convert_decimals_to_float(                response_    )
+            encdata = encrypt_data(                json.dumps(data_to_serialize)    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -9776,23 +9271,15 @@ class UpdateClassGroup(GenericAPIView):
 
     def post(self, request):
         encryped_header = ""
-
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-        )
+        request_data, error_response = handle_request_body(            request)
 
         if error_response:
             return error_response
 
         class_group_id = request_data.get('id')
-
-        if (
-            class_group_id is None
-            or class_group_id == ""
-        ):
+        if (            class_group_id is None            or class_group_id == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class group id is required.",
@@ -9800,20 +9287,12 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        class_group_obj = ClassGroup.objects.filter(
-            id=class_group_id,
-            isActive=True
-        ).first()
+        class_group_obj = ClassGroup.objects.filter(            id=class_group_id,            isActive=True).first()
 
         if class_group_obj is None:
             response_ = {
@@ -9823,66 +9302,25 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
-
         data = {}
-
-        data['academic_year_id'] = request_data.get(
-            'academic_year_id',
-            class_group_obj.academic_year_id
-        )
-        data['department_id'] = request_data.get(
-            'department_id',
-            class_group_obj.department_id
-        )
-        data['program_id'] = request_data.get(
-            'program_id',
-            class_group_obj.program_id
-        )
-        data['semester_id'] = request_data.get(
-            'semester_id',
-            class_group_obj.semester_id
-        )
-        data['class_name'] = request_data.get(
-            'class_name',
-            class_group_obj.class_name
-        )
-        data['division'] = request_data.get(
-            'division',
-            class_group_obj.division
-        )
-        data['batch_name'] = request_data.get(
-            'batch_name',
-            class_group_obj.batch_name
-        )
-        data['class_teacher_id'] = request_data.get(
-            'class_teacher_id',
-            class_group_obj.class_teacher_id
-        )
-        data['capacity'] = request_data.get(
-            'capacity',
-            class_group_obj.capacity
-        )
-        data['status'] = request_data.get(
-            'status',
-            class_group_obj.status
-        )
+        data['academic_year_id'] = request_data.get(            'academic_year_id',            class_group_obj.academic_year_id)
+        data['department_id'] = request_data.get(            'department_id',            class_group_obj.department_id)
+        data['program_id'] = request_data.get(            'program_id',            class_group_obj.program_id)
+        data['semester_id'] = request_data.get(            'semester_id',            class_group_obj.semester_id)
+        data['class_name'] = request_data.get(            'class_name',            class_group_obj.class_name)
+        data['division'] = request_data.get(            'division',            class_group_obj.division)
+        data['batch_name'] = request_data.get(            'batch_name',            class_group_obj.batch_name)
+        data['class_teacher_id'] = request_data.get(            'class_teacher_id',            class_group_obj.class_teacher_id)
+        data['capacity'] = request_data.get(            'capacity',            class_group_obj.capacity)
+        data['status'] = request_data.get(            'status',            class_group_obj.status)
         data['updatedBy'] = str(request.user.id)
         data['updatedAt'] = timezone.now()
 
-        academic_year_obj = AcademicYear.objects.filter(
-            id=data['academic_year_id'],
-            isActive=True,
-            status=True
-        ).first()
+        academic_year_obj = AcademicYear.objects.filter(            id=data['academic_year_id'],            isActive=True,      status=True).first()
 
         if academic_year_obj is None:
             response_ = {
@@ -9892,21 +9330,12 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        department_obj = Department.objects.filter(
-            id=data['department_id'],
-            isActive=True,
-            status=True
-        ).first()
+        department_obj = Department.objects.filter(            id=data['department_id'],            isActive=True,            status=True).first()
 
         if department_obj is None:
             response_ = {
@@ -9916,76 +9345,45 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        program_obj = Program.objects.filter(
-            id=data['program_id'],
-            department_id=data['department_id'],
-            isActive=True,
-            status=True
-        ).first()
+        program_obj = Program.objects.filter(            id=data['program_id'],            department_id=data['department_id'],            isActive=True,            status=True).first()
 
         if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Program does not belong to the "
-                    "selected department."
-                ),
+            response_ = {                "n": 0,                "msg": ("Program does not belong to the ""selected department."),
                 "data": {}
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         semester_obj = Semester.objects.filter(
             id=data['semester_id'],
-            program_id=data['program_id'],
             isActive=True,
-            status=True
-        ).first()
+            status=True).first()
 
         if semester_obj is None:
             response_ = {
                 "n": 0,
-                "msg": (
-                    "Semester does not belong to the "
-                    "selected program."
-                ),
+                "msg": ("Semester does not belong to the ""selected program."),
                 "data": {}
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        if (
-            data['class_name'] is None
-            or data['class_name'] == ""
-        ):
+        if (            data['class_name'] is None            or data['class_name'] == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class name is required.",
@@ -9993,37 +9391,36 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+                data_to_serialize = convert_decimals_to_float(response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
         data['class_name'] = str(
             data['class_name']
-        ).strip()
+).strip()
 
         if (
             data['division'] is not None
             and data['division'] != ""
-        ):
+):
             data['division'] = str(
                 data['division']
-            ).strip().upper()
+    ).strip().upper()
         else:
             data['division'] = None
 
         if (
             data['batch_name'] is not None
             and data['batch_name'] != ""
-        ):
+):
             data['batch_name'] = str(
                 data['batch_name']
-            ).strip()
+    ).strip()
         else:
             data['batch_name'] = None
 
@@ -10042,11 +9439,11 @@ class UpdateClassGroup(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10054,20 +9451,19 @@ class UpdateClassGroup(GenericAPIView):
         duplicate_query = ClassGroup.objects.filter(
             academic_year_id=data['academic_year_id'],
             department_id=data['department_id'],
-            program_id=data['program_id'],
             semester_id=data['semester_id'],
             class_name__iexact=data['class_name'],
             isActive=True
-        ).exclude(id=class_group_id)
+).exclude(id=class_group_id)
 
         if data['division'] is None:
             duplicate_query = duplicate_query.filter(
                 division__isnull=True
-            )
+    )
         else:
             duplicate_query = duplicate_query.filter(
                 division__iexact=data['division']
-            )
+    )
 
         if duplicate_query.exists():
             response_ = {
@@ -10078,11 +9474,11 @@ class UpdateClassGroup(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10091,7 +9487,7 @@ class UpdateClassGroup(GenericAPIView):
             class_group_obj,
             data=data,
             partial=True
-        )
+)
 
         if serializer.is_valid():
             serializer.save()
@@ -10104,11 +9500,11 @@ class UpdateClassGroup(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10122,10 +9518,10 @@ class UpdateClassGroup(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -10143,7 +9539,7 @@ class DeleteClassGroup(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -10153,7 +9549,7 @@ class DeleteClassGroup(GenericAPIView):
         if (
             class_group_id is None
             or class_group_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Class group id is required.",
@@ -10162,11 +9558,11 @@ class DeleteClassGroup(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10174,7 +9570,7 @@ class DeleteClassGroup(GenericAPIView):
         class_group_obj = ClassGroup.objects.filter(
             id=class_group_id,
             isActive=True
-        ).first()
+).first()
 
         if class_group_obj is None:
             response_ = {
@@ -10185,11 +9581,11 @@ class DeleteClassGroup(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10208,10 +9604,10 @@ class DeleteClassGroup(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -10229,7 +9625,7 @@ class ChangeClassGroupStatus(GenericAPIView):
 
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -10239,7 +9635,7 @@ class ChangeClassGroupStatus(GenericAPIView):
         if (
             class_group_id is None
             or class_group_id == ""
-        ):
+):
             response_ = {
                 "n": 0,
                 "msg": "Class group id is required.",
@@ -10248,11 +9644,11 @@ class ChangeClassGroupStatus(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10260,7 +9656,7 @@ class ChangeClassGroupStatus(GenericAPIView):
         class_group_obj = ClassGroup.objects.filter(
             id=class_group_id,
             isActive=True
-        ).first()
+).first()
 
         if class_group_obj is None:
             response_ = {
@@ -10271,11 +9667,11 @@ class ChangeClassGroupStatus(GenericAPIView):
 
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(
-                    response_
-                )
+response_
+)
                 encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-                )
+json.dumps(data_to_serialize)
+)
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -10297,10 +9693,10 @@ class ChangeClassGroupStatus(GenericAPIView):
         if encryped_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
-            )
+    )
             encdata = encrypt_data(
                 json.dumps(data_to_serialize)
-            )
+    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -10313,7 +9709,7 @@ class ClassGroupDetails(GenericAPIView):
     def post(self, request):
         request_data, error_response = handle_request_body(
             request
-        )
+)
 
         if error_response:
             return error_response
@@ -10323,30 +9719,30 @@ class ClassGroupDetails(GenericAPIView):
         if (
             class_group_id is None
             or class_group_id == ""
-        ):
+):
             return phase_one_response(
                 request,
                 {
-                    "n": 0,
-                    "msg": "Class group id is required.",
-                    "data": {}
+"n": 0,
+"msg": "Class group id is required.",
+"data": {}
                 }
-            )
+    )
 
         class_group_obj = ClassGroup.objects.filter(
             id=class_group_id,
             isActive=True
-        ).first()
+).first()
 
         if class_group_obj is None:
             return phase_one_response(
                 request,
                 {
-                    "n": 0,
-                    "msg": "Class group not found.",
-                    "data": {}
+"n": 0,
+"msg": "Class group not found.",
+"data": {}
                 }
-            )
+    )
 
         serializer = ClassGroupSerializer(class_group_obj)
         class_group_data = serializer.data
@@ -10354,27 +9750,27 @@ class ClassGroupDetails(GenericAPIView):
         academic_year_obj = AcademicYear.objects.filter(
             id=class_group_obj.academic_year_id,
             isActive=True
-        ).first()
+).first()
 
         if academic_year_obj is not None:
             class_group_data['academic_year_name'] = (
                 academic_year_obj.academic_year_name
-            )
+    )
         else:
             class_group_data['academic_year_name'] = ""
 
         department_obj = Department.objects.filter(
             id=class_group_obj.department_id,
             isActive=True
-        ).first()
+).first()
 
         if department_obj is not None:
             class_group_data['department_name'] = (
                 department_obj.department_name
-            )
+    )
             class_group_data['department_code'] = (
                 department_obj.department_code
-            )
+    )
         else:
             class_group_data['department_name'] = ""
             class_group_data['department_code'] = ""
@@ -10382,15 +9778,15 @@ class ClassGroupDetails(GenericAPIView):
         program_obj = Program.objects.filter(
             id=class_group_obj.program_id,
             isActive=True
-        ).first()
+).first()
 
         if program_obj is not None:
             class_group_data['program_name'] = (
                 program_obj.program_name
-            )
+    )
             class_group_data['program_code'] = (
                 program_obj.program_code
-            )
+    )
         else:
             class_group_data['program_name'] = ""
             class_group_data['program_code'] = ""
@@ -10398,15 +9794,15 @@ class ClassGroupDetails(GenericAPIView):
         semester_obj = Semester.objects.filter(
             id=class_group_obj.semester_id,
             isActive=True
-        ).first()
+).first()
 
         if semester_obj is not None:
             class_group_data['semester_name'] = (
                 semester_obj.semester_name
-            )
+    )
             class_group_data['semester_number'] = (
                 semester_obj.semester_number
-            )
+    )
         else:
             class_group_data['semester_name'] = ""
             class_group_data['semester_number'] = ""
@@ -10418,7 +9814,7 @@ class ClassGroupDetails(GenericAPIView):
                 "msg": "Class group details found successfully.",
                 "data": class_group_data
             }
-        )
+)
 
 
 

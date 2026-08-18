@@ -38,7 +38,6 @@ def save_file(folder_path,uploaded_file,request):
 
 def apply_college_faculty_fields(data, request_data, default_sub_role=None):
     college_fields = [
-        "staff_id",
         "faculty_sub_role",
         "department_id",
         "work_group",
@@ -59,8 +58,7 @@ def apply_college_faculty_fields(data, request_data, default_sub_role=None):
     if data.get("faculty_sub_role") is not None and data.get("faculty_sub_role") != "":
         data["faculty_sub_role"] = str(data["faculty_sub_role"]).upper()
 
-    if request_data.get("staffid") is not None and not data.get("staff_id"):
-        data["staff_id"] = request_data.get("staffid")
+
 
     if request_data.get("department") is not None and not data.get("department_id"):
         data["department_id"] = request_data.get("department")
@@ -190,6 +188,8 @@ class UserLogin(GenericAPIView):
 
         if role_obj.id == 6:
             user_object=Candidate.objects.filter(Q(isActive=True,username=username)|Q(isActive=True,email=username))
+        elif role_obj.id == 7:
+            user_object=Parent.objects.filter(Q(isActive=True,username=username)|Q(isActive=True,email=username))
         else:
             user_object = UserAdmin.objects.filter(Q(isActive=True,username=username)|Q(isActive=True,email=username)).first()
         if user_object is None:
@@ -208,8 +208,12 @@ class UserLogin(GenericAPIView):
         else:
             if role_obj.id == 6:
                 user_ser = CandidateSerializer(user_object)
+            if role_obj.id == 7:
+                user_ser = ParentSerializer(user_object)
             else:
                 user_ser = UserAdminSerializer(user_object)
+
+
             check_user_password = check_password(password,user_object.password)
             if check_user_password == True:
                 role = user_object.role
@@ -421,7 +425,7 @@ class AddOrganisation(GenericAPIView):
             else:
                 return Response(response_,status=200)
             
-class AddTrainingCenter(GenericAPIView):
+class AddCollege(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -441,9 +445,9 @@ class AddTrainingCenter(GenericAPIView):
         adminobj = UserAdmin.objects.filter(id=userid).first()
         if adminobj is not None:
             if adminobj.member_of is None :
-                data['og_id'] = str(adminobj.id)
+                data['og_code'] = str(adminobj.og_code)
             else:
-                data['og_id'] = str(adminobj.member_of)
+                data['og_code'] = str(adminobj.og_code)
 
         data['name'] = request_data.get('name')
         data['mobilenumber'] = request_data.get('mobilenumber')
@@ -451,8 +455,7 @@ class AddTrainingCenter(GenericAPIView):
         data['email'] = str(request_data.get('email')).lower()
         data['source'] = request_data.get('source')
         data['user_type'] = 3
-        data['accreditation_number'] = request_data.get('accreditation_number')
-        data['is_parent_training_center']=True
+        data['is_parent_college']=True
         if request_data.get('no_of_classroom') is not None and request_data.get('no_of_classroom') !='':
             data['no_of_classroom'] = request_data.get('no_of_classroom')
 
@@ -468,7 +471,7 @@ class AddTrainingCenter(GenericAPIView):
         data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None
         data['createdBy'] = str(request.user.id)
 
-        # data['parent_training_center'] = ''
+        # data['parent_college'] = ''
         data['og_code'] = str(request.user.og_code)
 
         
@@ -507,9 +510,9 @@ class AddTrainingCenter(GenericAPIView):
             courses=request_data.get('courses')
             if courses is not None and courses != '':
                 for course in courses:
-                    already_exist_obj=TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],isActive=True).first()
+                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],isActive=True).first()
                     if already_exist_obj is None:
-                        TrainingCenterCourses.objects.create(course_id=course,training_center_id=serializer.data['id'],isActive=True)
+                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True)
 
             menu_user_type = "3"
             role_obj=UsereRole.objects.create(name='Admin',member_type=3,og_code=data['og_code'],member_of=serializer.data['id'])
@@ -563,7 +566,7 @@ class AddTrainingCenter(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-class UpdateTrainingCenter(GenericAPIView):
+class UpdateCollege(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -612,7 +615,6 @@ class UpdateTrainingCenter(GenericAPIView):
         data['mobilenumber'] = request_data.get('mobilenumber')   
         data['email'] = str(request_data.get('email')).lower()
         data['source'] = request_data.get('source')
-        data['accreditation_number'] = request_data.get('accreditation_number')      
         if request_data.get('no_of_classroom') is not None and request_data.get('no_of_classroom') !='':
             data['no_of_classroom'] = request_data.get('no_of_classroom')
 
@@ -660,13 +662,13 @@ class UpdateTrainingCenter(GenericAPIView):
             serializer.save()
             courses=request_data.get('courses')
             if courses is not None:
-                TrainingCenterCourses.objects.filter(training_center_id=serializer.data['id'],).update(isActive=False)
+                CollegeCourses.objects.filter(college_id=serializer.data['id'],).update(isActive=False)
                 for course in courses:
-                    already_exist_obj=TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],).first()
+                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],).first()
                     if already_exist_obj is None:
-                        TrainingCenterCourses.objects.create(course_id=course,training_center_id=serializer.data['id'],isActive=True)
+                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True)
                     else:
-                        TrainingCenterCourses.objects.filter(course_id=course,training_center_id=serializer.data['id'],).update(isActive=True)
+                        CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],).update(isActive=True)
 
 
 
@@ -707,7 +709,7 @@ class UpdateTrainingCenter(GenericAPIView):
             else:
                 return Response(response_,status=200)
             
-class DeleteTrainingCenter(GenericAPIView):
+class DeleteCollege(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -869,7 +871,7 @@ class DeleteDocument(GenericAPIView):
 
 
 
-class TrainingCenterList(GenericAPIView):
+class CollegeList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -902,7 +904,7 @@ class TrainingCenterList(GenericAPIView):
             return Response(response_,status=200)
 
 
-class AllTrainingCenterList(GenericAPIView):
+class AllCollegeList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -936,7 +938,7 @@ class AllTrainingCenterList(GenericAPIView):
         else:
             return Response(response_,status=200)
 
-class OrgAllTrainingCenterList(GenericAPIView):
+class OrgAllCollegeList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -949,10 +951,10 @@ class OrgAllTrainingCenterList(GenericAPIView):
             
         og_code = str(request.user.og_code)
             
-        training_center_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,)
-        training_center_objs=training_center_objs.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,)|Q(user_type=4,is_member=False,))
+        college_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,)
+        college_objs=college_objs.filter(Q(user_type=3,is_parent_college=True,is_member=False,)|Q(user_type=4,is_member=False,))
         
-        user_admin_ser = UserAdminSerializer(training_center_objs,many=True)
+        user_admin_ser = UserAdminSerializer(college_objs,many=True)
         for i in user_admin_ser.data:
             country_object = Country.objects.filter(id=i['country']).first()
             if country_object is not None:
@@ -973,7 +975,7 @@ class OrgAllTrainingCenterList(GenericAPIView):
             return Response(response_,status=200)
 
 
-class ParentAndSubTrainingCenterList(GenericAPIView):
+class ParentAndSubCollegeList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -989,14 +991,14 @@ class ParentAndSubTrainingCenterList(GenericAPIView):
         
 
         og_code = str(request.user.og_code)
-        parent_training_center_id=request_data.get('parent_training_center_id')
+        parent_college_id=request_data.get('parent_college_id')
 
-        useradminobject = UserAdmin.objects.filter(Q(id=parent_training_center_id,isActive=True,user_type__in=[3],is_parent_training_center=True,og_code=og_code)|Q(parent_training_center=parent_training_center_id,isActive=True,user_type__in=[4],is_parent_training_center=False,og_code=og_code,is_member=False)).order_by('-createdAt')
+        useradminobject = UserAdmin.objects.filter(Q(id=parent_college_id,isActive=True,user_type__in=[3],is_parent_college=True,og_code=og_code)|Q(parent_college=parent_college_id,isActive=True,user_type__in=[4],is_parent_college=False,og_code=og_code,is_member=False)).order_by('-createdAt')
 
 
         course_ids=request_data.get('course_ids')
         if course_ids is not None and course_ids !='':
-            traning_center_ids=list(TrainingCenterCourses.objects.filter(course_id__in=course_ids,isActive=True).values_list('training_center_id',flat=True))
+            traning_center_ids=list(CollegeCourses.objects.filter(course_id__in=course_ids,isActive=True).values_list('college_id',flat=True))
             useradminobject=useradminobject.filter(id__in=traning_center_ids)
         useradminobject=useradminobject.order_by('id').distinct('id')
 
@@ -1102,7 +1104,7 @@ class UserDetails(GenericAPIView):
         else:
             state_name = ""
 
-        course_ids = list(TrainingCenterCourses.objects.filter(isActive=True,training_center_id=user_id).values_list('course_id',flat=True))
+        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id).values_list('course_id',flat=True))
 
         
         serializer_data.update({
@@ -1125,7 +1127,7 @@ class UserDetails(GenericAPIView):
         else:
             return Response(response_,status=200)
 
-class TrainingCenterDetails(GenericAPIView):
+class CollegeDetails(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1179,7 +1181,7 @@ class TrainingCenterDetails(GenericAPIView):
         documents_required_object = Documents.objects.filter(isActive=True,role=serializer.data['user_type'])
         documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
 
-        branch_required_object = Branch.objects.filter(isActive=True,training_center=serializer.data['id'])
+        branch_required_object = Branch.objects.filter(isActive=True,college=serializer.data['id'])
         branch_required_ser = CustomBranchSerializer(branch_required_object,many=True)
 
 
@@ -1209,7 +1211,7 @@ class TrainingCenterDetails(GenericAPIView):
         else:
             state_name = ""
 
-        course_ids = list(TrainingCenterCourses.objects.filter(isActive=True,training_center_id=user_id).values_list('course_id',flat=True))
+        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id).values_list('course_id',flat=True))
         
         
         serializer_data.update({
@@ -1255,7 +1257,7 @@ class UploadUserDocument(GenericAPIView):
         doc_names = request_data.getlist('doc_name')
         
         docsUpload = request.FILES.getlist('docsUpload')
-        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','SubTrainingCenter')
+        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','SubCollege')
 
         file_url_list = []
         if docsUpload != []:
@@ -1385,8 +1387,8 @@ class SearchCities(GenericAPIView):
 
 
         for i in cityser.data:
-            statename_obj=State.objects.filter(id=i['state']).first()
-            countryname_obj=Country.objects.filter(id=i['country']).first()
+            statename_obj=State.objects.filter(id=i['state_id']).first()
+            countryname_obj=Country.objects.filter(id=i['country_id']).first()
             if statename_obj is not None:
                 i['statename']=statename_obj.name
             else:
@@ -1408,7 +1410,94 @@ class SearchCities(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
+
+class SearchStates(GenericAPIView):
+    
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def post(self,request):
+        
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
             
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+
+        statename = request_data.get("state")
+        if statename != "":
+            stateobj = State.objects.filter(name__icontains=statename)[:10]
+            stateser = StateSerializer(stateobj,many=True)   
+
+        else:
+            stateobj = State.objects.filter(country_id=101)
+            stateser = StateSerializer(stateobj,many=True) 
+
+
+        for i in stateser.data:
+            countryname_obj=Country.objects.filter(id=i['country_id']).first()
+            if countryname_obj is not None:
+                i['countryname']=countryname_obj.name
+            else:
+                i['countryname']=''
+
+        response_={
+                    "n": 1,
+                    "msg": 'Data fetched successfully',
+                    "data":stateser.data                        
+                }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+class SearchCountry(GenericAPIView):
+    
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def post(self,request):
+        
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+
+        countryname = request_data.get("country")
+        if countryname != "":
+            countryobj = Country.objects.filter(name__icontains=countryname)
+            countryser = CountrySerializer(countryobj,many=True)   
+
+        else:
+            countryobj = Country.objects.filter(isActive=True)
+            countryser = CountrySerializer(countryobj,many=True) 
+
+
+       
+
+        response_={
+                    "n": 1,
+                    "msg": 'Data fetched successfully',
+                    "data":countryser.data                        
+                }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+       
+
 class AddCountryEligibility(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1480,26 +1569,51 @@ class AddFaculty(GenericAPIView):
         data['first_name'] = request_data.get("first_name")
         data['middle_name'] = request_data.get("middle_name")
         data['last_name'] = request_data.get("last_name")
+        data['name']=str(data['first_name']) +' '+str(data['last_name'])
+        data['email'] = request_data.get('email')    
+        data['official_email'] = request_data.get('email')    
+        data['source'] = 'admin'    
+        data['mobilenumber'] = request_data.get('mobilenumber')    
+        data['designation'] = request_data.get('designation')    
         data['dob'] = request_data.get("dob")
+        data['marital_status'] = request_data.get("marital_status")
         data['gender'] = request_data.get("gender")
-        data['years_of_experience'] = request_data.get("years_of_experience")
-        data['previous_institute'] = request_data.get("previous_institute")
-        data['teaching_experience'] = request_data.get("teaching_experience")
-        data['preferred_teaching_mode'] = request_data.get("preferred_teaching_mode")
-        data['specialization'] = request_data.get("specialization") #json.loads
-        data['languages'] = request_data.get("languages")
+        data['blood_group'] = request_data.get("blood_group")
         data['address_line_one'] = request_data.get('address_line_one')
         data['address_line_two'] = request_data.get('address_line_two')
         data['country'] = request_data.get('country')
         data['state'] = request_data.get('state')
         data['city'] = request_data.get('city')
         data['pincode'] = request_data.get('pincode')
+        data['is_member'] = True
+        data['employee_code'] = request_data.get('employee_code')
+
+        data['work_group'] = request_data.get("work_group")
+        data['department_id'] = request_data.get("department_id")
+        data['work_category'] = request_data.get("work_category")
+        data['joining_date'] = request_data.get("joining_date")
+
+        data['employment_type'] = request_data.get("employment_type")
+        data['pf_no'] = request_data.get("pf_no")
+        data['pan_number'] = request_data.get("pan_number")
+        data['adhar_number'] = request_data.get("adhar_number")
+        data['bank_name'] = request_data.get("bank_name")
+        data['account_number'] = request_data.get("account_number")
+
+        
+        data['years_of_experience'] = request_data.get("years_of_experience")
+        data['previous_institute'] = request_data.get("previous_institute")
+        data['teaching_experience'] = request_data.get("teaching_experience")
+        data['specialization'] = request_data.get("specialization") #json.loads
+        data['languages'] = request_data.get("languages")
         data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None 
-        data['email'] = request_data.get('email')    
-        data['mobilenumber'] = request_data.get('mobilenumber')    
+        print("request.user.id",request.user.id)
+
         data = apply_college_faculty_fields(data, request_data, getattr(self, "default_faculty_sub_role", None))
         data['user_type'] = 5
+        data['role'] = 5
         data['og_code'] = str(request.user.og_code)
+        data['college_id'] =str(request.user.id)
         data['createdBy'] = str(request.user.id)
         data['password'] =make_password('Default@123')
         userid = request.user.id
@@ -1507,38 +1621,15 @@ class AddFaculty(GenericAPIView):
         adminobj = UserAdmin.objects.filter(id=userid).first()
         if adminobj is not None:
             if adminobj.member_of is None :
-                data['parent_training_center'] = str(adminobj.id)
+                data['parent_college'] = str(adminobj.id)
             else:
-                data['parent_training_center'] = str(adminobj.member_of)
+                data['parent_college'] = str(adminobj.member_of)
                 
 
 
         serializer = UserAdminSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-
-            # role_obj=UsereRole.objects.create(name='Faculty',member_type=5,og_code=data['og_code'],member_of=serializer.data['id'])
-            # data['role_id']=role_obj.id
-            # user_bj=UserAdmin.objects.filter(id=serializer.data['id']).update(role=role_obj.id)
-            # serobj = MenuDetails.objects.filter(isActive=True,user_type__icontains = [4]).order_by('sort_order')
-            # serializer2 = MenuDetailsSerializer(serobj,many=True)
-            # for i in serializer2.data:
-            #     Permissions.objects.create(
-            #             role_id =  data['role_id'],
-            #             menu_id = i['id']
-            #         )
-
-
-
-
-
-
-
-
-
-
-
-
 
             response_={
                         "n": 1,
@@ -1553,9 +1644,10 @@ class AddFaculty(GenericAPIView):
                 return Response(response_,status=200)
         else:
             print("error",serializer.errors)
+            first_key, first_value = next(iter(serializer.errors.items()))
             response_={
-                        "n": 0,
-                        "msg": 'Faculty not registered',
+                            "n": 0,
+                            "msg": first_key+' : '+ first_value[0],
                         "data":[]                     
                     }
             if encryped_header == "1" :
@@ -1574,11 +1666,10 @@ class FacultyList(GenericAPIView):
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
         og_code = str(request.user.og_code)
-
-        if request.user.member_of is not None and request.user.member_of !='':
-            facultyobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type=5,parent_training_center=str(request.user.member_of)).order_by('-id')
+        if request.user.role==3:
+            facultyobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type=5,college_id=str(request.user.id)).order_by('-id')
         else:
-            facultyobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type=5,parent_training_center=str(request.user.id)).order_by('-id')
+            facultyobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type=5).order_by('-id')
         
         faculty_sub_role = getattr(self, "faculty_sub_role", None) or request.GET.get("faculty_sub_role")
         if faculty_sub_role is not None and faculty_sub_role != "":
@@ -1592,22 +1683,14 @@ class FacultyList(GenericAPIView):
                 i['country_name'] = country_object.name
             else:
                 i['country_name'] = ""
-                
-                
+                 
             if i['specialization'] != "" and i['specialization'] is not None:
                 i['specialization'] = json.loads(i['specialization'])
-                # for k in topics_cov:
-                #     topic_list.append(k['value'])
-            
-            trmode = i['preferred_teaching_mode']
-            if trmode is not None and trmode != '':
-                trobj = TrainingMode.objects.filter(id=i['preferred_teaching_mode']).first()
-                i['preferred_teaching_mode'] = trobj.training_mode
-            else:
-                i['preferred_teaching_mode'] = ''
 
             if i['name'] == '' or i['name'] is None:
                 i['name']=i['first_name']+' '+i['last_name']
+
+
         response_={
                     "n": 1,
                     "msg": 'Faculty list found successfully',
@@ -1670,7 +1753,6 @@ class FacultyList(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-
 class userList(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1700,8 +1782,6 @@ class userList(GenericAPIView):
         else:
             return Response(response_,status=200)
         
-
-
 class UpdateFaculty(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1723,31 +1803,43 @@ class UpdateFaculty(GenericAPIView):
             data['first_name'] = request_data.get("first_name")
             data['middle_name'] = request_data.get("middle_name")
             data['last_name'] = request_data.get("last_name")
+            data['name']=str(data['first_name']) +' '+str(data['last_name'])
+            data['email'] = request_data.get('email')    
+            data['official_email'] = request_data.get('email')    
+            data['mobilenumber'] = request_data.get('mobilenumber')    
+            data['designation'] = request_data.get('designation')    
             data['dob'] = request_data.get("dob")
+            data['marital_status'] = request_data.get("marital_status")
             data['gender'] = request_data.get("gender")
-            data['years_of_experience'] = request_data.get("years_of_experience")
-            data['previous_institute'] = request_data.get("previous_institute")
-            data['teaching_experience'] = request_data.get("teaching_experience")
-            data['preferred_teaching_mode'] = request_data.get("preferred_teaching_mode")
-            data['specialization'] = request_data.get("specialization") #json.loads
-            data['languages'] = request_data.get("languages")
+            data['blood_group'] = request_data.get("blood_group")
             data['address_line_one'] = request_data.get('address_line_one')
             data['address_line_two'] = request_data.get('address_line_two')
             data['country'] = request_data.get('country')
             data['state'] = request_data.get('state')
             data['city'] = request_data.get('city')
             data['pincode'] = request_data.get('pincode')
-            data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None 
-            data['email'] = request_data.get('email')    
-            data['mobilenumber'] = request_data.get('mobilenumber')
-            data = apply_college_faculty_fields(data, request_data, getattr(self, "default_faculty_sub_role", None))
-   
-            data['updatedBy'] = str(request.user.id)
-            data['updatedAt'] = timezone.now()
+
+            data['work_group'] = request_data.get("work_group")
+            data['department_id'] = request_data.get("department_id")
+            data['work_category'] = request_data.get("work_category")
+            data['joining_date'] = request_data.get("joining_date")
+
+            data['employment_type'] = request_data.get("employment_type")
+            data['pf_no'] = request_data.get("pf_no")
+            data['pan_number'] = request_data.get("pan_number")
+            data['adhar_number'] = request_data.get("adhar_number")
+            data['bank_name'] = request_data.get("bank_name")
+            data['account_number'] = request_data.get("account_number")
 
             
+            data['years_of_experience'] = request_data.get("years_of_experience")
+            data['previous_institute'] = request_data.get("previous_institute")
+            data['teaching_experience'] = request_data.get("teaching_experience")
+            data['specialization'] = request_data.get("specialization") #json.loads
+            data['languages'] = request_data.get("languages")
+            data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber') or None 
+                
             email_object = UserAdmin.objects.filter(isActive=True,email=data['email']).exclude(id=facultyid).first()
-            number_object = UserAdmin.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).exclude(id=facultyid).first()
             if email_object is not None:
                 response_={
                             "n": 0,                    
@@ -1760,7 +1852,10 @@ class UpdateFaculty(GenericAPIView):
                     return Response(encdata,status=200)
                 else:
                     return Response(response_,status=200)
+            number_object = UserAdmin.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).exclude(id=facultyid).first()
+
             if number_object is not None:
+                print("num",number_object)
                 response_={
                             "n": 0,                    
                             "msg": 'Mobile number already exists',
@@ -1827,8 +1922,6 @@ class UpdateFaculty(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-
-
 class DeleteFaculty(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1884,38 +1977,6 @@ class DeleteFaculty(GenericAPIView):
                 return Response(response_,status=200)
         
         
-
-class AddHOD(AddFaculty):
-    default_faculty_sub_role = "HOD"
-
-
-class AddTeacher(AddFaculty):
-    default_faculty_sub_role = "TEACHER"
-
-
-class AddStaff(AddFaculty):
-    default_faculty_sub_role = "STAFF"
-
-
-class HODList(FacultyList):
-    faculty_sub_role = "HOD"
-
-
-class TeacherList(FacultyList):
-    faculty_sub_role = "TEACHER"
-
-
-class StaffList(FacultyList):
-    faculty_sub_role = "STAFF"
-
-
-class FacultyProfileDetails(FacultyList):
-    pass
-
-
-class UpdateFacultyProfile(UpdateFaculty):
-    pass
-
 
 
 
@@ -2147,7 +2208,7 @@ class DeleteUserDocuments(GenericAPIView):
             return Response(response_,status=200)
                 
 
-class GetTrainingCenterCourses(GenericAPIView):
+class GetCollegeCourses(GenericAPIView):
     
     def post(self,request):
         encryped_header = ""
@@ -2157,14 +2218,14 @@ class GetTrainingCenterCourses(GenericAPIView):
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
-        training_center_id = request_data.get('training_center_id')
-        if training_center_id is None or training_center_id == "" or training_center_id == "None":
-            training_center_id = str(request.user.id)
+        college_id = request_data.get('college_id')
+        if college_id is None or college_id == "" or college_id == "None":
+            college_id = str(request.user.id)
 
-        if training_center_id is not None and training_center_id != "" and training_center_id != "None":
+        if college_id is not None and college_id != "" and college_id != "None":
 
 
-            course_ids = list(TrainingCenterCourses.objects.filter(training_center_id=training_center_id,isActive=True).values_list('course_id',flat=True))
+            course_ids = list(CollegeCourses.objects.filter(college_id=college_id,isActive=True).values_list('course_id',flat=True))
             course_objs=Course.objects.filter(id__in=course_ids,isActive=True,course_status='Approved')
             if course_objs.exists():
                 serializer=CourseSerializer(course_objs,many=True)

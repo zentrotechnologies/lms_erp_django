@@ -9,9 +9,9 @@ def getMenu(request):
     
     og_token = request.session.get('og_token')
     if og_token is not None:  
-        is_parent_training_center = request.session.get('is_parent_training_center')
+        is_parent_college = request.session.get('is_parent_college')
         user_type = request.session.get('user_type')
-        parent_training_center = request.session.get('parent_training_center')
+        parent_college = request.session.get('parent_college')
         user_id = request.session.get('user_id')
         menuItems=request.session.get('menuItems')
         name = request.session.get('name')
@@ -23,9 +23,9 @@ def getMenu(request):
             'base_encryption_key':base_encryption_key,
             'backendurl':hostURL,
             'frontendurl':frontURL,
-            'is_parent_training_center':is_parent_training_center,
+            'is_parent_college':is_parent_college,
             'user_type':user_type,      
-            'parent_training_center':parent_training_center,
+            'parent_college':parent_college,
             'user_id':user_id,
             'menuItems':menuItems,
             'name':name,

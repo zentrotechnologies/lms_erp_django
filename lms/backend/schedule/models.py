@@ -24,25 +24,12 @@ class ScheduleCourseMapping(TrackingModel):
     schedule_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["schedule_id", "course_id"], name="uniq_schedule_course"
-            )
-        ]
 
 
-class ScheduleTrainingCenterMapping(TrackingModel):
+class ScheduleCollegeMapping(TrackingModel):
     schedule_id = models.BigIntegerField(db_index=True)
-    training_center_id = models.CharField(max_length=255, db_index=True)
+    college_id = models.CharField(max_length=255, db_index=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["schedule_id", "training_center_id"],
-                name="uniq_schedule_training_center",
-            )
-        ]
 
 
 

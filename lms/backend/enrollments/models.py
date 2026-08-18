@@ -9,7 +9,7 @@ class Enrollments(TrackingModel):
     schedule = models.CharField(max_length=255, db_index=True)
     enrollments_status = models.CharField(max_length=50, null=True, blank=True, db_index=True)
     source = models.CharField(max_length=50, null=True, blank=True)
-    trainingcenter_id = models.CharField(max_length=255, null=True, blank=True)
+    college_id = models.CharField(max_length=255, null=True, blank=True)
     declined_rsn = models.TextField(null=True, blank=True)
 
     # College allocation fields
@@ -63,7 +63,7 @@ class EnrollPayment(TrackingModel):
     subtotal_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     final_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    trainingcenter_id = models.CharField(max_length=255, null=True, blank=True)
+    college_id = models.CharField(max_length=255, null=True, blank=True)
     candidate_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     currency_type = models.CharField(default="INR", max_length=10)
@@ -126,10 +126,4 @@ class CandidateSubjectSelection(TrackingModel):
 
     mandatory = models.BooleanField(default=False)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["application_id", "subject_id"],
-                name="unique_admission_subject_selection",
-            )
-        ]
+

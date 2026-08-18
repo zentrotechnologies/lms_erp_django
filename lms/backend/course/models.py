@@ -15,7 +15,7 @@ class Subject(TrackingModel):
     subject_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100, null=True, blank=True)
 
-    department_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_type = models.CharField(
         max_length=30,
         choices=SUBJECT_TYPE_CHOICES,
@@ -35,6 +35,7 @@ class Subject(TrackingModel):
     description = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True, db_index=True)
 
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
     def __str__(self):
@@ -56,18 +57,11 @@ class Course(TrackingModel):
     course_status = models.BooleanField(default=True)
     languages = models.JSONField(default=list, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
-    og_approved = models.BooleanField(default=False)
-    og_approvedby = models.CharField(max_length=255, null=True, blank=True)
-    ptc_approved = models.BooleanField(default=False)
-    ptc_approvedby = models.CharField(max_length=255, null=True, blank=True)
-    # College subject mapping
     department_id = models.BigIntegerField(null=True, blank=True, db_index=True)
 
     category_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     sub_category_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     course_type = models.CharField( max_length=30, choices=COURSE_TYPE_CHOICES, default="THEORY", db_index=True    )
-    total_lectures = models.PositiveIntegerField(default=0)
-    total_practicals = models.PositiveIntegerField(default=0)
     semister_count = models.BigIntegerField(null=True, blank=True, db_index=True)
     semister_per_year = models.BigIntegerField(null=True, blank=True, db_index=True)
     duration = models.CharField(max_length=100, null=True, blank=True)

@@ -79,7 +79,7 @@ class AddQuestion(GenericAPIView):
             else:
                 data['tc_id']=str(request.user.id)
         else:
-            data['tc_id']=str(request.user.parent_training_center)
+            data['tc_id']=str(request.user.parent_college)
 
      
         q_serializer = QuestionSerializer(data=data)
@@ -178,12 +178,12 @@ class BulkUploadQuestion(GenericAPIView):
                 else:
                     data['tc_id']=str(request.user.id)
             else:
-                data['tc_id']=str(request.user.parent_training_center)
+                data['tc_id']=str(request.user.parent_college)
 
             course_name=i[0]
             if course_name is not None and course_name !='':
                 course_name=str(course_name)
-                mapped_course_ids=list(TrainingCenterCourses.objects.filter(training_center_id=data['tc_id'],isActive=True).values_list('course_id',flat=True))
+                mapped_course_ids=list(CollegeCourses.objects.filter(college_id=data['tc_id'],isActive=True).values_list('course_id',flat=True))
                 course_obj=Course.objects.filter(course_name__in=[course_name.strip().capitalize(),course_name.strip(),course_name.title(),course_name.upper(),course_name.lower(),course_name],id__in=mapped_course_ids,isActive=True).first()
                 if course_obj is not None:
                     data['course']=str(course_obj.id)
@@ -684,7 +684,7 @@ class QuestionList(GenericAPIView):
             tc_id=str(request.user.id)
 
 
-        tc_course_ids=list(TrainingCenterCourses.objects.filter(training_center_id=tc_id).order_by('course_id').distinct('course_id').values_list('course_id',flat=True))
+        tc_course_ids=list(CollegeCourses.objects.filter(college_id=tc_id).order_by('course_id').distinct('course_id').values_list('course_id',flat=True))
         
         if request.user.user_type == 2:
             question_object = Question.objects.filter(isActive=True).order_by('-id')

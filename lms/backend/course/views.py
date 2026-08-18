@@ -111,7 +111,7 @@ class AddCourse(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-class TrainingCenterCourseFilterList(GenericAPIView):
+class CollegeCourseFilterList(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
@@ -341,7 +341,7 @@ class UpdateCourse(GenericAPIView):
         data['category_id'] = request_data.get('category_id')
         data['sub_category_id'] = request_data.get('sub_category_id')
 
-        courseobj = Course.objects.filter(id=courseid).first()
+        courseobj = Course.objects.filter(id=courseid,isActive=True,).first()
         if courseobj is not None:
 
             coursecode_object = Course.objects.filter(isActive=True,course_code=data['course_code']).exclude(id=int(courseid)).order_by('id')
@@ -429,7 +429,7 @@ class DeleteCourse(GenericAPIView):
         }
         courseid = request_data.get('courseid')
 
-        courseobj = Course.objects.filter(id=courseid).first()
+        courseobj = Course.objects.filter(isActive=True,id=courseid).first()
         if courseobj is not None:
 
 
@@ -501,7 +501,7 @@ class getCoursedetails(GenericAPIView):
                 serializer_data = serializer.data
 
                 subject_ids = list(CourseSubjects.objects.filter(course_id=courseid,isActive=True).values_list('subject_id',flat=True))
-                subject_obj=Subject.objects.filter(id__in=subject_ids)
+                subject_obj=Subject.objects.filter(id__in=subject_ids,isActive=True)
                 if subject_obj.exists():
                     subjectser = SubjectSerializer(subject_obj,many=True)
                     serializer_data.update({
@@ -580,7 +580,7 @@ def _build_subject_data(request_data, user, include_created=False):
         "subject_code": _subject_value(request_data, "subject_code", "subjectcode"),
         "subject_name": _subject_value(request_data, "subject_name", "subjectname"),
         "short_name": _subject_value(request_data, "short_name", "shortname"),
-        "department_id": _subject_value(request_data, "department_id"),
+        "course_id": _subject_value(request_data, "course_id"),
         "subject_type": _subject_value(request_data, "subject_type") or "THEORY",
         "theory_credits": _subject_value(request_data, "theory_credits") or 0,
         "practical_credits": _subject_value(request_data, "practical_credits") or 0,
@@ -591,6 +591,8 @@ def _build_subject_data(request_data, user, include_created=False):
         "total_marks": _subject_value(request_data, "total_marks") or 0,
         "description": _subject_value(request_data, "description"),
         "status": request_data.get("status", True),
+        "og_code": user.og_code,
+
     }
 
     if include_created:
@@ -606,7 +608,7 @@ def _build_subject_update_data(request_data, user):
         "subject_code": ("subject_code", "subjectcode"),
         "subject_name": ("subject_name", "subjectname"),
         "short_name": ("short_name", "shortname"),
-        "department_id": ("department_id",),
+        "course_id": ("course_id",),
         "subject_type": ("subject_type",),
         "theory_credits": ("theory_credits",),
         "practical_credits": ("practical_credits",),
@@ -657,8 +659,10 @@ class AddSubject(GenericAPIView):
 
         subject_object = Subject.objects.filter(
             isActive=True,
-            department_id=data["department_id"],
+            course_id=data["course_id"],
             subject_code=data["subject_code"],
+            og_code=data['og_code'],
+            
         ).first()
         if subject_object is not None:
             return _subject_response(encryped_header, {
@@ -697,14 +701,14 @@ class CollegeSubjectFilterList(GenericAPIView):
         if error_response:
             return error_response
 
-        subjectlistobj = Subject.objects.filter(isActive=True).order_by("-createdAt")
-        department_id = request_data.get("department_id")
+        subjectlistobj = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by("-createdAt")
+        course_id = request_data.get("course_id")
         subject_type = request_data.get("subject_type")
         status = request_data.get("status")
         search = request_data.get("search")
 
-        if department_id not in (None, ""):
-            subjectlistobj = subjectlistobj.filter(department_id=department_id)
+        if course_id not in (None, ""):
+            subjectlistobj = subjectlistobj.filter(course_id=course_id)
         if subject_type not in (None, ""):
             subjectlistobj = subjectlistobj.filter(subject_type=subject_type)
         if status not in (None, ""):
@@ -765,13 +769,14 @@ class CollegeSubjectList(GenericAPIView):
         subjectlistobj = Subject.objects.filter(
             isActive=True,
             status=True,
+            og_code=str(request.user.og_code)
         ).order_by("subject_name")
 
-        department_id = request_data.get("department_id")
+        course_id = request_data.get("course_id")
         subject_type = request_data.get("subject_type")
 
-        if department_id not in (None, ""):
-            subjectlistobj = subjectlistobj.filter(department_id=department_id)
+        if course_id not in (None, ""):
+            subjectlistobj = subjectlistobj.filter(course_id=course_id)
         if subject_type not in (None, ""):
             subjectlistobj = subjectlistobj.filter(subject_type=subject_type)
 
@@ -804,7 +809,7 @@ class UpdateSubject(GenericAPIView):
                 "data": [],
             })
 
-        subjectobj = Subject.objects.filter(id=subjectid).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -814,12 +819,13 @@ class UpdateSubject(GenericAPIView):
 
         data = _build_subject_update_data(request_data, request.user)
         subject_code = data.get("subject_code", subjectobj.subject_code)
-        department_id = data.get("department_id", subjectobj.department_id)
+        course_id = data.get("course_id", subjectobj.course_id)
         if subject_code not in (None, ""):
             subject_object = Subject.objects.filter(
                 isActive=True,
-                department_id=department_id,
+                course_id=course_id,
                 subject_code=subject_code,
+                og_code=str(request.user.og_code)
             ).exclude(id=subjectid)
             if subject_object.exists():
                 return _subject_response(encryped_header, {
@@ -858,7 +864,7 @@ class DeleteSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -907,7 +913,7 @@ class GetSubjectdetails(GenericAPIView):
                 "data": [],
             })
 
-        subjectobj = Subject.objects.filter(id=subjectid).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -937,7 +943,7 @@ class DeactivateSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -976,7 +982,7 @@ class ActivateSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,

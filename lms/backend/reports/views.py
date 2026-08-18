@@ -30,7 +30,7 @@ from django.db.models import Sum, IntegerField,FloatField
 from django.db.models.functions import Cast
 # Create your views here.
 
-class FilterTrainingCenterReportApi(GenericAPIView):
+class FilterCollegeReportApi(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
@@ -45,24 +45,24 @@ class FilterTrainingCenterReportApi(GenericAPIView):
         
         og_code=str(request.user.og_code)
 
-        training_center_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,)
-        training_center_objs=training_center_objs.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,)|Q(user_type=4,is_member=False,))
+        college_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,)
+        college_objs=college_objs.filter(Q(user_type=3,is_parent_college=True,is_member=False,)|Q(user_type=4,is_member=False,))
 
         
         country_id=request_data.get('country_id')
         if country_id is not None and country_id !='':
-            training_center_objs=training_center_objs.filter(country=country_id) 
+            college_objs=college_objs.filter(country=country_id) 
         
         search=request_data.get('search')
         if search is not None and search !='':
-            training_center_objs=training_center_objs.filter(name__icontains=search) 
+            college_objs=college_objs.filter(name__icontains=search) 
         
 
 
 
         # sort_by=request_data.get('sort_by')
         # if sort_by is not None and sort_by !='':
-        #      training_center_objs=training_center_objs.filter(sort_by=sort_by) 
+        #      college_objs=college_objs.filter(sort_by=sort_by) 
 
 
 
@@ -70,29 +70,29 @@ class FilterTrainingCenterReportApi(GenericAPIView):
 
 
 
-        if training_center_objs.exists():
-            page4 = self.paginate_queryset(training_center_objs)
+        if college_objs.exists():
+            page4 = self.paginate_queryset(college_objs)
             serializer=UserAdminSerializer(page4,many=True)
 
 
             if encryped_header == "1" :
-                for training_center in serializer.data:
+                for college in serializer.data:
                     
-                    if training_center['name'] == 'None' or  training_center['name'] =='' or training_center['name'] is None:
-                        user_obj=UserAdmin.objects.filter(id=str(training_center['id'])).first()
+                    if college['name'] == 'None' or  college['name'] =='' or college['name'] is None:
+                        user_obj=UserAdmin.objects.filter(id=str(college['id'])).first()
                         if user_obj is not None:
-                            training_center['name']=user_obj.name
+                            college['name']=user_obj.name
                             
 
 
-                    course_conducted=Schedule.objects.filter(training_center_ids__in=[training_center['id']],isActive=True,action_status="Approved")
-                    candidate_enrolled=Enrollments.objects.filter(trainingcenter_id=training_center['id'],enrollments_status='2')
-                    total_revenue= EnrollPayment.objects.filter(trainingcenter_id=training_center['id'])
+                    course_conducted=Schedule.objects.filter(college_ids__in=[college['id']],isActive=True,action_status="Approved")
+                    candidate_enrolled=Enrollments.objects.filter(college_id=college['id'],enrollments_status='2')
+                    total_revenue= EnrollPayment.objects.filter(college_id=college['id'])
                     
-                    if int(training_center['user_type']) == 3:
-                        reported_complaints=Ticket.objects.filter(parent_training_center_id=training_center['id'])
-                    elif int(training_center['user_type']) == 4:
-                        reported_complaints=Ticket.objects.filter(sub_training_center_id=training_center['id'])
+                    if int(college['user_type']) == 3:
+                        reported_complaints=Ticket.objects.filter(parent_college_id=college['id'])
+                    elif int(college['user_type']) == 4:
+                        reported_complaints=Ticket.objects.filter(sub_college_id=college['id'])
                     else:
                         reported_complaints=Ticket.objects.filter(isActive=True).none()
 
@@ -119,13 +119,13 @@ class FilterTrainingCenterReportApi(GenericAPIView):
                         reported_complaints=reported_complaints.filter(createdAt__lte=cend_date) 
                         total_revenue=total_revenue.filter(createdAt__lte=cend_date) 
                         
-                    training_center['course_conducted']=course_conducted.count()
-                    training_center['candidate_enrolled']=candidate_enrolled.count()
-                    training_center['reported_complaints']=reported_complaints.count()
-                    training_center['total_revenue'] = round(total_revenue.annotate(final_amount_float=Cast("final_amount", FloatField())).aggregate(total=Sum("final_amount_float"))["total"] or 0)
-                    training_center['revenue_per_candidate'] =0
-                    if float(training_center['candidate_enrolled']) !=0: 
-                        training_center['revenue_per_candidate'] =round(float(training_center['total_revenue'])/float(training_center['candidate_enrolled']),2)
+                    college['course_conducted']=course_conducted.count()
+                    college['candidate_enrolled']=candidate_enrolled.count()
+                    college['reported_complaints']=reported_complaints.count()
+                    college['total_revenue'] = round(total_revenue.annotate(final_amount_float=Cast("final_amount", FloatField())).aggregate(total=Sum("final_amount_float"))["total"] or 0)
+                    college['revenue_per_candidate'] =0
+                    if float(college['candidate_enrolled']) !=0: 
+                        college['revenue_per_candidate'] =round(float(college['total_revenue'])/float(college['candidate_enrolled']),2)
                     else:
                         0
 
@@ -152,7 +152,7 @@ class FilterTrainingCenterReportApi(GenericAPIView):
                 return Response(response_,status=200)
 
 
-class GetTrainingCenterReportCountsApi(GenericAPIView):
+class GetCollegeReportCountsApi(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
@@ -167,27 +167,27 @@ class GetTrainingCenterReportCountsApi(GenericAPIView):
         
         og_code=str(request.user.og_code)
 
-        training_center_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type__in=[3,4],is_member=False)
-        training_center_objs=training_center_objs.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,)|Q(user_type=4,is_member=False,))
+        college_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,user_type__in=[3,4],is_member=False)
+        college_objs=college_objs.filter(Q(user_type=3,is_parent_college=True,is_member=False,)|Q(user_type=4,is_member=False,))
 
         
         country_id=request_data.get('country_id')
         if country_id is not None and country_id !='':
-            training_center_objs=training_center_objs.filter(country=country_id) 
+            college_objs=college_objs.filter(country=country_id) 
         
         search=request_data.get('search')
         if search is not None and search !='':
-            training_center_objs=training_center_objs.filter(name__icontains=search) 
+            college_objs=college_objs.filter(name__icontains=search) 
 
 
 
 
 
-        total_training_centers=training_center_objs.count()
-        total_parent_training_centers=training_center_objs.filter(user_type=3,is_parent_training_center=True,is_member=False,).count()
-        total_sub_training_centers=training_center_objs.filter(user_type=4,is_parent_training_center=False,is_member=False,).count()
-        total_active_training_centers=0
-        total_inactive_training_centers=0
+        total_colleges=college_objs.count()
+        total_parent_colleges=college_objs.filter(user_type=3,is_parent_college=True,is_member=False,).count()
+        total_sub_colleges=college_objs.filter(user_type=4,is_parent_college=False,is_member=False,).count()
+        total_active_colleges=0
+        total_inactive_colleges=0
 
 
 
@@ -196,11 +196,11 @@ class GetTrainingCenterReportCountsApi(GenericAPIView):
                 "n": 1,
                 "msg": 'Schedule attendance found successfully',
                 "data":{
-                        "total_training_centers":total_training_centers,
-                        "total_parent_training_centers":total_parent_training_centers,
-                        "total_sub_training_centers":total_sub_training_centers,
-                        "total_active_training_centers":total_active_training_centers,
-                        "total_inactive_training_centers":total_inactive_training_centers,
+                        "total_colleges":total_colleges,
+                        "total_parent_colleges":total_parent_colleges,
+                        "total_sub_colleges":total_sub_colleges,
+                        "total_active_colleges":total_active_colleges,
+                        "total_inactive_colleges":total_inactive_colleges,
                 }                     
             }
         if encryped_header == "1" :
@@ -231,13 +231,13 @@ class FilterCoursesScheduleReportApi(GenericAPIView):
         query_objs=Schedule.objects.filter(isActive=True,action_status='Approved')
         country_id=request_data.get('country_id')
         if country_id is not None and country_id !='':
-            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,isActive=True,og_code=og_code,country=country_id)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,country=country_id)).values_list('id',flat=True))
-            query_objs=query_objs.filter(training_center_ids__in=tc_query_objs_ids)
+            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_college=True,is_member=False,isActive=True,og_code=og_code,country=country_id)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,country=country_id)).values_list('id',flat=True))
+            query_objs=query_objs.filter(college_ids__in=tc_query_objs_ids)
 
         search=request_data.get('search')
         if search is not None and search !='':
-            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,isActive=True,og_code=og_code,name__icontains=search)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,name__icontains=search)).values_list('id',flat=True))
-            query_objs=query_objs.filter(training_center_ids__in=tc_query_objs_ids)
+            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_college=True,is_member=False,isActive=True,og_code=og_code,name__icontains=search)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,name__icontains=search)).values_list('id',flat=True))
+            query_objs=query_objs.filter(college_ids__in=tc_query_objs_ids)
 
 
 
@@ -256,7 +256,7 @@ class FilterCoursesScheduleReportApi(GenericAPIView):
             cend_date =str(new_end_date.strftime("%Y-%m-%d"))
             query_objs=query_objs.filter(Q(end_date__lte=end_date)|Q(start_date__lte=end_date)) 
 
-        query_objs=query_objs.values('id', 'course_ids','training_center_ids','mode').distinct()
+        query_objs=query_objs.values('id', 'course_ids','college_ids','mode').distinct()
 
      
 
@@ -280,14 +280,14 @@ class FilterCoursesScheduleReportApi(GenericAPIView):
                     course_name=course_obj.course_name 
                 else:
                     course_name='' 
-                training_center_obj=UserAdmin.objects.filter(id=str(i['training_center_ids'])).first()
-                if training_center_obj is not None:
-                    training_center_name=training_center_obj.name 
+                college_obj=UserAdmin.objects.filter(id=str(i['college_ids'])).first()
+                if college_obj is not None:
+                    college_name=college_obj.name 
                 else:
-                    training_center_name=''
+                    college_name=''
 
-                total_schedules=Schedule.objects.filter(course_ids__in=[i['course_ids']],training_center_ids__in=[str(i['training_center_ids'])],mode=i['mode'])
-                total_enrollments_obj=Enrollments.objects.filter(course=i['course_ids'],trainingcenter_id=str(i['training_center_ids']))
+                total_schedules=Schedule.objects.filter(course_ids__in=[i['course_ids']],college_ids__in=[str(i['college_ids'])],mode=i['mode'])
+                total_enrollments_obj=Enrollments.objects.filter(course=i['course_ids'],college_id=str(i['college_ids']))
 
                 start_date=request_data.get('startdate')
                 if start_date is not None and start_date !='':
@@ -314,12 +314,12 @@ class FilterCoursesScheduleReportApi(GenericAPIView):
                     'id':i['id'],
                     'course_id':i['course_ids'],
                     'course_name':course_name,
-                    'training_center_anme':training_center_name,
+                    'college_anme':college_name,
                     'total_schedules':total_schedules.count(),
                     'total_faculties':total_faculties,
                     'total_enrollments':total_enrollments_obj.count(),
                     'status':status,
-                    'training_center_id':str(i['training_center_ids']),
+                    'college_id':str(i['college_ids']),
                     'mode':i['mode'],
                 }
 
@@ -375,13 +375,13 @@ class GetCoursesScheduleReportCountsApi(GenericAPIView):
         query_objs=Schedule.objects.filter(isActive=True,action_status='Approved')
         country_id=request_data.get('country_id')
         if country_id is not None and country_id !='':
-            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,isActive=True,og_code=og_code,country=country_id)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,country=country_id)).values_list('id',flat=True))
-            query_objs=query_objs.filter(training_center_ids__in=tc_query_objs_ids)
+            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_college=True,is_member=False,isActive=True,og_code=og_code,country=country_id)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,country=country_id)).values_list('id',flat=True))
+            query_objs=query_objs.filter(college_ids__in=tc_query_objs_ids)
 
         search=request_data.get('search')
         if search is not None and search !='':
-            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_training_center=True,is_member=False,isActive=True,og_code=og_code,name__icontains=search)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,name__icontains=search)).values_list('id',flat=True))
-            query_objs=query_objs.filter(training_center_ids__in=tc_query_objs_ids)
+            tc_query_objs_ids=list(UserAdmin.objects.filter(Q(user_type=3,is_parent_college=True,is_member=False,isActive=True,og_code=og_code,name__icontains=search)|Q(user_type=4,is_member=False,isActive=True,og_code=og_code,name__icontains=search)).values_list('id',flat=True))
+            query_objs=query_objs.filter(college_ids__in=tc_query_objs_ids)
 
 
         today = date.today()
@@ -727,10 +727,10 @@ class FilterRevenueReportApi(GenericAPIView):
 
 
 
-                i['training_center_name']=''  
-                training_center_obj=UserAdmin.objects.filter(id=str(i['trainingcenter_id'])).first()
-                if training_center_obj is not None:
-                    i['training_center_name']=training_center_obj.name
+                i['college_name']=''  
+                college_obj=UserAdmin.objects.filter(id=str(i['college_id'])).first()
+                if college_obj is not None:
+                    i['college_name']=college_obj.name
 
                 i['date']=str(i['createdAt']).split('T')[0]
                 if enroll_obj is not None:
@@ -920,7 +920,7 @@ class FilterCertificationReportApi(GenericAPIView):
                     i['middle_name']=''   
                     i['last_name']=''   
                 i['course_name']='' 
-                i['training_center_name']=''  
+                i['college_name']=''  
                 i['expiry_date']=''  
                 i['status']=''  
                 i['date']=str(i['createdAt']).split('T')[0]
@@ -935,9 +935,9 @@ class FilterCertificationReportApi(GenericAPIView):
                         if i['expiry_date'] < today:
                             i['status']='Inactive'
 
-                    training_center_obj=UserAdmin.objects.filter(id=exam_schedule_obj.training_center).first()
-                    if training_center_obj is not None:
-                        i['training_center_name']=training_center_obj.name
+                    college_obj=UserAdmin.objects.filter(id=exam_schedule_obj.college).first()
+                    if college_obj is not None:
+                        i['college_name']=college_obj.name
 
 
 

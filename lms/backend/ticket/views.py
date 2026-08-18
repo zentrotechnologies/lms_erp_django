@@ -109,53 +109,53 @@ class AddTicket(GenericAPIView):
         
         if validation_status:
             user_type=request.user.user_type
-            is_parent_training_center=request.user.is_parent_training_center
+            is_parent_college=request.user.is_parent_college
             is_member=request.user.is_member
             member_of=str(request.user.member_of)
-            parent_training_center=request.user.parent_training_center
+            parent_college=request.user.parent_college
 
             #Parent training Center Admin
-            if user_type == 3 and is_parent_training_center==True and is_member == False and member_of in ['','None',None]:
-                data['parent_training_center_id']=str(request.user.id)
-                data['sub_training_center_id']=''
+            if user_type == 3 and is_parent_college==True and is_member == False and member_of in ['','None',None]:
+                data['parent_college_id']=str(request.user.id)
+                data['sub_college_id']=''
                 print("Parent training Center Admin",)
 
 
             #Parent training Center Member
-            if user_type == 3 and is_parent_training_center == False and is_member == True and member_of != '':
-                data['parent_training_center_id']=member_of
-                data['sub_training_center_id']=''
+            if user_type == 3 and is_parent_college == False and is_member == True and member_of != '':
+                data['parent_college_id']=member_of
+                data['sub_college_id']=''
                 print("Parent training Center Member",)
 
             #Sub training Center Admin
-            elif user_type == 4 and is_parent_training_center == False and is_member == False  and parent_training_center != '':
-                data['parent_training_center_id']=parent_training_center
-                data['sub_training_center_id']=str(request.user.id)
+            elif user_type == 4 and is_parent_college == False and is_member == False  and parent_college != '':
+                data['parent_college_id']=parent_college
+                data['sub_college_id']=str(request.user.id)
                 print("Sub training Center Admin",)
 
             #Sub training Center Member
-            elif user_type == 4 and is_parent_training_center == False and is_member == True  and parent_training_center != '':
+            elif user_type == 4 and is_parent_college == False and is_member == True  and parent_college != '':
                 user_obj=UserAdmin.objects.filter(id=member_of).first()
                 if user_obj is not None:
 
-                    data['parent_training_center_id']=str(user_obj.parent_training_center)
-                    data['sub_training_center_id']=str(user_obj.id)
+                    data['parent_college_id']=str(user_obj.parent_college)
+                    data['sub_college_id']=str(user_obj.id)
                     
-                print("Sub training Center Member",parent_training_center,member_of)
+                print("Sub training Center Member",parent_college,member_of)
 
             # training Center Faculty
-            elif user_type == 5 and parent_training_center !='':
-                user_obj=UserAdmin.objects.filter(id=parent_training_center).first()
+            elif user_type == 5 and parent_college !='':
+                user_obj=UserAdmin.objects.filter(id=parent_college).first()
                 # Parent training Center Faculty
-                if user_obj.is_parent_training_center==True and user_obj.user_type==3:
-                    data['parent_training_center_id']=parent_training_center
-                    data['sub_training_center_id']=''
+                if user_obj.is_parent_college==True and user_obj.user_type==3:
+                    data['parent_college_id']=parent_college
+                    data['sub_college_id']=''
                     print("Parent training Center Faculty",)
 
                 #Sub training Center Faculty
-                elif user_obj.is_parent_training_center==False and user_obj.user_type==4:
-                    data['parent_training_center_id']=member_of
-                    data['sub_training_center_id']=str(user_obj.id)
+                elif user_obj.is_parent_college==False and user_obj.user_type==4:
+                    data['parent_college_id']=member_of
+                    data['sub_college_id']=str(user_obj.id)
                     print("Sub training Center Faculty",)
             elif user_type == 6:
 
@@ -172,25 +172,25 @@ class AddTicket(GenericAPIView):
 
 
                 
-                training_centers_ids=list(Enrollments.objects.filter(candidate=str(request.user.id),schedule=todays_schedules_ids,enrollments_status='2',isActive=True).values_list('trainingcenter_id',flat=True))
+                colleges_ids=list(Enrollments.objects.filter(candidate=str(request.user.id),schedule=todays_schedules_ids,enrollments_status='2',isActive=True).values_list('college_id',flat=True))
 
-                training_center_obj=UserAdmin.objects.filter(id__in=training_centers_ids).first()
-                if training_center_obj is not None:
-                    if training_center_obj.user_type == 3 and training_center_obj.is_parent_training_center==True and training_center_obj.is_member == False and training_center_obj.member_of == '':
-                        data['parent_training_center_id']=training_center_obj.id
-                        data['sub_training_center_id']=''
+                college_obj=UserAdmin.objects.filter(id__in=colleges_ids).first()
+                if college_obj is not None:
+                    if college_obj.user_type == 3 and college_obj.is_parent_college==True and college_obj.is_member == False and college_obj.member_of == '':
+                        data['parent_college_id']=college_obj.id
+                        data['sub_college_id']=''
                         print("Candidate With Parent training Center",)
-                    elif training_center_obj.user_type == 4 and training_center_obj.is_parent_training_center == False and training_center_obj.is_member == False  and training_center_obj.parent_training_center != '':
-                        data['parent_training_center_id']=training_center_obj.parent_training_center
-                        data['sub_training_center_id']=training_center_obj.id
+                    elif college_obj.user_type == 4 and college_obj.is_parent_college == False and college_obj.is_member == False  and college_obj.parent_college != '':
+                        data['parent_college_id']=college_obj.parent_college
+                        data['sub_college_id']=college_obj.id
                         print("Candidate With Sub training Center",)
                     else:
-                        data['parent_training_center_id']=''
-                        data['sub_training_center_id']=''
+                        data['parent_college_id']=''
+                        data['sub_college_id']=''
                         print("Candidate With No training Center",)  
                 else:
-                    data['parent_training_center_id']=''
-                    data['sub_training_center_id']=''
+                    data['parent_college_id']=''
+                    data['sub_college_id']=''
                     print("Candidate With No training Center",)    
 
 
@@ -634,12 +634,12 @@ class GetTicketCounts(GenericAPIView):
         if request.user.user_type == 2:
             print("Organization Admin",)
         elif request.user.user_type == 3:
-            if request.user.is_parent_training_center==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
+            if request.user.is_parent_college==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
                 print("Parent training Center Admin",)
-                ticket_objs=ticket_objs.filter(Q(parent_training_center_id=request.user.id)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
-            elif request.user.is_parent_training_center == False and request.user.is_member == True and request.user.member_of != '':
+                ticket_objs=ticket_objs.filter(Q(parent_college_id=request.user.id)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+            elif request.user.is_parent_college == False and request.user.is_member == True and request.user.member_of != '':
                 print("Parent training Center Member",)
-                ticket_objs=ticket_objs.filter(Q(parent_training_center_id=request.user.member_of)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                ticket_objs=ticket_objs.filter(Q(parent_college_id=request.user.member_of)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                 assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                 ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
 
@@ -649,33 +649,33 @@ class GetTicketCounts(GenericAPIView):
             else:
                 ticket_objs=ticket_objs.none()
                 print("hii",
-                      request.user.is_parent_training_center,
+                      request.user.is_parent_college,
                       request.user.is_member,
                       request.user.member_of
                       )
         elif request.user.user_type == 4:
-            if request.user.is_parent_training_center == False and request.user.is_member == False  and request.user.parent_training_center != '':
+            if request.user.is_parent_college == False and request.user.is_member == False  and request.user.parent_college != '':
                 print("Sub training Center Admin",)
-                ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(request.user.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                ticket_objs=ticket_objs.filter(Q(sub_college_id=str(request.user.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
 
 
                 
 
-            elif request.user.is_parent_training_center == False and request.user.is_member == True  and request.user.parent_training_center != '':
-                print("Sub training Center Member",request.user.parent_training_center)
-                ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(request.user.member_of))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+            elif request.user.is_parent_college == False and request.user.is_member == True  and request.user.parent_college != '':
+                print("Sub training Center Member",request.user.parent_college)
+                ticket_objs=ticket_objs.filter(Q(sub_college_id=str(request.user.member_of))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                 assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                 ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
         elif request.user.user_type == 5:
-                user_obj=UserAdmin.objects.filter(id=request.user.parent_training_center).first()
+                user_obj=UserAdmin.objects.filter(id=request.user.parent_college).first()
                 if user_obj is not None:
-                    if user_obj.is_parent_training_center==True and user_obj.user_type==3:
-                        ticket_objs=ticket_objs.filter(Q(parent_training_center_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                    if user_obj.is_parent_college==True and user_obj.user_type==3:
+                        ticket_objs=ticket_objs.filter(Q(parent_college_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                         assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                         ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
                         print("Parent training Center Faculty",)
-                    elif user_obj.is_parent_training_center==False and user_obj.user_type==4:
-                        ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                    elif user_obj.is_parent_college==False and user_obj.user_type==4:
+                        ticket_objs=ticket_objs.filter(Q(sub_college_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                         assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                         ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
                         print("Sub training Center Faculty",)
@@ -782,46 +782,46 @@ class FilterTicket(GenericAPIView):
         if request.user.user_type == 2:
             print("Organization Admin",)
         elif request.user.user_type == 3:
-            if request.user.is_parent_training_center==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
+            if request.user.is_parent_college==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
                 print("Parent training Center Admin",)
-                ticket_objs=ticket_objs.filter(Q(parent_training_center_id=request.user.id)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
-            elif request.user.is_parent_training_center == False and request.user.is_member == True and request.user.member_of != '':
+                ticket_objs=ticket_objs.filter(Q(parent_college_id=request.user.id)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+            elif request.user.is_parent_college == False and request.user.is_member == True and request.user.member_of != '':
                 print("Parent training Center Member",)
-                ticket_objs=ticket_objs.filter(Q(parent_training_center_id=request.user.member_of)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                ticket_objs=ticket_objs.filter(Q(parent_college_id=request.user.member_of)|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                 assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                 ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
 
             else:
                 ticket_objs=ticket_objs.none()
                 print("hii",
-                      request.user.is_parent_training_center,
+                      request.user.is_parent_college,
                       request.user.is_member,
                       request.user.member_of
                       )
                 
         elif request.user.user_type == 4:
-            if request.user.is_parent_training_center == False and request.user.is_member == False  and request.user.parent_training_center != '':
+            if request.user.is_parent_college == False and request.user.is_member == False  and request.user.parent_college != '':
                 print("Sub training Center Admin",)
-                ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(request.user.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                ticket_objs=ticket_objs.filter(Q(sub_college_id=str(request.user.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
 
 
                 
 
-            elif request.user.is_parent_training_center == False and request.user.is_member == True  and request.user.parent_training_center != '':
-                print("Sub training Center Member",request.user.parent_training_center)
-                ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(request.user.member_of))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+            elif request.user.is_parent_college == False and request.user.is_member == True  and request.user.parent_college != '':
+                print("Sub training Center Member",request.user.parent_college)
+                ticket_objs=ticket_objs.filter(Q(sub_college_id=str(request.user.member_of))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                 assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                 ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
         elif request.user.user_type == 5:
-                user_obj=UserAdmin.objects.filter(id=request.user.parent_training_center).first()
+                user_obj=UserAdmin.objects.filter(id=request.user.parent_college).first()
                 if user_obj is not None:
-                    if user_obj.is_parent_training_center==True and user_obj.user_type==3:
-                        ticket_objs=ticket_objs.filter(Q(parent_training_center_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                    if user_obj.is_parent_college==True and user_obj.user_type==3:
+                        ticket_objs=ticket_objs.filter(Q(parent_college_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                         assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                         ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
                         print("Parent training Center Faculty",)
-                    elif user_obj.is_parent_training_center==False and user_obj.user_type==4:
-                        ticket_objs=ticket_objs.filter(Q(sub_training_center_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
+                    elif user_obj.is_parent_college==False and user_obj.user_type==4:
+                        ticket_objs=ticket_objs.filter(Q(sub_college_id=str(user_obj.id))|Q(raiseby=str(request.user.id))).order_by('id').distinct('id')
                         assign_tickets_ids=list(TicketAssign.objects.filter(userid=str(request.user.id),active=True).values_list('ticket',flat=True))
                         ticket_objs=ticket_objs.filter(Q(id__in=assign_tickets_ids)|Q(raiseby=str(request.user.id)))
                         print("Sub training Center Faculty",)
@@ -1045,16 +1045,16 @@ class AssignUserList(GenericAPIView):
                 
                 
                 if request.user.user_type == 2:
-                    # if request.user.is_parent_training_center==false and request.user.is_member == False and request.user.member_of in ['',None,'None']:
+                    # if request.user.is_parent_college==false and request.user.is_member == False and request.user.member_of in ['',None,'None']:
                     member_type = request.user.user_type
                     if request.user.member_of is None :
                         member_of = str(request.user.id)
                     else:
                         member_of = str(request.user.member_of)
                     member_ids = list(UserAdmin.objects.filter(Q(member_type = member_type,member_of=member_of,og_code=og_code,is_member=True,isActive=True)|Q(id=member_of)).values_list('id',flat=True))
-                    userobj=userobj.filter(Q(is_parent_training_center=True)|Q(id__in=member_ids)).exclude(id=str(request.user.id)).order_by('id').distinct('id')
+                    userobj=userobj.filter(Q(is_parent_college=True)|Q(id__in=member_ids)).exclude(id=str(request.user.id)).order_by('id').distinct('id')
                 elif request.user.user_type == 3:
-                    if request.user.is_parent_training_center==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
+                    if request.user.is_parent_college==True and request.user.is_member == False and request.user.member_of in ['',None,'None']:
                         member_type = request.user.user_type
                         if request.user.member_of is None :
                             member_of = str(request.user.id)
@@ -1066,16 +1066,16 @@ class AssignUserList(GenericAPIView):
 
                         org_admin_ids=list(UserAdmin.objects.filter(Q(user_type = 2,is_member=False,isActive=True,og_code=og_code)).values_list('id',flat=True))
 
-                        sub_training_admin_ids = list(UserAdmin.objects.filter(Q(user_type = 4,parent_training_center=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
+                        sub_training_admin_ids = list(UserAdmin.objects.filter(Q(user_type = 4,parent_college=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
 
                         # tc_members+orgadmin+subtrainingadmin+tc_faculty
-                        faculty_ids = list(UserAdmin.objects.filter(Q(user_type =5,parent_training_center=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
+                        faculty_ids = list(UserAdmin.objects.filter(Q(user_type =5,parent_college=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
 
                         user_ids=member_ids+org_admin_ids+sub_training_admin_ids+faculty_ids
                         userobj=userobj.filter(Q(id__in=user_ids)).exclude(id=str(request.user.id)).order_by('id').distinct('id')
 
                         
-                    elif request.user.is_parent_training_center == False and request.user.is_member == True and request.user.member_of != '':
+                    elif request.user.is_parent_college == False and request.user.is_member == True and request.user.member_of != '':
                         print("Parent training Center Member",)
                         userobj=userobj.none()
 
@@ -1083,7 +1083,7 @@ class AssignUserList(GenericAPIView):
                     else:
                         userobj=userobj.none()
                 elif request.user.user_type == 4:
-                    if request.user.is_parent_training_center == False and request.user.is_member == False  and request.user.parent_training_center != '':
+                    if request.user.is_parent_college == False and request.user.is_member == False  and request.user.parent_college != '':
                         
                         print("Sub training Center Admin",)
                         member_type = request.user.user_type
@@ -1095,17 +1095,17 @@ class AssignUserList(GenericAPIView):
 
                         member_ids = list(UserAdmin.objects.filter(Q(member_type = member_type,member_of=member_of,is_member=True,isActive=True)|Q(id=member_of)).values_list('id',flat=True))
 
-                        ptc_admin_ids=list(UserAdmin.objects.filter(user_type = 3,is_parent_training_center=True,isActive=True,id=str(request.user.parent_training_center)).values_list('id',flat=True))
+                        ptc_admin_ids=list(UserAdmin.objects.filter(user_type = 3,is_parent_college=True,isActive=True,id=str(request.user.parent_college)).values_list('id',flat=True))
 
 
 
-                        faculty_ids = list(UserAdmin.objects.filter(Q(user_type = 5,parent_training_center=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
+                        faculty_ids = list(UserAdmin.objects.filter(Q(user_type = 5,parent_college=str(request.user.id),is_member=False,isActive=True)).values_list('id',flat=True))
                         # stc_members+ptc_admin+stc_faculty
 
                         user_ids=member_ids+ptc_admin_ids+faculty_ids
                         userobj=userobj.filter(id__in=user_ids).exclude(id=str(request.user.id)).order_by('id').distinct('id')
 
-                    elif request.user.is_parent_training_center == False and request.user.is_member == True  and request.user.parent_training_center != '':
+                    elif request.user.is_parent_college == False and request.user.is_member == True  and request.user.parent_college != '':
                         print("Sub training Center Member",)
                         userobj=userobj.none()
                 elif request.user.user_type == 5:

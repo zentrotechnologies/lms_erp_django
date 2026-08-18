@@ -16,8 +16,8 @@ class Ticket(TrackingModel):
     IPAddress = models.GenericIPAddressField(null=True, blank=True)
     isduplicate = models.BooleanField(default=False)
     parentticketid = models.CharField(max_length=255, null=True, blank=True)
-    parent_training_center_id = models.CharField(max_length=255, null=True, blank=True)
-    sub_training_center_id = models.CharField(max_length=255, null=True, blank=True)
+    parent_college_id = models.CharField(max_length=255, null=True, blank=True)
+    sub_college_id = models.CharField(max_length=255, null=True, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
 
     # College communication scope
