@@ -28,5 +28,8 @@ urlpatterns = [
     path('remove-archive-question',v.RemoveArchiveQuestion.as_view(),name='post'),
     path('delete-question',v.DeleteQuestion.as_view(),name='post'),
 
+    #dropdown for question form
+    path('course-list-by-college',v.CourseListByCollege.as_view(),name='post'),
+    path('subject-list-by-course',v.SubjectListByCourse.as_view(),name='post'),
 
 ]

@@ -62,7 +62,7 @@ class AddQuestion(GenericAPIView):
         
         data = {}
         data['course'] = request.data.get('course')
-        data['module'] = request.data.get('module')
+        data['subject'] = request.data.get('subject')
         data['type_of_question'] = request.POST.get('type_of_question')
         data['question_text'] = request.POST.get('question_text')
         data['correct_option'] = request.POST.get('correct_option')
@@ -183,7 +183,7 @@ class BulkUploadQuestion(GenericAPIView):
             course_name=i[0]
             if course_name is not None and course_name !='':
                 course_name=str(course_name)
-                mapped_course_ids=list(TrainingCenterCourses.objects.filter(training_center_id=data['tc_id'],isActive=True).values_list('course_id',flat=True))
+                mapped_course_ids=list(CollegeCourses.objects.filter(training_center_id=data['tc_id'],isActive=True).values_list('course_id',flat=True))
                 course_obj=Course.objects.filter(course_name__in=[course_name.strip().capitalize(),course_name.strip(),course_name.title(),course_name.upper(),course_name.lower(),course_name],id__in=mapped_course_ids,isActive=True).first()
                 if course_obj is not None:
                     data['course']=str(course_obj.id)
@@ -200,20 +200,11 @@ class BulkUploadQuestion(GenericAPIView):
                 continue 
 
 
-            module_name=i[1]
-            if module_name is not None and module_name !='':
-                module_name=str(module_name)
-
-                module_obj=CourseModules.objects.filter(module_name__in=[module_name.strip().capitalize(),module_name.strip(),module_name.title(),module_name.upper(),module_name.lower(),module_name],course_id=int(data['course']),isActive=True).first()
-                if module_obj is not None:
-                    data['module']=str(module_obj.id)
-                else:
-                    reason = 'module not found'
-                    error = i + tuple([reason])
-                    fileerrorlist.append(error)
-                    continue 
+            subject_value=i[1]
+            if subject_value is not None and subject_value != '':
+                data['subject']=str(subject_value)
             else:
-                reason = 'Please provide module name'
+                reason = 'Please provide subject name'
                 error = i + tuple([reason])
                 fileerrorlist.append(error)
                 continue 
@@ -382,7 +373,7 @@ class BulkUploadQuestion(GenericAPIView):
 
 
 
-            update_obj = Question.objects.filter(course__icontains=data['course'],module__icontains=data['module'],type_of_question=data['type_of_question'],question_text=data['question_text'],isActive=True).first()
+            update_obj = Question.objects.filter(course__icontains=data['course'],subject__icontains=data['subject'],type_of_question=data['type_of_question'],question_text=data['question_text'],isActive=True).first()
             
             if update_obj is not None:
                 q_serializer = QuestionSerializer(update_obj,data=data,partial=True)       
@@ -427,7 +418,7 @@ class BulkUploadQuestion(GenericAPIView):
             else:
                 return Response(response_,status=200)
         else:
-            headers=["Course Name","Module Name","Question","Option 1","Option 2","	Option 3","Option 4","Correct Option","Time To Solve","Marks","Difficulty Level","Tags","Note",]
+            headers=["Course Name","Subject Name","Question","Option 1","Option 2","	Option 3","Option 4","Correct Option","Time To Solve","Marks","Difficulty Level","Tags","Note",]
             response_={
                         "n": 0,
                         "msg": 'Question not uploaded',
@@ -477,7 +468,7 @@ class UpdateQuestion(GenericAPIView):
         data = {}
         questionid =  request.data.get('question_id')
         data['course'] = request.data.get('course')
-        data['module'] = request.data.get('module')
+        data['subject'] = request.data.get('subject')
         data['type_of_question'] = request.POST.get('type_of_question')
         data['question_text'] = request.POST.get('question_text')
         data['correct_option'] = request.POST.get('correct_option')
@@ -514,7 +505,7 @@ class UpdateQuestion(GenericAPIView):
                             )
                         
                 if option_list != []:
-                    QuestionOption.objects.filter(question_id=questionid,isActive=True).update(isActive=False)
+                    QuestionOption.objects.filter(question_id=questionid).delete()
                     for o in option_list:
                         if o['option_image'] is not None and o['option_image'] != '':
                             file_url=save_file(option_folder_path,o['option_image'],request)
@@ -609,14 +600,14 @@ class QuestionDetail(GenericAPIView):
             question_serializer_data = question_serializer.data
 
             course_list = question_serializer_data['course']
-            module_list = question_serializer_data['module']
+            subject_list = question_serializer_data['subject']
 
             course_list = [int(x) for x in question_serializer_data['course'].split(",")]
-            module_list = [int(x) for x in question_serializer_data['module'].split(",")]
+            subject_list = [int(x) for x in question_serializer_data['subject'].split(",")]
             
             question_serializer_data.update({
                 "course" : course_list,
-                "module":  module_list
+                "subject":  subject_list
             })
             
             question_image_object = QuestionImages.objects.filter(isActive=True,question_id=question_id)
@@ -684,7 +675,7 @@ class QuestionList(GenericAPIView):
             tc_id=str(request.user.id)
 
 
-        tc_course_ids=list(TrainingCenterCourses.objects.filter(training_center_id=tc_id).order_by('course_id').distinct('course_id').values_list('course_id',flat=True))
+        tc_course_ids=list(CollegeCourses.objects.filter(training_center_id=tc_id).order_by('course_id').distinct('course_id').values_list('course_id',flat=True))
         
         if request.user.user_type == 2:
             question_object = Question.objects.filter(isActive=True).order_by('-id')
@@ -696,9 +687,21 @@ class QuestionList(GenericAPIView):
             question_object = Question.objects.filter(isActive=True,course__in=tc_course_ids).order_by('-id')
 
         course=request_data.get('course')
-        if course is not None and course !='':    
-            question_object = question_object.filter(course__in=[course]).order_by('-id')
-           
+        if course is not None and course != '':
+            course_values = []
+            raw_values = course if isinstance(course, (list, tuple)) else [course]
+            for raw in raw_values:
+                for part in str(raw).split(","):
+                    part = part.strip()
+                    if part != '' and part not in course_values:
+                        course_values.append(part)
+                    try:
+                        as_int = int(part)
+                    except ValueError:
+                        continue
+                    if as_int not in course_values:
+                        course_values.append(as_int)
+            question_object = question_object.filter(course__in=course_values).order_by('-id')
 
            
         difficulty=request_data.get('difficulty')
@@ -715,15 +718,10 @@ class QuestionList(GenericAPIView):
                 course_object = Course.objects.filter(isActive=True,id__in =course_list).values_list('course_name')
                 i['course_name'] = course_object
 
-                if i['module'] != '':
-                    modules_list = [int(x) for x in i['module'].split(",")]
-                    course_module_object = CourseModules.objects.filter(isActive=True,id__in = modules_list).values_list('module_name')
-                    if course_module_object != []:
-                        i['module_name'] = course_module_object
-                    else:
-                        i['module_name'] = ''
+                if i['subject'] != '':
+                    i['subject_name'] = ''
                 else:
-                    i['module_name'] = ''
+                    i['subject_name'] = ''
                 
                 question_image_object = QuestionImages.objects.filter(isActive=True,question_id=i['id'])
                 question_image_ser = QuestionImagesSerializer(question_image_object,many=True)
@@ -773,6 +771,7 @@ class QuestionList(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 paigna=self.get_paginated_response(serializer.data)
+                return Response(paigna, status=200)
         else:
             response_={
                         "n": 0,
@@ -805,11 +804,24 @@ class GetDislikeReviews(GenericAPIView):
         question_id = request_data.get("id")
         if question_id is not None and question_id != '':
             Questionobj = Question.objects.filter(id=question_id).first()
+            if Questionobj is None:
+                response_={
+                    "n": 0,
+                    "msg": 'Question not found',
+                    "data":[]
+                }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+
             quesser = QuestionSerializer(Questionobj)
             ser_data = quesser.data
 
-            crtby = ser_data['createdBy']
-            userobj = UserAdmin.objects.filter(id=crtby).first()
+            crtby = ser_data.get('createdBy','')
+            userobj = UserAdmin.objects.filter(id=crtby).first() if crtby else None
             if userobj is not None and userobj != '':
                 if userobj.user_type == 5:
                     added_by = userobj.first_name +" "+userobj.last_name
@@ -834,8 +846,8 @@ class GetDislikeReviews(GenericAPIView):
             questlikes = QuestionLike.objects.filter(question_id=question_id,is_dislike=True,isActive=True)
             questlikeser = QuestionLikeSerializer(questlikes,many=True)
             for i in questlikeser.data:
-                crtby = i['actionby']
-                userobj = UserAdmin.objects.filter(id=crtby).first()
+                crtby = i.get('actionby','')
+                userobj = UserAdmin.objects.filter(id=crtby).first() if crtby else None
                 if userobj is not None and userobj != '':
                     if userobj.user_type == 5:
                         i['actionby'] = userobj.first_name +" "+userobj.last_name
@@ -915,15 +927,10 @@ class ValidateQuestionList(GenericAPIView):
                 course_object = Course.objects.filter(isActive=True,id__in =i['course']).values_list('course_name')
                 i['course_name'] = course_object
 
-                if i['module'] != '':
-                    # modules_list = [int(x) for x in i['module'].split(",")]
-                    course_module_object = CourseModules.objects.filter(isActive=True,id__in = i['module']).values_list('module_name')
-                    if course_module_object != []:
-                        i['module_name'] = course_module_object
-                    else:
-                        i['module_name'] = ''
+                if i['subject'] != '':
+                    i['subject_name'] = ''
                 else:
-                    i['module_name'] = ''
+                    i['subject_name'] = ''
                 
                 question_image_object = QuestionImages.objects.filter(isActive=True,question_id=i['id'])
                 question_image_ser = QuestionImagesSerializer(question_image_object,many=True)
@@ -972,6 +979,7 @@ class ValidateQuestionList(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 paigna=self.get_paginated_response(serializer.data)
+                return Response(paigna, status=200)
         else:
             response_={
                         "n": 0,
@@ -1082,13 +1090,13 @@ class GetDuplicateQuestions(GenericAPIView):
 
         questionid = request_data.get("questionid")  
         course = request_data.get("course")  
-        module = request_data.get("module")  
+        subject = request_data.get("subject")  
         severity_level = request_data.get("severity_level") 
         type = request_data.get("type")  
 
         if course is not None and course != '':
-            if module is not None and module != '':
-                Questionobj = Question.objects.filter(course__icontains=course,module__icontains=module,isActive=True).exclude(id=questionid)
+            if subject is not None and subject != '':
+                Questionobj = Question.objects.filter(course__icontains=course,subject__icontains=subject,isActive=True).exclude(id=questionid)
             else:
                 Questionobj = Question.objects.filter(course__icontains=course,isActive=True).exclude(id=questionid)
             
@@ -1156,13 +1164,13 @@ class SaveDuplicates(GenericAPIView):
         data={}
         data['question_id'] = request_data.get("questionid")  
         data['course_id'] = request_data.get("course") 
-        data['module_id'] = request_data.get("module")  
+        data['subject_id'] = request_data.get("subject")  
         data['severity_level'] = request_data.get("severity_level") 
         data['type_of_question'] = request_data.get("type") 
         data['duplicate_of'] = request_data.get("duplicatequestions") 
         if  data['duplicate_of'] is not None and  data['duplicate_of'] != '':
-            if data['module_id'] == '':
-                data['module_id'] = None
+            if data['subject_id'] == '':
+                data['subject_id'] = None
             if data['question_id'] is not None and data['question_id'] != '':
                 Questionobj = Question.objects.filter(id=data['question_id']).first()
                 if Questionobj is not None :
@@ -1422,15 +1430,10 @@ class ArchiveQuestionList(GenericAPIView):
                 course_object = Course.objects.filter(isActive=True,id__in =i['course']).values_list('course_name')
                 i['course_name'] = course_object
 
-                if i['module'] != '':
-                    # modules_list = [int(x) for x in i['module'].split(",")]
-                    course_module_object = CourseModules.objects.filter(isActive=True,id__in = i['module']).values_list('module_name')
-                    if course_module_object != []:
-                        i['module_name'] = course_module_object
-                    else:
-                        i['module_name'] = ''
+                if i['subject'] != '':
+                    i['subject_name'] = ''
                 else:
-                    i['module_name'] = ''
+                    i['subject_name'] = ''
                 
                 question_image_object = QuestionImages.objects.filter(isActive=True,question_id=i['id'])
                 question_image_ser = QuestionImagesSerializer(question_image_object,many=True)
@@ -1468,6 +1471,7 @@ class ArchiveQuestionList(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 paigna=self.get_paginated_response(serializer.data)
+                return Response(paigna, status=200)
         else:
             response_={
                         "n": 0,
@@ -1626,4 +1630,182 @@ class DeleteQuestion(GenericAPIView):
                     return Response(encdata,status=200)
                 else:
                     return Response(response_,status=200) 
+
+
+class CourseListByCollege(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        org_code = request_data.get('org_code') or request.user.og_code
+        college_id = request_data.get('college_id')
+
+        if college_id not in (None, ''):
+            tc_candidates = [str(college_id)]
+        else:
+            tc_candidates = []
+            if request.user.college_id not in (None, ''):
+                tc_candidates.append(str(request.user.college_id))
+            if request.user.member_of not in (None, ''):
+                tc_candidates.append(str(request.user.member_of))
+
+        course_ids = list(CollegeCourses.objects.filter(
+            training_center_id__in=tc_candidates, isActive=True
+        ).values_list('course_id', flat=True))
+
+        courselistobj = Course.objects.filter(isActive=True)
+        if org_code not in (None, ''):
+            courselistobj = courselistobj.filter(og_code=org_code)
+        if tc_candidates:
+            courselistobj = courselistobj.filter(id__in=course_ids)
+        courselistobj = courselistobj.order_by('course_name')
+
+        if courselistobj.exists():
+            serializer = CourseSerializer(courselistobj, many=True)
+            creator_ids = {s['createdBy'] for s in serializer.data if s.get('createdBy')}
+            user_map = {
+                str(u.id): u
+                for u in UserAdmin.objects.filter(id__in=creator_ids, isActive=True)
+            }
+            for s in serializer.data:
+                cretby = user_map.get(str(s.get('createdBy')))
+                if cretby is not None:
+                    if cretby.user_type == 5:
+                        s['addedby'] = str(cretby.first_name) + " " + str(cretby.last_name)
+                    else:
+                        s['addedby'] = cretby.name
+                else:
+                    s['addedby'] = ''
+
+            response_={
+                        "n": 1,
+                        "msg": 'Course list found successfully',
+                        "data":serializer.data
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        else:
+            response_={
+                        "n": 0,
+                        "msg": 'course not found',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+class SubjectListByCourse(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        course_id = request_data.get('course_id') or request_data.get('courseid') or request_data.get('course')
+        if course_id in (None, ''):
+            response_={
+                        "n": 0,
+                        "msg": 'Course id not provided',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        org_code = request_data.get('org_code') or request.user.og_code
+        college_id = request_data.get('college_id')
+
+        if college_id not in (None, ''):
+            tc_candidates = [str(college_id)]
+        else:
+            tc_candidates = []
+            if request.user.college_id not in (None, ''):
+                tc_candidates.append(str(request.user.college_id))
+            if request.user.member_of not in (None, ''):
+                tc_candidates.append(str(request.user.member_of))
+
+        mapped_course_ids = list(CollegeCourses.objects.filter(
+            training_center_id__in=tc_candidates, isActive=True
+        ).values_list('course_id', flat=True))
+
+        course_obj = Course.objects.filter(id=course_id, isActive=True)
+        if org_code not in (None, ''):
+            course_obj = course_obj.filter(og_code=org_code)
+        if tc_candidates:
+            course_obj = course_obj.filter(id__in=mapped_course_ids)
+        if not course_obj.exists():
+            response_={
+                        "n": 0,
+                        "msg": 'Course not found for this college',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        course_subjects = CourseSubjects.objects.filter(course_id=course_id,isActive=True)
+        semister_no = (
+            request_data.get('semister_no')
+            or request_data.get('semester_no')
+            or request_data.get('semester_id')
+        )
+        if semister_no not in (None, ''):
+            course_subjects = course_subjects.filter(semister_no=semister_no)
+
+        subject_ids = list(course_subjects.values_list('subject_id',flat=True))
+        subjectlistobj = Subject.objects.filter(isActive=True,status=True,id__in=subject_ids).order_by('subject_name')
+
+        if subjectlistobj.exists():
+            serializer = SubjectSerializer(subjectlistobj,many=True)
+            response_={
+                        "n": 1,
+                        "msg": 'Subject list found successfully',
+                        "data":serializer.data
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        else:
+            response_={
+                        "n": 0,
+                        "msg": 'subject not found',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
 
