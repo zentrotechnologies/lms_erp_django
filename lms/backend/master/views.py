@@ -1674,7 +1674,7 @@ class AddSub_Category(GenericAPIView):
             return error_response
         
         data={}
-        data['category_name'] = request_data.get('category_name')
+        data['category_id'] = request_data.get('category_id')
         data['sub_name'] = request_data.get('sub_name')
         data['tags'] = request_data.get('tags')
         
@@ -1735,11 +1735,11 @@ class Sub_CategoryList(GenericAPIView):
         obj = Sub_Category.objects.filter(isActive=True)
         ser = Sub_CategorySerializer(obj,many=True)
         for s in ser.data:
-            objdep = Category.objects.filter(id=s['category_name']).first()
+            objdep = Category.objects.filter(id=s['category_id']).first()
             if objdep is not None and objdep !="":
-                s['category_name_str'] = objdep.category_name
+                s['category_name'] = objdep.category_name
             else:
-                s['category_name_str'] = ""
+                s['category_name'] = ""
             if s['tags'] != "" and s['tags'] is not None:
                 try:
                     s['tags'] = json.loads(s['tags'])
@@ -1830,7 +1830,7 @@ class UpdateSub_Category(GenericAPIView):
         data={}
         data['id'] = request_data.get('id')
         if data['id'] is not None:
-            data['category_name'] = request_data.get('category_name')
+            data['category_id'] = request_data.get('category_id')
             data['sub_name'] = request_data.get('sub_name')
             data['tags'] = request_data.get('tags')
             obj = Sub_Category.objects.filter(isActive=True).exclude(id=data['id'])
@@ -2177,7 +2177,17 @@ class DepartmentList(GenericAPIView):
             
         obj = Department.objects.filter(isActive=True)
         ser = DepartmentSerializer(obj,many=True)
+        ser_data=ser.data
         for i in ser.data:
+            if i['hod_faculty_id'] != "" and i['hod_faculty_id'] is not None:
+                print("i['hod_faculty_id']",i['hod_faculty_id'])
+                hod_obj=UserAdmin.objects.filter(id=str(i['hod_faculty_id'])).first()
+                if hod_obj is not None:
+                    i['hod_name'] = str(hod_obj.first_name) +' '+ str(hod_obj.last_name)
+                else:
+                    i['hod_name']=''
+            else:
+                i['hod_name']=''
                 
             if i['tags'] != "" and i['tags'] is not None:
                 try:
@@ -2188,7 +2198,7 @@ class DepartmentList(GenericAPIView):
         response_={
             "n": 1,
             'msg':'Department found successfully.',
-            'data': ser.data
+            'data': ser_data
         }
         if encryped_header == "1" :
             data_to_serialize = convert_decimals_to_float(response_)
@@ -9102,25 +9112,15 @@ class ClassGroupList(GenericAPIView):
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
 
-        class_group_obj = ClassGroup.objects.filter(isActive=True).order_by('academic_year_id','class_name','division')
-
-        academic_year_id = request.GET.get('academic_year_id')
-        department_id = request.GET.get('department_id')
-        program_id = request.GET.get('program_id')
-        semester_id = request.GET.get('semester_id')
+        class_group_obj = ClassGroup.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        course_id = request.GET.get('course_id')
         status = request.GET.get('status')
 
-        if (academic_year_id is not None and academic_year_id != ""):
-            class_group_obj = class_group_obj.filter(academic_year_id=academic_year_id)
 
-        if (department_id is not None and department_id != ""):
-            class_group_obj = class_group_obj.filter(department_id=department_id)
+        if (course_id is not None and course_id != ""):
+            class_group_obj = class_group_obj.filter(course_id=course_id)
 
-        if (program_id is not None and program_id != ""):
-            class_group_obj = class_group_obj.filter(program_id=program_id)
 
-        if (semester_id is not None and semester_id != ""):
-            class_group_obj = class_group_obj.filter(semester_id=semester_id)
 
         if status is not None and status != "":
             if str(status).lower() in ["true""1""active"]:
@@ -9133,39 +9133,16 @@ class ClassGroupList(GenericAPIView):
         class_group_data = serializer.data
 
         for item in class_group_data:
-            academic_year_obj = AcademicYear.objects.filter(id=item['academic_year_id'],isActive=True).first()
 
-            if academic_year_obj is not None:
-                item['academic_year_name'] = (academic_year_obj.academic_year_name)
+            course_obj = Course.objects.filter(id=item['course_id'],isActive=True).first()
+
+            if course_obj is not None:
+                item['course_name'] = (course_obj.course_name)                
+                item['course_code'] = (course_obj.course_code)
             else:
-                item['academic_year_name'] = ""
+                item['course_name'] = ""
+                item['course_code'] = ""
 
-            department_obj = Department.objects.filter(id=item['department_id'],isActive=True).first()
-
-            if department_obj is not None:
-                item['department_name'] = (department_obj.department_name)
-                item['department_code'] = (department_obj.department_code)
-            else:
-                item['department_name'] = ""
-                item['department_code'] = ""
-
-            program_obj = Program.objects.filter(id=item['program_id'],isActive=True).first()
-
-            if program_obj is not None:
-                item['program_name'] = (program_obj.program_name)                
-                item['program_code'] = (program_obj.program_code)
-            else:
-                item['program_name'] = ""
-                item['program_code'] = ""
-
-            semester_obj = Semester.objects.filter(id=item['semester_id'],isActive=True).first()
-
-            if semester_obj is not None:
-                item['semester_name'] = (semester_obj.semester_name)
-                item['semester_number'] = (semester_obj.semester_number)
-            else:
-                item['semester_name'] = ""
-                item['semester_number'] = ""
 
         response_ = {
             "n": 1,
@@ -9217,40 +9194,6 @@ class ClassGroupList(GenericAPIView):
             return Response(response_, status=200)
         serializer = ClassGroupSerializer(class_group_obj)
         class_group_data = serializer.data
-        academic_year_obj = AcademicYear.objects.filter(id=class_group_obj.academic_year_id,isActive=True).first()
-
-        if academic_year_obj is not None:
-            class_group_data['academic_year_name'] = (                academic_year_obj.academic_year_name    )
-        else:
-            class_group_data['academic_year_name'] = ""
-
-        department_obj = Department.objects.filter(            id=class_group_obj.department_id,            isActive=True).first()
-
-        if department_obj is not None:
-            class_group_data['department_name'] = (                department_obj.department_name    )
-            class_group_data['department_code'] = (                department_obj.department_code    )
-        else:
-            class_group_data['department_name'] = ""
-            class_group_data['department_code'] = ""
-
-        program_obj = Program.objects.filter(            id=class_group_obj.program_id,            isActive=True).first()
-
-        if program_obj is not None:
-            class_group_data['program_name'] = (                program_obj.program_name    )
-            class_group_data['program_code'] = (                program_obj.program_code    )
-        else:
-            class_group_data['program_name'] = ""
-            class_group_data['program_code'] = ""
-
-        semester_obj = Semester.objects.filter(            id=class_group_obj.semester_id,            isActive=True).first()
-
-        if semester_obj is not None:
-            class_group_data['semester_name'] = (                semester_obj.semester_name    )
-            class_group_data['semester_number'] = (                semester_obj.semester_number    )
-        else:
-            class_group_data['semester_name'] = ""
-            class_group_data['semester_number'] = ""
-
         response_ = {
             "n": 1,
             "msg": "Class group details found successfully.",
@@ -9258,8 +9201,8 @@ class ClassGroupList(GenericAPIView):
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(                response_    )
-            encdata = encrypt_data(                json.dumps(data_to_serialize)    )
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -9273,13 +9216,13 @@ class UpdateClassGroup(GenericAPIView):
         encryped_header = ""
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
-        request_data, error_response = handle_request_body(            request)
+        request_data, error_response = handle_request_body(request)
 
         if error_response:
             return error_response
 
         class_group_id = request_data.get('id')
-        if (            class_group_id is None            or class_group_id == ""):
+        if (class_group_id is None or class_group_id == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class group id is required.",
@@ -9292,8 +9235,7 @@ class UpdateClassGroup(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
-        class_group_obj = ClassGroup.objects.filter(            id=class_group_id,            isActive=True).first()
-
+        class_group_obj = ClassGroup.objects.filter(id=class_group_id,isActive=True).first()
         if class_group_obj is None:
             response_ = {
                 "n": 0,
@@ -9307,83 +9249,17 @@ class UpdateClassGroup(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
         data = {}
-        data['academic_year_id'] = request_data.get(            'academic_year_id',            class_group_obj.academic_year_id)
-        data['department_id'] = request_data.get(            'department_id',            class_group_obj.department_id)
-        data['program_id'] = request_data.get(            'program_id',            class_group_obj.program_id)
-        data['semester_id'] = request_data.get(            'semester_id',            class_group_obj.semester_id)
-        data['class_name'] = request_data.get(            'class_name',            class_group_obj.class_name)
-        data['division'] = request_data.get(            'division',            class_group_obj.division)
-        data['batch_name'] = request_data.get(            'batch_name',            class_group_obj.batch_name)
-        data['class_teacher_id'] = request_data.get(            'class_teacher_id',            class_group_obj.class_teacher_id)
-        data['capacity'] = request_data.get(            'capacity',            class_group_obj.capacity)
-        data['status'] = request_data.get(            'status',            class_group_obj.status)
+        data['semester_ids'] = request_data.get('semester_ids',class_group_obj.semester_ids)
+        data['course_id'] = request_data.get('course_id',class_group_obj.course_id)
+        data['class_name'] = request_data.get('class_name',class_group_obj.class_name)
+        data['division'] = request_data.get('division',class_group_obj.division)
+        data['capacity'] = request_data.get('capacity',class_group_obj.capacity)
+        data['status'] = request_data.get('status',class_group_obj.status)
         data['updatedBy'] = str(request.user.id)
         data['updatedAt'] = timezone.now()
 
-        academic_year_obj = AcademicYear.objects.filter(            id=data['academic_year_id'],            isActive=True,      status=True).first()
 
-        if academic_year_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active academic year not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-            return Response(response_, status=200)
-
-        department_obj = Department.objects.filter(            id=data['department_id'],            isActive=True,            status=True).first()
-
-        if department_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active department not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(            id=data['program_id'],            department_id=data['department_id'],            isActive=True,            status=True).first()
-
-        if program_obj is None:
-            response_ = {                "n": 0,                "msg": ("Program does not belong to the ""selected department."),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        semester_obj = Semester.objects.filter(
-            id=data['semester_id'],
-            isActive=True,
-            status=True).first()
-
-        if semester_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": ("Semester does not belong to the ""selected program."),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-            return Response(response_, status=200)
-
-        if (            data['class_name'] is None            or data['class_name'] == ""):
+        if (data['class_name'] is None  or data['class_name'] == ""):
             response_ = {
                 "n": 0,
                 "msg": "Class name is required.",
@@ -9391,42 +9267,22 @@ class UpdateClassGroup(GenericAPIView):
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        data['class_name'] = str(
-            data['class_name']
-).strip()
+        data['class_name'] = str(data['class_name']).strip()
 
-        if (
-            data['division'] is not None
-            and data['division'] != ""
-):
-            data['division'] = str(
-                data['division']
-    ).strip().upper()
+        if (data['division'] is not None and data['division'] != ""):
+            data['division'] = str(data['division']).strip().upper()
         else:
             data['division'] = None
 
-        if (
-            data['batch_name'] is not None
-            and data['batch_name'] != ""
-):
-            data['batch_name'] = str(
-                data['batch_name']
-    ).strip()
-        else:
-            data['batch_name'] = None
+
 
         try:
             data['capacity'] = int(data['capacity'])
-
             if data['capacity'] < 0:
                 raise ValueError
 
@@ -9438,32 +9294,21 @@ json.dumps(data_to_serialize)
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
         duplicate_query = ClassGroup.objects.filter(
-            academic_year_id=data['academic_year_id'],
-            department_id=data['department_id'],
-            semester_id=data['semester_id'],
+            course_id=data['course_id'],
             class_name__iexact=data['class_name'],
-            isActive=True
-).exclude(id=class_group_id)
+            og_code=str(request.user.og_code),
+            isActive=True).exclude(id=class_group_id)
 
         if data['division'] is None:
-            duplicate_query = duplicate_query.filter(
-                division__isnull=True
-    )
+            duplicate_query = duplicate_query.filter(division__isnull=True)
         else:
-            duplicate_query = duplicate_query.filter(
-                division__iexact=data['division']
-    )
+            duplicate_query = duplicate_query.filter(division__iexact=data['division'])
 
         if duplicate_query.exists():
             response_ = {
@@ -9473,22 +9318,12 @@ json.dumps(data_to_serialize)
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
-        serializer = ClassGroupSerializer(
-            class_group_obj,
-            data=data,
-            partial=True
-)
-
+        serializer = ClassGroupSerializer(class_group_obj,data=data,partial=True)
         if serializer.is_valid():
             serializer.save()
 
@@ -9499,12 +9334,8 @@ json.dumps(data_to_serialize)
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
@@ -9516,12 +9347,8 @@ json.dumps(data_to_serialize)
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
+            data_to_serialize = convert_decimals_to_float(                response_    )
+            encdata = encrypt_data(                json.dumps(data_to_serialize)    )
             return Response(encdata, status=200)
 
         return Response(response_, status=200)
@@ -9537,40 +9364,27 @@ class DeleteClassGroup(GenericAPIView):
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
 
-        request_data, error_response = handle_request_body(
-            request
-)
+        request_data, error_response = handle_request_body(request)
 
         if error_response:
             return error_response
 
         class_group_id = request_data.get('id')
 
-        if (
-            class_group_id is None
-            or class_group_id == ""
-):
-            response_ = {
-                "n": 0,
+        if (            class_group_id is None            or class_group_id == ""):
+            response_ = {                "n": 0,
                 "msg": "Class group id is required.",
                 "data": {}
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
 
             return Response(response_, status=200)
 
-        class_group_obj = ClassGroup.objects.filter(
-            id=class_group_id,
-            isActive=True
-).first()
+        class_group_obj = ClassGroup.objects.filter(            id=class_group_id,            isActive=True).first()
 
         if class_group_obj is None:
             response_ = {
@@ -9580,14 +9394,9 @@ json.dumps(data_to_serialize)
             }
 
             if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
-
             return Response(response_, status=200)
 
         class_group_obj.isActive = False
@@ -9602,14 +9411,9 @@ json.dumps(data_to_serialize)
         }
 
         if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
+            data_to_serialize = convert_decimals_to_float(                response_    )
+            encdata = encrypt_data(                json.dumps(data_to_serialize)    )
             return Response(encdata, status=200)
-
         return Response(response_, status=200)
 
 
@@ -9707,105 +9511,35 @@ class ClassGroupDetails(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        request_data, error_response = handle_request_body(
-            request
-)
+        request_data, error_response = handle_request_body(request)
 
         if error_response:
             return error_response
 
         class_group_id = request_data.get('id')
 
-        if (
-            class_group_id is None
-            or class_group_id == ""
-):
-            return phase_one_response(
-                request,
+        if (class_group_id is None  or class_group_id == ""):
+            return phase_one_response(                
+                request,                
                 {
-"n": 0,
-"msg": "Class group id is required.",
-"data": {}
+                    "n": 0,
+                    "msg": "Class group id is required.",
+                    "data": {}
                 }
-    )
+            )
 
-        class_group_obj = ClassGroup.objects.filter(
-            id=class_group_id,
-            isActive=True
-).first()
-
+        class_group_obj = ClassGroup.objects.filter(id=class_group_id,isActive=True).first()
         if class_group_obj is None:
             return phase_one_response(
-                request,
-                {
-"n": 0,
-"msg": "Class group not found.",
-"data": {}
+                request,{
+                    "n": 0,
+                    "msg": "Class group not found.",
+                    "data": {}
                 }
-    )
+            )
 
         serializer = ClassGroupSerializer(class_group_obj)
         class_group_data = serializer.data
-
-        academic_year_obj = AcademicYear.objects.filter(
-            id=class_group_obj.academic_year_id,
-            isActive=True
-).first()
-
-        if academic_year_obj is not None:
-            class_group_data['academic_year_name'] = (
-                academic_year_obj.academic_year_name
-    )
-        else:
-            class_group_data['academic_year_name'] = ""
-
-        department_obj = Department.objects.filter(
-            id=class_group_obj.department_id,
-            isActive=True
-).first()
-
-        if department_obj is not None:
-            class_group_data['department_name'] = (
-                department_obj.department_name
-    )
-            class_group_data['department_code'] = (
-                department_obj.department_code
-    )
-        else:
-            class_group_data['department_name'] = ""
-            class_group_data['department_code'] = ""
-
-        program_obj = Program.objects.filter(
-            id=class_group_obj.program_id,
-            isActive=True
-).first()
-
-        if program_obj is not None:
-            class_group_data['program_name'] = (
-                program_obj.program_name
-    )
-            class_group_data['program_code'] = (
-                program_obj.program_code
-    )
-        else:
-            class_group_data['program_name'] = ""
-            class_group_data['program_code'] = ""
-
-        semester_obj = Semester.objects.filter(
-            id=class_group_obj.semester_id,
-            isActive=True
-).first()
-
-        if semester_obj is not None:
-            class_group_data['semester_name'] = (
-                semester_obj.semester_name
-    )
-            class_group_data['semester_number'] = (
-                semester_obj.semester_number
-    )
-        else:
-            class_group_data['semester_name'] = ""
-            class_group_data['semester_number'] = ""
 
         return phase_one_response(
             request,

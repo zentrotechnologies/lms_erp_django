@@ -19,7 +19,7 @@ class Category(TrackingModel):
     tags = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
 class Sub_Category(TrackingModel):
-    category_name = models.IntegerField(null=True, blank=True, db_index=True)
+    category_id = models.IntegerField(null=True, blank=True, db_index=True)
     sub_name = models.CharField(max_length=255)
     tags = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
