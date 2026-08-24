@@ -172,7 +172,7 @@ class AddUser(GenericAPIView):
             data['address_line_one'] = request_data.get('address_line_one')
             data['address_line_two'] = request_data.get('address_line_two')
             data['department_id'] = request_data.get('department_id')
-            data['program_id'] = request_data.get('program_id')
+            data['course_id'] = request_data.get('course_id')
             data['semester_id'] = request_data.get('semester_id')
             data['class_group_id'] = request_data.get('class_group_id')
             data['academic_year_id'] = request_data.get('academic_year_id')

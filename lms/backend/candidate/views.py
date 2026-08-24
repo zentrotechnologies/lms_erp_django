@@ -33,6 +33,7 @@ from rules.serializers import *
 from datetime import date  # Make sure this import is at the top of your views.py
 from enrollments.models import *
 from enrollments.serializers import *
+from course.models import StudentSubjectAllocation
 def calculate_age(dob):
     """
     Calculate the current age based on date of birth.
@@ -75,7 +76,7 @@ def apply_student_fields(data, request_data):
         "admission_number",
         "roll_number",
         "academic_year_id",
-        "program_id",
+        "course_id",
         "class_group_id",
         "semester",
         "division",
@@ -3793,6 +3794,17 @@ class AddAdmission(GenericAPIView):
             }
             return self._respond(encryped_header, response_)
 
+        
+        course_id = request_data.get('course_id')
+        if course_id is None or course_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'course_id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        
         if mobilenumber is None or mobilenumber == "":
             response_ = {
                 "n": 0,
@@ -3865,11 +3877,63 @@ class AddAdmission(GenericAPIView):
         data['local_city'] = _value('local_city')
         data['local_state'] = _value('local_state')
         data['local_pincode'] = _value('local_pincode')
+        if _value('academic_year_id') is None or _value('academic_year_id') =='':
+            active_academic_year=AcademicYear.objects.filter(is_current=True,isActive=True).first()
+            if active_academic_year is not None:
+                data['academic_year_id'] = active_academic_year.id
+            else:
+                response_ = {
+                    "n": 0,
+                    'msg': 'Please provide academic year id',
+                    'data': {}
+                }
+                return self._respond(encryped_header, response_)
+        else:
+            data['academic_year_id'] = _value('academic_year_id')
 
-        data['academic_year_id'] = _value('academic_year_id')
-        data['college_id'] = _value('college_id')
+
+        if _value('college_id') is None or _value('college_id') =='':
+            if request.user.is_parent_college:
+                data['college_id'] = str(request.user.id)
+            else:
+                active_college=College.objects.filter(id=str(request.user.college_id),isActive=True).first()
+                if active_college is not None:
+                    data['college_id'] = active_college.id
+                else:
+                    response_ = {
+                        "n": 0,
+                        'msg': 'Please provide college id',
+                        'data': {}
+                    }
+                    return self._respond(encryped_header, response_)
+        else:
+            data['college_id'] = _value('college_id')
+
+
+
         data['department_id'] = _value('department_id')
-        data['program_id'] = _value('program_id')
+        if _value('course_id') is not None and _value('course_id') !='':
+            active_course=Course.objects.filter(id= _value('course_id'),isActive=True).first()
+            if active_course is not None:
+                data['course_id'] = active_course.department_id
+            else:
+                response_ = {
+                    "n": 0,
+                    'msg': 'Course dosent have department id',
+                    'data': {}
+                }
+                return self._respond(encryped_header, response_)
+        else:
+            response_ = {
+                "n": 0,
+                'msg': 'Please provide course id',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+
+        data['course_id'] = _value('course_id')
+
         data['semester_id'] = _value('semester_id')
         data['class_group_id'] = _value('class_group_id')
         data['division'] = _value('division')
@@ -3915,16 +3979,7 @@ class AddAdmission(GenericAPIView):
             }
             return self._respond(encryped_header, response_)
 
-        if (
-            data['program_id'] is None
-            or data['program_id'] == ""
-        ):
-            response_ = {
-                "n": 0,
-                'msg': 'Program id is required.',
-                'data': {}
-            }
-            return self._respond(encryped_header, response_)
+
 
         serializer = CandidateSerializer(data=data)
         if not serializer.is_valid():
@@ -3958,7 +4013,7 @@ class AddAdmission(GenericAPIView):
                     candidate_id=str(candidate.id),
                     application_number=application_number,
                     academic_year_id=data['academic_year_id'],
-                    program_id=data['program_id'],
+                    course_id=data['course_id'],
                     class_group_id=data['class_group_id'],
                     admission_applying_for=_value(
                         'admission_applying_for'
@@ -3976,6 +4031,7 @@ class AddAdmission(GenericAPIView):
                     ),
                     submitted_at=timezone.now(),
                     createdBy=str(request.user.id),
+                    og_code=str(request.user.og_code)
                 )
 
                 education_details = request_data.get(
@@ -4140,7 +4196,7 @@ class AdmissionList(GenericAPIView):
             isActive=True
         ).order_by('-createdAt')
 
-        program_id = request_data.get('program_id')
+        course_id = request_data.get('course_id')
         academic_year_id = request_data.get('academic_year_id')
         class_group_id = request_data.get('class_group_id')
         admission_status = request_data.get('admission_status')
@@ -4148,9 +4204,9 @@ class AdmissionList(GenericAPIView):
         submission_status = request_data.get('submission_status')
         search = request_data.get('search')
 
-        if program_id not in (None, ""):
+        if course_id not in (None, ""):
             applications = applications.filter(
-                program_id=program_id
+                course_id=course_id
             )
 
         if academic_year_id not in (None, ""):
@@ -4259,7 +4315,7 @@ class AdmissionList(GenericAPIView):
             item['academic_year_id'] = (
                 application.academic_year_id
             )
-            item['program_id'] = application.program_id
+            item['course_id'] = application.course_id
             item['class_group_id'] = application.class_group_id
             item['admission_applying_for'] = (
                 application.admission_applying_for
@@ -4492,7 +4548,7 @@ class UpdateAdmission(GenericAPIView):
             'city', 'pincode', 'address_line_one',
             'address_line_two', 'local_address', 'local_city',
             'local_state', 'local_pincode', 'academic_year_id',
-            'college_id', 'department_id', 'program_id',
+            'college_id', 'department_id', 'course_id',
             'semester_id', 'class_group_id', 'division',
             'admission_date', 'admission_status', 'student_status',
             'admission_number', 'roll_number', 'university_prn',
@@ -4531,7 +4587,7 @@ class UpdateAdmission(GenericAPIView):
                 serializer.save()
 
                 application_fields = [
-                    'academic_year_id', 'program_id',
+                    'academic_year_id', 'course_id',
                     'class_group_id', 'admission_applying_for',
                     'admission_applying_class', 'submission_status',
                     'current_step', 'personal_info_status',
@@ -4730,7 +4786,6 @@ class UpdateAdmission(GenericAPIView):
 
         return Response(response_, status=200)
 
-
 class DeleteAdmission(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -4827,9 +4882,78 @@ class DeleteAdmission(GenericAPIView):
 
         return Response(response_, status=200)
 
+class GetCourseStudentList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        course_id = request_data.get('course_id')
+        if course_id is None or course_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'course id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+        
+        academic_year_id = request_data.get('academic_year_id')
+        if academic_year_id is None or academic_year_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'academic year id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        semester_id=request_data.get('semester_id')
+
+        if semester_id is None or semester_id == "":
+            response_ = {
+                "n": 0,
+                'msg': 'semester id is required.',
+                'data': {}
+            }
+            return self._respond(encryped_header, response_)
+
+        student_ids=list(AdmissionApplication.objects.filter(academic_year_id=academic_year_id,course_id=course_id,og_code=str(request.user.og_code)).values_list('candidate_id',flat=True))
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id)
+        serializer=CandidateSerializer(student_objs,many=True)
+        students_list=serializer.data
+        for student in students_list:
+            subject_ids=list(StudentSubjectAllocation.objects.filter(academic_year_id=student['academic_year_id'],student_id=student['id'],course_id=student['course_id'],semester_id=student['semester_id'],class_id=student['class_group_id'],).values_list('subject_id',flat=True))
+
+            subject_objs=Subject.objects.filter(id__in=subject_ids,isActive=True)
+            subject_serializer=SubjectSerializer(subject_objs,many=True)
+            student['subjects']=subject_serializer.data
+        response_ = {
+            "n": 1,
+            'msg': 'Student list found.',
+            'data':students_list
+        }
+        return self._respond(encryped_header, response_)
 
 
 
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(
+                response_
+            )
+            encdata = encrypt_data(
+                json.dumps(data_to_serialize)
+            )
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
 
 
 

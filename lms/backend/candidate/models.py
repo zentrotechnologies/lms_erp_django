@@ -21,8 +21,6 @@ class CandidateManager(UserManager):
 
     def create_user(self, email, password=None, **extra_fields):
         return self._create_user(email, password, **extra_fields)
-
-
 class Candidate(AbstractBaseUser, TrackingModel):
     ADMISSION_STATUS_CHOICES = (
         ("APPLIED", "Applied"),
@@ -85,6 +83,9 @@ class Candidate(AbstractBaseUser, TrackingModel):
     college_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     role_code = models.CharField(max_length=50,null=True,blank=True,db_index=True)
     department_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
+
+    #Current Academics
+    course_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     semester_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     class_group_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     division = models.CharField(max_length=255,null=True,blank=True)
@@ -113,7 +114,7 @@ class Candidate(AbstractBaseUser, TrackingModel):
     local_city = models.CharField(max_length=255,null=True,blank=True)
     local_state = models.CharField(max_length=255,null=True,blank=True)
     local_pincode = models.CharField(max_length=20,null=True,blank=True)
-
+    
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
@@ -127,7 +128,6 @@ class Candidate(AbstractBaseUser, TrackingModel):
             settings.SECRET_KEY,
             algorithm="HS256",
         )
-
 
 class ParentProfile(TrackingModel):
     parent_code = models.CharField(max_length=100, unique=True)
@@ -165,16 +165,12 @@ class ParentStudentMapping(TrackingModel):
     can_view_attendance = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 
-
-
-
 class candidatelog(TrackingModel):
     candidate_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     action_takenbyid = models.CharField(max_length=255, null=True, blank=True)
     action_usertype = models.BigIntegerField(null=True, blank=True)
     action = models.CharField(max_length=255, null=True, blank=True)
     decline_reason = models.TextField(null=True, blank=True)
-
 
 class CandidateToken(TrackingModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -202,13 +198,16 @@ class candidateOtp(TrackingModel):
     email = models.EmailField(null=True, blank=True)
     mobileotp = models.CharField(max_length=10, null=True, blank=True)
     emailotp = models.CharField(max_length=10, null=True, blank=True)
+
 class AdmissionApplication(TrackingModel):
     candidate_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
     application_number = models.CharField(max_length=255,null=True,blank=True,unique=True,)
     academic_year_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
-    program_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
+    course_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
+
     class_group_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
-    admission_applying_for = models.CharField(max_length=255,null=True,blank=True,)
+
+    admission_applying_for = models.CharField(max_length=255,null=True,blank=True,) 
     admission_applying_class = models.CharField(max_length=255,null=True,blank=True,)
     personal_info_status = models.CharField(max_length=50,default="Pending",)
     educational_info_status = models.CharField(max_length=50,default="Pending",)
@@ -225,6 +224,7 @@ class AdmissionApplication(TrackingModel):
     approved_by = models.CharField(max_length=255,null=True,blank=True,)
     approved_at = models.DateTimeField(null=True,blank=True,)
     rejection_reason = models.TextField(null=True,blank=True,)
+    og_code = models.CharField(max_length=255,null=True,blank=True,)
 
 class CandidateEducation(TrackingModel):
     candidate_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
@@ -245,3 +245,10 @@ class CandidatePhotoSignature(TrackingModel):
     photo_url = models.TextField(null=True,blank=True,)
     signature_url = models.TextField(null=True,blank=True,)
     status = models.CharField(max_length=50,default="Pending",)
+
+
+
+
+
+
+    

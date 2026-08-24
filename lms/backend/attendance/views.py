@@ -51,7 +51,7 @@ class MarkCandidateAttendance(GenericAPIView):
 
         college_id=request_data.get('college_id')
         if college_id is None or college_id =='':
-            msg="Please provide training center id "
+            msg="Please provide college id "
             validation_status=False 
 
         faculty_id=str(request.user.id)

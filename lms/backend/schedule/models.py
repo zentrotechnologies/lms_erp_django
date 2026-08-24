@@ -35,9 +35,13 @@ class ScheduleCollegeMapping(TrackingModel):
 
 class TimetableTemplate(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
-    semister_id = models.BigIntegerField(db_index=True)
-    class_id = models.BigIntegerField(db_index=True)
+    class_group_id = models.BigIntegerField(db_index=True)
     template_name = models.CharField(max_length=150)
+    effective_from = models.DateField(null=True, blank=True)
+    effective_to = models.DateField(null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_by = models.CharField(max_length=255)
 
 
 class TimetableSlot(TrackingModel):
@@ -47,9 +51,20 @@ class TimetableSlot(TrackingModel):
     start_time =models.CharField(max_length=250, null=True, blank=True)
     end_time =models.CharField(max_length=250, null=True, blank=True)
     course_id = models.BigIntegerField(db_index=True)
-    faculty_id = models.CharField(max_length=255, db_index=True)#logined user
-    entry_for = models.CharField(default="lecture",max_length=50, null=True, blank=True)#lecture/longbreak/shortbrak
+    faculty_id = models.CharField(max_length=255, db_index=True)
+    room_number = models.CharField(max_length=50, null=True, blank=True)
+    entry_for = models.CharField(default="lecture", max_length=50, null=True, blank=True)
     lecture_type = models.CharField(max_length=30, default="THEORY")
+    is_active = models.BooleanField(default=True)
+    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["timetable_template_id", "day_of_week", "period_number"],
+                name="uniq_timetable_period",
+            )
+        ]
 
 
 

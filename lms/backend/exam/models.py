@@ -22,7 +22,7 @@ class ExamSet(TrackingModel):
 
     # College exam scope
     academic_year_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-    program_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     semester_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     class_group_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     exam_type = models.CharField(max_length=30, null=True, blank=True, db_index=True)

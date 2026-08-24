@@ -13,6 +13,10 @@ from enrollments.serializers import *
 from .serializers import *
 from master.serializers import *
 from lms.settings import *
+
+
+def _is_course_active(status):
+    return str(status or '').lower() in ('true', '1', 'active', 'approved', 't', 'yes')
 from django.contrib.auth.hashers import make_password,check_password
 from adminauth.jwt import *
 from helpers.validations import *
@@ -53,6 +57,10 @@ class AddCourse(GenericAPIView):
             subjectslist = request_data.get('subject_list')
         else:
             subjectslist = []
+        if 'class_list' in request_data.keys():
+            classlist = request_data.get('class_list')
+        else:
+            classlist = []
         print("request_data",request_data)
         data['og_code'] = str(request.user.og_code)
         data['createdBy'] = str(request.user.id)
@@ -77,14 +85,21 @@ class AddCourse(GenericAPIView):
             serializer.save()
             courseid = serializer.data['id']
 
-
-
             if subjectslist != []:
                 for m in subjectslist:
                     if m['subject_id'] != '':
-                        subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],isActive=True,semister_no=m['semister_no']).first()
+                        subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],isActive=True,semester_no=m['semester_no']).first()
                         if subjectexist is None:
-                            CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semister_no=m['semister_no'])
+                            CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'])
+
+
+            if classlist !=[]:
+                for c in classlist:
+                    if c['class_id'] != '':
+                        classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id'],isActive=True).first()
+                        if classexist is None:
+                            CourseClass.objects.create(course_id=courseid,class_id=c['class_id'])
+
 
             response_={
                         "n": 1,
@@ -126,7 +141,7 @@ class CollegeCourseFilterList(GenericAPIView):
             return error_response
         course_status = request_data.get('course_status')
         if course_status is not None and course_status != '':
-            courselistobj = Course.objects.filter(course_status=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
+            courselistobj = Course.objects.filter(course_status__iexact=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
         else:
             courselistobj = Course.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
 
@@ -135,9 +150,18 @@ class CollegeCourseFilterList(GenericAPIView):
 
             page4 = self.paginate_queryset(courselistobj)
             serializer =  CourseSerializer(page4,many=True)
+
+            creator_ids = {
+                s['createdBy'] for s in serializer.data if s.get('createdBy')
+            }
+            user_map = {
+                str(u.id): u
+                for u in UserAdmin.objects.filter(id__in=creator_ids, isActive=True)
+            }
+
             for s in serializer.data:
-                cretby = UserAdmin.objects.filter(id=s['createdBy']).first()
-                if cretby is not None and cretby != '':
+                cretby = user_map.get(str(s.get('createdBy')))
+                if cretby is not None:
                     if cretby.user_type == 5:
                         addedby = str(cretby.first_name) + " " +str(cretby.last_name)
                     else:
@@ -174,6 +198,52 @@ class CollegeCourseFilterList(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
+class CollegeCourseList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self,request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        course_status = request_data.get('course_status')
+        if course_status is not None and course_status != '':
+            courselistobj = Course.objects.filter(course_status__iexact=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
+        else:
+            courselistobj = Course.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
+
+
+        if courselistobj.exists():
+            serializer =  CourseSerializer(courselistobj,many=True)
+            response_={
+                        "n": 1,
+                        "msg": 'Course list found  successfully',
+                        "data":serializer.data
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(serializer.data)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        else:
+            response_={
+                        "n": 0,
+                        "msg": 'course not found',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
 class DeactivateCourse(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -191,8 +261,8 @@ class DeactivateCourse(GenericAPIView):
         if course_id is not None or course_id !='':
             course_idobj = Course.objects.filter(id=course_id).first()
             if course_idobj is not None:
-                if course_idobj.course_status is True:
-                    course_idobj.course_status = False
+                if _is_course_active(course_idobj.course_status):
+                    course_idobj.course_status = 'Inactive'
                     course_idobj.save()
 
                     response_={
@@ -261,8 +331,8 @@ class ActivateCourse(GenericAPIView):
         if course_id is not None or course_id !='':
             course_idobj = Course.objects.filter(id=course_id).first()
             if course_idobj is not None:
-                if course_idobj.course_status is False:
-                    course_idobj.course_status = True
+                if not _is_course_active(course_idobj.course_status):
+                    course_idobj.course_status = 'Active'
                     course_idobj.save()
 
                     response_={
@@ -338,6 +408,11 @@ class UpdateCourse(GenericAPIView):
             subjectslist = request_data.get('subject_list')
         else:
             subjectslist = []
+
+        if 'class_list' in request_data.keys():
+            classlist = request_data.get('class_list')
+        else:
+            classlist = []
         data['category_id'] = request_data.get('category_id')
         data['sub_category_id'] = request_data.get('sub_category_id')
 
@@ -366,13 +441,23 @@ class UpdateCourse(GenericAPIView):
                 if subjectslist != []:
                     for m in subjectslist:
                         if m['subject_id'] != '':
-                            subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],semister_no=m['semister_no']).first()
+                            subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no']).first()
                             if subjectexist is None:
-                                CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semister_no=m['semister_no'])
+                                CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'])
                             else:
                                 subjectexist.isActive=True
                                 subjectexist.save()
 
+                CourseClass.objects.filter(course_id=courseid,isActive=True).update(isActive=False)
+                if classlist !=[]:
+                    for c in classlist:
+                        if c['class_id'] != '':
+                            classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id']).first()
+                            if classexist is None:
+                                CourseClass.objects.create(course_id=courseid,class_id=c['class_id'])
+                            else:
+                                classexist.isActive=True
+                                classexist.save()
 
                 response_={
                             "n": 1,
@@ -511,6 +596,21 @@ class getCoursedetails(GenericAPIView):
                     serializer_data.update({
                         'subjects_list':[]
                     })
+
+
+                class_ids = list(CourseClass.objects.filter(course_id=courseid,isActive=True).values_list('class_id',flat=True))
+                class_obj=ClassGroup.objects.filter(id__in=class_ids,isActive=True)
+                if class_obj.exists():
+                    classser = ClassGroupSerializer(class_obj,many=True)
+                    serializer_data.update({
+                        'classs_list':classser.data
+                    })
+                else:
+                    serializer_data.update({
+                        'classs_list':[]
+                    })
+
+
 
                 lamguage_object = Languages.objects.filter(isActive=True,id__in=serializer.data['languages'])
                 if lamguage_object.exists():
@@ -1100,7 +1200,356 @@ class AddCourseMaterial(GenericAPIView):
 
 
 
+class GetCourseClases(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
 
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        course_id = request_data.get("course_id")
+        if course_id is None or course_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'Course id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        courseobj = Course.objects.filter(id=course_id,isActive=True).first()
+        if courseobj is None:
+            response_={
+                            "n": 0,
+                            "msg": 'Course not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        class_ids=list(CourseClass.objects.filter(course_id=course_id,isActive=True).values_list('class_id',flat=True))
+        class_objs=ClassGroup.objects.filter(id__in=class_ids,isActive=True,og_code=str(request.user.og_code))
+        serializer=ClassGroupSerializer(class_objs,many=True)
+
+        response_={
+                        "n": 1,
+                        "msg": 'Course classes founds',
+                        "data":serializer.data
+                    }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+class GetClassSemesters(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        class_id = request_data.get("class_id")
+        if class_id is None or class_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'class id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        classobj = ClassGroup.objects.filter(id=class_id,isActive=True).first()
+        if classobj is None:
+            response_={
+                            "n": 0,
+                            "msg": 'class not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        semester_objs=Semester.objects.filter(id__in=classobj.semester_ids,isActive=True,)
+        print("semester_objs",semester_objs)
+        serializer=SemesterSerializer(semester_objs,many=True)
+
+        response_={
+                    "n": 1,
+                    "msg": 'Class Semesters founds',
+                    "data":serializer.data
+                    }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+
+class SubjectListByCourseAndSemester(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        course_id = request_data.get("course_id")
+        if course_id is None or course_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'course id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+            
+        semester_id = request_data.get("semester_id")
+        if semester_id is None or semester_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'semester id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        courseobj = Course.objects.filter(id=course_id,isActive=True).first()
+        if courseobj is None:
+            response_={
+                            "n": 0,
+                            "msg": 'course not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        semester_objs=Semester.objects.filter(id=semester_id,isActive=True,).first()
+        if semester_objs is None:
+            response_={
+                            "n": 0,
+                            "msg": 'Semester not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+
+        subject_ids=list(CourseSubjects.objects.filter(course_id=course_id,semester_no=semester_id,isActive=True).values_list('subject_id',flat=True))
+        subjects_objs=Subject.objects.filter(id__in=subject_ids,isActive=True)
+        serializer=SubjectSerializer(subjects_objs,many=True)
+
+        response_={
+                    "n": 1,
+                    "msg": 'Class Semesters founds',
+                    "data":serializer.data
+                    }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+
+class AllocateSubjectToStudent(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        subject_ids = request_data.get("subject_ids")
+        if subject_ids is None or subject_ids =='':
+            response_={
+                            "n": 0,
+                            "msg": 'Please provide subjects ids',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+
+
+
+            
+        student_ids = request_data.get("student_ids")
+        if student_ids is None or student_ids =='':
+            response_={
+                        "n": 0,
+                        "msg": 'students id not found',
+                        "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+            
+        course_id = request_data.get("course_id")
+        if course_id is None or course_id =='':
+            response_={
+                        "n": 0,
+                        "msg": 'course id not found',
+                        "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        
+        class_id = request_data.get("class_id")
+        if class_id is None or class_id =='':
+            response_={
+                        "n": 0,
+                        "msg": 'class id not found',
+                        "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+        academic_year_id = request_data.get("academic_year_id")
+        if academic_year_id is None or academic_year_id =='':
+            response_={
+                        "n": 0,
+                        "msg": 'academic year id not found',
+                        "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        semester_id = request_data.get("semester_id")
+        if semester_id is None or semester_id =='':
+            response_={
+                        "n": 0,
+                        "msg": 'semester id not found',
+                        "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+  
+        if not isinstance(subject_ids, list):
+            subject_ids = [subject_ids]
+
+        if not isinstance(student_ids, list):
+            student_ids = [student_ids]
+
+        subject_ids = [subject_id for subject_id in subject_ids if subject_id not in (None, '')]
+        student_ids = [student_id for student_id in student_ids if student_id not in (None, '')]
+
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id)
+        serializer=CandidateSerializer(student_objs,many=True)
+        for student in serializer.data:
+            StudentSubjectAllocation.objects.filter(course_id=course_id,class_id=class_id,academic_year_id=academic_year_id,semester_id=semester_id,student_id=student['id'],isActive=True).update(isActive=False)
+            for subject_id in subject_ids:
+                StudentSubjectAllocation.objects.update_or_create(
+                    course_id=course_id,
+                    class_id=class_id,
+                    academic_year_id=academic_year_id,
+                    semester_id=semester_id,
+                    student_id=student['id'],
+                    subject_id=subject_id,
+                    defaults={"isActive": True},
+                )
+
+
+        response_={
+                    "n": 1,
+                    "msg": 'Subjects allocated successfully',
+                    "data":serializer.data
+                    }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
 
 
 

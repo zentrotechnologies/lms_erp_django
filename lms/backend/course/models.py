@@ -54,7 +54,7 @@ class Course(TrackingModel):
     course_code = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     pricing = models.CharField(max_length=12, null=True, blank=True)
     description = models.TextField(default="", blank=True)
-    course_status = models.BooleanField(default=True)
+    course_status = models.CharField(max_length=50, default='Pending')
     languages = models.JSONField(default=list, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
     department_id = models.BigIntegerField(null=True, blank=True, db_index=True)
@@ -62,15 +62,14 @@ class Course(TrackingModel):
     category_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     sub_category_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     course_type = models.CharField( max_length=30, choices=COURSE_TYPE_CHOICES, default="THEORY", db_index=True    )
-    semister_count = models.BigIntegerField(null=True, blank=True, db_index=True)
-    semister_per_year = models.BigIntegerField(null=True, blank=True, db_index=True)
+    semester_count = models.BigIntegerField(null=True, blank=True, db_index=True)
+    semester_per_year = models.BigIntegerField(null=True, blank=True, db_index=True)
     duration = models.CharField(max_length=100, null=True, blank=True)
 
 class CourseSubjects(TrackingModel):
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-    semister_no = models.BigIntegerField(null=True, blank=True, db_index=True)
+    semester_no = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-
 
 class CourseClass(TrackingModel):
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
@@ -79,7 +78,13 @@ class CourseClass(TrackingModel):
 
 
 
-
+class StudentSubjectAllocation(TrackingModel):
+    course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    class_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    academic_year_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    semester_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    student_id = models.CharField(max_length=255, null=True, blank=True)
 
 
 
@@ -105,7 +110,7 @@ class CourseMaterial(TrackingModel):
     material_label = models.CharField(max_length=255, null=True, blank=True)
     material_link = models.TextField(default="", blank=True)
     material_file = models.TextField(null=True, blank=True)
-    semister_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    semester_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     uploaded_by = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default="CLASS")
     is_published = models.BooleanField(default=False)
@@ -131,7 +136,7 @@ class FacultyCourseAllocation(TrackingModel):
 class LessonPlan(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
     department_id = models.BigIntegerField(db_index=True)
-    program_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
     semester_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
     prepared_by = models.CharField(max_length=255, db_index=True)

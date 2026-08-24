@@ -65,4 +65,7 @@ urlpatterns = [
     path('admission-details',views.AdmissionDetails.as_view(), name='post'),
     path('update-admission',views.UpdateAdmission.as_view(), name='post'),
     path('delete-admission',views.DeleteAdmission.as_view(), name='post'),
+
+
+    path('get-course-student-list',views.GetCourseStudentList.as_view(), name='post'),
 ]

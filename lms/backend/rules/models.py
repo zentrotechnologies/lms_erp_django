@@ -29,7 +29,7 @@ class GeneralEligibilityMandatoryDocuments(TrackingModel):
 
 class AdmissionEligibilityRule(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
-    program_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
     rule_name = models.CharField(max_length=255)
     minimum_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     minimum_age = models.PositiveIntegerField(null=True, blank=True)

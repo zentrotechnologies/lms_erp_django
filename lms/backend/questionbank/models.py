@@ -20,7 +20,7 @@ class Question(TrackingModel):
 
     # Plain IDs for direct college filtering.
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-    module_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
 
 
 class QuestionOption(TrackingModel):
@@ -49,6 +49,6 @@ class DuplicateQuestion(TrackingModel):
     question_id = models.BigIntegerField(null=True, db_index=True)
     duplicate_of = models.JSONField(default=list, blank=True)
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-    module_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     severity_level = models.CharField(max_length=50, null=True)
     type_of_question = models.CharField(max_length=50, null=True)

@@ -3,14 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from helpers.models import TrackingModel
 
 
-class Program(TrackingModel):
-    department_id = models.BigIntegerField(db_index=True)
-    program_code = models.CharField(max_length=50)
-    program_name = models.CharField(max_length=255)
-    program_type = models.CharField(max_length=30)
-    duration_years = models.PositiveSmallIntegerField(default=1)
-    total_semesters = models.PositiveSmallIntegerField(default=1)
-    status = models.BooleanField(default=True)
 
 
 # course category
@@ -32,6 +24,8 @@ class College(TrackingModel):
     phone = models.CharField(max_length=20, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
+
+    
 class AcademicYear(TrackingModel):
     academic_year_name = models.CharField(
         max_length=50,
@@ -66,7 +60,7 @@ class Semester(TrackingModel):
 
 
 class ClassGroup(TrackingModel):
-    course_id = models.BigIntegerField(db_index=True)
+    # course_id = models.BigIntegerField(db_index=True)
     semester_ids = models.JSONField(default=list, blank=True)
     class_name = models.CharField(max_length=150)
     division = models.CharField(max_length=30, null=True, blank=True)

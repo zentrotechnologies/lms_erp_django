@@ -94,7 +94,7 @@ class CandidateSubjectSelection(TrackingModel):
         db_index=True,
     )
 
-    program_id = models.CharField(
+    course_id = models.CharField(
         max_length=255,
         null=True,
         blank=True,

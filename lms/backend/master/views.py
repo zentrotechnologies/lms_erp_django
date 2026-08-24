@@ -35,1138 +35,6 @@ def phase_one_response(request, response_data):
 
 
 
-# ============================================================
-# Program Master APIs
-# ============================================================
-
-
-class AddProgram(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(request)
-
-        if error_response:
-            return error_response
-
-        data = {}
-
-        data['department_id'] = request_data.get('department_id')
-        data['program_code'] = request_data.get('program_code')
-        data['program_name'] = request_data.get('program_name')
-        data['program_type'] = request_data.get('program_type')
-        data['duration_years'] = request_data.get(
-            'duration_years',
-            1
-)
-        data['total_semesters'] = request_data.get(
-            'total_semesters',
-            1
-)
-        data['status'] = request_data.get('status', True)
-        data['createdBy'] = str(request.user.id)
-
-        # Department validation
-        if (
-            data['department_id'] is None
-            or data['department_id'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Department id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        department_obj = Department.objects.filter(
-            id=data['department_id'],
-            isActive=True,
-            status=True
-).first()
-
-        if department_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active department not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Program code validation
-        if (
-            data['program_code'] is None
-            or data['program_code'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program code is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Program name validation
-        if (
-            data['program_name'] is None
-            or data['program_name'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program name is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Program type validation
-        if (
-            data['program_type'] is None
-            or data['program_type'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program type is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Duration validation
-        try:
-            data['duration_years'] = int(
-                data['duration_years']
-    )
-
-            if data['duration_years'] <= 0:
-                raise ValueError
-
-        except (TypeError, ValueError):
-            response_ = {
-                "n": 0,
-                "msg": (
-"Duration years must be a positive "
-"number."
-),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Total semesters validation
-        try:
-            data['total_semesters'] = int(
-                data['total_semesters']
-    )
-
-            if data['total_semesters'] <= 0:
-                raise ValueError
-
-        except (TypeError, ValueError):
-            response_ = {
-                "n": 0,
-                "msg": (
-"Total semesters must be a positive "
-"number."
-),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        data['program_code'] = str(
-            data['program_code']
-).strip().upper()
-
-        data['program_name'] = str(
-            data['program_name']
-).strip()
-
-        data['program_type'] = str(
-            data['program_type']
-).strip().upper()
-
-        # Duplicate program code in the same department
-        duplicate_program = Program.objects.filter(
-            department_id=data['department_id'],
-            program_code__iexact=data['program_code'],
-            isActive=True
-).first()
-
-        if duplicate_program is not None:
-            response_ = {
-                "n": 0,
-                "msg": (
-"Program code already exists for "
-"this department."
-),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        # Duplicate program name in the same department
-        duplicate_name = Program.objects.filter(
-            department_id=data['department_id'],
-            program_name__iexact=data['program_name'],
-            isActive=True
-).first()
-
-        if duplicate_name is not None:
-            response_ = {
-                "n": 0,
-                "msg": (
-"Program name already exists for "
-"this department."
-),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        serializer = ProgramSerializer(data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            response_ = {
-                "n": 1,
-                "msg": "Program added successfully.",
-                "data": serializer.data
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        response_ = {
-            "n": 0,
-            "msg": "Program not added.",
-            "data": serializer.errors
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
-
-
-class ProgramList(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        program_obj = Program.objects.filter(
-            isActive=True
-).order_by('program_name')
-
-        department_id = request.GET.get('department_id')
-        status = request.GET.get('status')
-
-        if (
-            department_id is not None
-            and department_id != ""
-):
-            program_obj = program_obj.filter(
-                department_id=department_id
-    )
-
-        if status is not None and status != "":
-            if str(status).lower() in [
-                "true",
-                "1",
-                "active"
-            ]:
-                program_obj = program_obj.filter(
-status=True
-)
-
-            elif str(status).lower() in [
-                "false",
-                "0",
-                "inactive"
-            ]:
-                program_obj = program_obj.filter(
-status=False
-)
-
-        serializer = ProgramSerializer(
-            program_obj,
-            many=True
-)
-
-        program_data = serializer.data
-
-        for item in program_data:
-            department_obj = Department.objects.filter(
-                id=item['department_id'],
-                isActive=True
-    ).first()
-
-            if department_obj is not None:
-                item['department_name'] = (
-department_obj.department_name
-)
-                item['department_code'] = (
-department_obj.department_code
-)
-            else:
-                item['department_name'] = ""
-                item['department_code'] = ""
-
-        response_ = {
-            "n": 1,
-            "msg": "Program found successfully.",
-            "data": program_data
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
-
-    def post(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-)
-
-        if error_response:
-            return error_response
-
-        program_id = request_data.get('id')
-
-        if program_id is None or program_id == "":
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=program_id,
-            isActive=True
-).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Program not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-)
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-)
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        serializer = ProgramSerializer(program_obj)
-        program_data = serializer.data
-
-        department_obj = Department.objects.filter(
-            id=program_obj.department_id,
-            isActive=True
-).first()
-
-        if department_obj is not None:
-            program_data['department_name'] = (
-                department_obj.department_name
-    )
-            program_data['department_code'] = (
-                department_obj.department_code
-    )
-        else:
-            program_data['department_name'] = ""
-            program_data['department_code'] = ""
-
-        response_ = {
-            "n": 1,
-            "msg": "Program details found successfully.",
-            "data": program_data
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
-
-
-class ProgramDetails(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        request_data, error_response = handle_request_body(
-            request
-)
-
-        if error_response:
-            return error_response
-
-        program_id = request_data.get('id')
-
-        if (
-            program_id is None
-            or program_id == ""
-):
-            return phase_one_response(
-                request,
-                {
-"n": 0,
-"msg": "Program id is required.",
-"data": {}
-                }
-    )
-
-        program_obj = Program.objects.filter(
-            id=program_id,
-            isActive=True
-).first()
-
-        if program_obj is None:
-            return phase_one_response(
-                request,
-                {
-"n": 0,
-"msg": "Program not found.",
-"data": {}
-                }
-    )
-
-        program_data = ProgramSerializer(program_obj).data
-
-        department_obj = Department.objects.filter(
-            id=program_obj.department_id,
-            isActive=True
-).first()
-
-        if department_obj is not None:
-            program_data['department_name'] = (
-                department_obj.department_name
-    )
-            program_data['department_code'] = (
-                department_obj.department_code
-    )
-        else:
-            program_data['department_name'] = ""
-            program_data['department_code'] = ""
-
-        return phase_one_response(
-            request,
-            {
-                "n": 1,
-                "msg": "Program details found successfully.",
-                "data": program_data
-            }
-)
-
-
-class UpdateProgram(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-)
-
-        if error_response:
-            return error_response
-
-        program_id = request_data.get('id')
-
-        if program_id is None or program_id == "":
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=program_id,
-            isActive=True
-).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Program not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        data = {}
-
-        data['department_id'] = request_data.get(
-            'department_id',
-            program_obj.department_id
-)
-        data['program_code'] = request_data.get(
-            'program_code',
-            program_obj.program_code
-)
-        data['program_name'] = request_data.get(
-            'program_name',
-            program_obj.program_name
-)
-        data['program_type'] = request_data.get(
-            'program_type',
-            program_obj.program_type
-)
-        data['duration_years'] = request_data.get(
-            'duration_years',
-            program_obj.duration_years
-)
-        data['total_semesters'] = request_data.get(
-            'total_semesters',
-            program_obj.total_semesters
-)
-        data['status'] = request_data.get(
-            'status',
-            program_obj.status
-)
-        data['updatedBy'] = str(request.user.id)
-        data['updatedAt'] = timezone.now()
-
-        department_obj = Department.objects.filter(
-            id=data['department_id'],
-            isActive=True,
-            status=True
-).first()
-
-        if department_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active department not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        if (
-            data['program_code'] is None
-            or data['program_code'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program code is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        if (
-            data['program_name'] is None
-            or data['program_name'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program name is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        if (
-            data['program_type'] is None
-            or data['program_type'] == ""
-):
-            response_ = {
-                "n": 0,
-                "msg": "Program type is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        try:
-            data['duration_years'] = int(
-                data['duration_years']
-    )
-
-            if data['duration_years'] <= 0:
-                raise ValueError
-
-        except (TypeError, ValueError):
-            response_ = {
-                "n": 0,
-                "msg": (
-"Duration years must be a positive "
-"number."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        try:
-            data['total_semesters'] = int(
-                data['total_semesters']
-    )
-
-            if data['total_semesters'] <= 0:
-                raise ValueError
-
-        except (TypeError, ValueError):
-            response_ = {
-                "n": 0,
-                "msg": (
-"Total semesters must be a positive "
-"number."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        data['program_code'] = str(
-            data['program_code']
-).strip().upper()
-
-        data['program_name'] = str(
-            data['program_name']
-).strip()
-
-        data['program_type'] = str(
-            data['program_type']
-).strip().upper()
-
-        duplicate_code = Program.objects.filter(
-            department_id=data['department_id'],
-            program_code__iexact=data['program_code'],
-            isActive=True
-).exclude(id=program_id).first()
-
-        if duplicate_code is not None:
-            response_ = {
-                "n": 0,
-                "msg": (
-"Program code already exists for "
-"this department."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        duplicate_name = Program.objects.filter(
-            department_id=data['department_id'],
-            program_name__iexact=data['program_name'],
-            isActive=True
-).exclude(id=program_id).first()
-
-        if duplicate_name is not None:
-            response_ = {
-                "n": 0,
-                "msg": (
-"Program name already exists for "
-"this department."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-response_
-        )
-                encdata = encrypt_data(
-json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        serializer = ProgramSerializer(
-            program_obj,
-            data=data,
-            partial=True
-)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            response_ = {
-                "n": 1,
-                "msg": "Program updated successfully.",
-                "data": serializer.data
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        response_ = {
-            "n": 0,
-            "msg": "Program not updated.",
-            "data": serializer.errors
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
-
-
-class DeleteProgram(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-)
-
-        if error_response:
-            return error_response
-
-        program_id = request_data.get('id')
-
-        if program_id is None or program_id == "":
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=program_id,
-            isActive=True
-).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Program id not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        semester_exists = Semester.objects.filter(
-            program_id=program_obj.id,
-            isActive=True
-).exists()
-
-        if semester_exists:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Program cannot be deleted because "
-                    "semesters exist."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        class_group_exists = ClassGroup.objects.filter(
-            program_id=program_obj.id,
-            isActive=True
-).exists()
-
-        if class_group_exists:
-            response_ = {
-                "n": 0,
-                "msg": (
-                    "Program cannot be deleted because "
-                    "class groups exist."
-        ),
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj.isActive = False
-        program_obj.updatedBy = str(request.user.id)
-        program_obj.updatedAt = timezone.now()
-        program_obj.save()
-
-        response_ = {
-            "n": 1,
-            "msg": "Program deleted successfully.",
-            "data": {}
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
-
-
-class ChangeProgramStatus(GenericAPIView):
-    authentication_classes = [UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        encryped_header = ""
-
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(
-            request
-)
-
-        if error_response:
-            return error_response
-
-        program_id = request_data.get('id')
-
-        if program_id is None or program_id == "":
-            response_ = {
-                "n": 0,
-                "msg": "Program id is required.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj = Program.objects.filter(
-            id=program_id,
-            isActive=True
-).first()
-
-        if program_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Program id not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(
-                    response_
-        )
-                encdata = encrypt_data(
-                    json.dumps(data_to_serialize)
-        )
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
-
-        program_obj.status = not program_obj.status
-        program_obj.updatedBy = str(request.user.id)
-        program_obj.updatedAt = timezone.now()
-        program_obj.save()
-
-        response_ = {
-            "n": 1,
-            "msg": "Program status changed successfully.",
-            "data": {
-                "id": program_obj.id,
-                "status": program_obj.status
-            }
-        }
-
-        if encryped_header == "1":
-            data_to_serialize = convert_decimals_to_float(
-                response_
-    )
-            encdata = encrypt_data(
-                json.dumps(data_to_serialize)
-    )
-            return Response(encdata, status=200)
-
-        return Response(response_, status=200)
 
 
 
@@ -7274,6 +6142,66 @@ class AcademicYearList(GenericAPIView):
 )
 
 
+class AcademicYearListByActive(GenericAPIView):
+    """
+    Simple academic year list filtered by isActive.
+
+    POST /api/master/academic-year-list
+
+    Request Body (optional):
+    {
+        "is_active": "active"    # "active" (default) | "inactive" | "all"
+    }
+
+    Response:
+    {
+        "n": 1,
+        "msg": "Academic years found successfully.",
+        "data": [ ...AcademicYear... ]
+    }
+    """
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = request.headers.get("encrypted", "")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        is_active = request_data.get('is_active')
+
+        academic_year_obj = AcademicYear.objects.all().order_by(
+            '-is_current',
+            '-start_date',
+            '-id'
+        )
+
+        if str(is_active).lower() in ("inactive", "false", "0"):
+            academic_year_obj = academic_year_obj.filter(isActive=False)
+        elif str(is_active).lower() not in ("all", "none"):
+            academic_year_obj = academic_year_obj.filter(isActive=True)
+
+        serializer = AcademicYearSerializer(
+            academic_year_obj,
+            many=True
+        )
+
+        response_ = {
+            "n": 1,
+            "msg": "Academic years found successfully.",
+            "data": serializer.data
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+
+        return Response(response_, status=200)
+
+
 # ============================================================
 # Update Academic Year
 # ============================================================
@@ -8035,12 +6963,12 @@ class ChangeAcademicYearStatus(GenericAPIView):
 
 # ============================================================
 # Semester Master APIs
-# URL spelling retained as "semister" for existing frontend use.
+# URL spelling retained as "semester" for existing frontend use.
 # Model name remains Semester.
 # ============================================================
 
 
-class AddSemister(GenericAPIView):
+class AddSemester(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -8057,13 +6985,11 @@ class AddSemister(GenericAPIView):
 
         data = {}
 
-        # data['program_id'] = request_data.get('program_id')
         data['semester_number'] = request_data.get('semester_number')
         data['semester_name'] = request_data.get('semester_name')
         data['status'] = request_data.get('status', True)
         data['createdBy'] = str(request.user.id)
 
-        # Program id validation
         
 
         # Semester number validation
@@ -8141,7 +7067,6 @@ class AddSemister(GenericAPIView):
             data['semester_name']
 ).strip()
 
-        # Duplicate semester number for same program
         duplicate_number = Semester.objects.filter(
             semester_number=data['semester_number'],
             isActive=True
@@ -8152,7 +7077,7 @@ class AddSemister(GenericAPIView):
                 "n": 0,
                 "msg": (
                     "Semester number already exists "
-                    "for this program."
+                    "for this course."
         ),
                 "data": {}
             }
@@ -8168,7 +7093,7 @@ class AddSemister(GenericAPIView):
 
             return Response(response_, status=200)
 
-        # Duplicate semester name for same program
+        # Duplicate semester name for same course
         duplicate_name = Semester.objects.filter(
             semester_name__iexact=data['semester_name'],
             isActive=True
@@ -8179,7 +7104,7 @@ class AddSemister(GenericAPIView):
                 "n": 0,
                 "msg": (
                     "Semester name already exists "
-                    "for this program."
+                    "for this course."
         ),
                 "data": {}
             }
@@ -8235,7 +7160,7 @@ class AddSemister(GenericAPIView):
         return Response(response_, status=200)
 
 
-class SemisterList(GenericAPIView):
+class SemesterList(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -8383,7 +7308,7 @@ class SemisterList(GenericAPIView):
         return Response(response_, status=200)
 
 
-class SemisterDetails(GenericAPIView):
+class SemesterDetails(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -8426,7 +7351,7 @@ class SemisterDetails(GenericAPIView):
 
         semester_data = {
             "id": semester_obj.id,
-            "program_id": semester_obj.program_id,
+            "course_id": semester_obj.course_id,
             "semester_name": semester_obj.semester_name,
             "semester_number": semester_obj.semester_number,
         }
@@ -8441,7 +7366,7 @@ class SemisterDetails(GenericAPIView):
 )
 
 
-class UpdateSemister(GenericAPIView):
+class UpdateSemester(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -8506,9 +7431,9 @@ class UpdateSemister(GenericAPIView):
 
         data = {}
 
-        data['program_id'] = request_data.get(
-            'program_id',
-            semester_obj.program_id
+        data['course_id'] = request_data.get(
+            'course_id',
+            semester_obj.course_id
 )
         data['semester_number'] = request_data.get(
             'semester_number',
@@ -8525,16 +7450,16 @@ class UpdateSemister(GenericAPIView):
         data['updatedBy'] = str(request.user.id)
         data['updatedAt'] = timezone.now()
 
-        program_obj = Program.objects.filter(
-            id=data['program_id'],
+        course_obj = Course.objects.filter(
+            id=data['course_id'],
             isActive=True,
             status=True
 ).first()
 
-        if program_obj is None:
+        if course_obj is None:
             response_ = {
                 "n": 0,
-                "msg": "Active program not found.",
+                "msg": "Active course not found.",
                 "data": {}
             }
 
@@ -8596,12 +7521,12 @@ class UpdateSemister(GenericAPIView):
 
             return Response(response_, status=200)
 
-        if data['semester_number'] > program_obj.total_semesters:
+        if data['semester_number'] > course_obj.total_semesters:
             response_ = {
                 "n": 0,
                 "msg": (
                     "Semester number cannot be greater than "
-                    f"{program_obj.total_semesters} for this program."
+                    f"{course_obj.total_semesters} for this course."
         ),
                 "data": {}
             }
@@ -8654,7 +7579,7 @@ class UpdateSemister(GenericAPIView):
                 "n": 0,
                 "msg": (
                     "Semester number already exists "
-                    "for this program."
+                    "for this course."
         ),
                 "data": {}
             }
@@ -8682,7 +7607,7 @@ class UpdateSemister(GenericAPIView):
                 "n": 0,
                 "msg": (
                     "Semester name already exists "
-                    "for this program."
+                    "for this course."
         ),
                 "data": {}
             }
@@ -8742,7 +7667,7 @@ class UpdateSemister(GenericAPIView):
         return Response(response_, status=200)
 
 
-class DeleteSemister(GenericAPIView):
+class DeleteSemester(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -8854,7 +7779,7 @@ class DeleteSemister(GenericAPIView):
         return Response(response_, status=200)
 
 
-class ChangeSemisterStatus(GenericAPIView):
+class ChangeSemesterStatus(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 

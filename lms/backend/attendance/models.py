@@ -22,7 +22,7 @@ class LectureAttendanceSession(TrackingModel):
     class_group_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
     faculty_id = models.CharField(max_length=255, db_index=True)
-    attendance_date = models.DateField(db_index=True)
+    attendance_date = models.DateField(db_index=True,null=True, blank=True)
     total_students = models.PositiveIntegerField(default=0)
     present_count = models.PositiveIntegerField(default=0)
     absent_count = models.PositiveIntegerField(default=0)
@@ -45,7 +45,7 @@ class LectureAttendanceDetail(TrackingModel):
 
 class FacultyAttendance(TrackingModel):
     faculty_id = models.CharField(max_length=255, db_index=True)
-    attendance_date = models.DateField(db_index=True)
+    attendance_date = models.DateField(db_index=True,null=True, blank=True)
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
     attendance_status = models.CharField(max_length=20, db_index=True)
@@ -58,8 +58,8 @@ class LeaveApplication(TrackingModel):
     applicant_type = models.CharField(max_length=20, db_index=True)
     applicant_id = models.CharField(max_length=255, db_index=True)
     leave_type = models.CharField(max_length=100)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     number_of_days = models.DecimalField(max_digits=5, decimal_places=1)
     reason = models.TextField()
     status = models.CharField(max_length=20, default="PENDING", db_index=True)
