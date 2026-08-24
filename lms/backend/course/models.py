@@ -87,14 +87,6 @@ class StudentSubjectAllocation(TrackingModel):
     student_id = models.CharField(max_length=255, null=True, blank=True)
 
 
-
-
-
-
-
-
-
-
 class CourseMaterial(TrackingModel):
     VISIBILITY_CHOICES = (
         ("ALL", "All"),
@@ -135,32 +127,55 @@ class FacultyCourseAllocation(TrackingModel):
 
 class LessonPlan(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
-    department_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
     semester_id = models.BigIntegerField(db_index=True)
-    course_id = models.BigIntegerField(db_index=True)
+    subject_id = models.BigIntegerField(db_index=True)
+
+    title = models.CharField(max_length=255)
+    teaching_methodology = models.TextField(null=True, blank=True)
+
     prepared_by = models.CharField(max_length=255, db_index=True)
     approved_by = models.CharField(max_length=255, null=True, blank=True)
-    title = models.CharField(max_length=255)
+
     objectives = models.TextField(null=True, blank=True)
-    teaching_methodology = models.TextField(null=True, blank=True)
     references = models.TextField(null=True, blank=True)
+
     total_planned_lectures = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=30, default="DRAFT", db_index=True)
+
     approved_at = models.DateTimeField(null=True, blank=True)
     approval_remarks = models.TextField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
 
 
 class LessonPlanUnit(TrackingModel):
     lesson_plan_id = models.BigIntegerField(db_index=True)
+
     unit_number = models.PositiveIntegerField()
     unit_title = models.CharField(max_length=255)
     topics = models.TextField()
+
     planned_lectures = models.PositiveIntegerField(default=0)
-    completed_lectures = models.PositiveIntegerField(default=0)
+    completed_lectures = models.DecimalField(max_digits=5,decimal_places=1,default=0)
+
     planned_start_date = models.DateField(null=True, blank=True)
     planned_end_date = models.DateField(null=True, blank=True)
+
+    reference = models.TextField(null=True, blank=True)
+    teaching_method = models.TextField(null=True, blank=True)
+    co_mapping = models.CharField(max_length=255, null=True, blank=True)
+    remarks = models.TextField(null=True, blank=True)
+
     sequence_number = models.PositiveIntegerField(default=1)
 
+class LessonPlanExecution(TrackingModel):
+    lesson_plan_id = models.BigIntegerField(db_index=True)
+    lesson_plan_unit_id = models.BigIntegerField(db_index=True)
+    attendance_session_id = models.BigIntegerField(null=True,blank=True,db_index=True)
 
+    executed_on = models.DateField(db_index=True)
+    lecture_count = models.DecimalField(max_digits=4,decimal_places=1,default=1)
+
+    topics_covered = models.TextField()
+    remarks = models.TextField(null=True, blank=True)
+
+    completed_by = models.CharField(max_length=255, db_index=True)

@@ -1683,7 +1683,15 @@ class FacultyList(GenericAPIView):
                 i['country_name'] = country_object.name
             else:
                 i['country_name'] = ""
-                 
+
+
+            department_object = Department.objects.filter(id=i['department_id']).first()
+            if department_object is not None:
+                i['department_name'] = department_object.department_name
+            else:
+                i['department_name'] = ""
+
+
             if i['specialization'] != "" and i['specialization'] is not None:
                 i['specialization'] = json.loads(i['specialization'])
 

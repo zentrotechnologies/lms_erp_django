@@ -31,4 +31,13 @@ urlpatterns = [
         path('subject-list-by-course-and-semester',v.SubjectListByCourseAndSemester.as_view(),name='post'),
         path('allocate-subjects-to-student',v.AllocateSubjectToStudent.as_view(),name='post'),
 
+
+
+
+        path('bulk-upload-lesson-plan',v.BulkUploadLessonPlan.as_view(),name='post'),
+        path('lesson-plan-filter-list',v.LessonPlanFilterList.as_view(),name='post'),
+        path('get-lesson-plan-details',v.GetLessonPlanDetails.as_view(),name='post'),
+        path('delete-lesson-plan',v.DeleteLessonPlan.as_view(),name='post'),
+
+
 ]

@@ -21,14 +21,17 @@ from django.contrib.auth.hashers import make_password,check_password
 from adminauth.jwt import *
 from helpers.validations import *
 from rest_framework import permissions
+from django.db import transaction
 from django.db.models import Q
 from adminauth.views import save_file,sanitize_filename
 from adminauth.common import convertcreationdate
 from candidate.jwt import CandidateJWTAuthentication
 from schedule.models  import *
 from schedule.serializers import *
+from tablib import Dataset
+from tablib.exceptions import UnsupportedFormat
 # Create your views here.
-from datetime import date
+from datetime import date, datetime
 
 class AddCourse(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1555,6 +1558,609 @@ class AllocateSubjectToStudent(GenericAPIView):
 
 
 
+class BulkUploadLessonPlan(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    required_headers = [
+        "Lesson Plan Title",
+        "Unit No",
+        "Unit Title",
+        "Topics",
+        "Planned Lectures",
+        "Planned Start Date",
+        "Planned End Date",
+        "Teaching Method",
+        "Reference",
+        "CO Mapping",
+        "Remarks",
+    ]
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        academic_year_id = request.data.get("academic_year_id")
+        course_id = request.data.get("course_id")
+        semester_id = request.data.get("semester_id")
+        subject_id = request.data.get("subject_id")
+        excel_file = request.FILES.get("excel_file")
+
+        required_fields = {
+            "academic_year_id": academic_year_id,
+            "course_id": course_id,
+            "semester_id": semester_id,
+            "subject_id": subject_id,
+        }
+        for field_name, field_value in required_fields.items():
+            if field_value is None or field_value == "":
+                return self._respond(encryped_header, {
+                    "n": 0,
+                    "msg": field_name.replace("_", " ") + " not found",
+                    "data": [],
+                })
+
+        if excel_file is None:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "Please upload lesson plan excel file",
+                "data": [],
+            })
+
+        if not excel_file.name.endswith("xlsx"):
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "File format not supported",
+                "data": [],
+            })
+
+        dataset = Dataset()
+        try:
+            imported_data = dataset.load(excel_file.read(), format="xlsx")
+        except UnsupportedFormat:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "XLSX support is not installed. Please install openpyxl in the project venv using: pip install openpyxl",
+                "data": [],
+            })
+        missing_headers = [
+            header for header in self.required_headers
+            if header not in imported_data.headers
+        ]
+
+        if missing_headers:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "Invalid lesson plan template",
+                "data": missing_headers,
+                "headers": self.required_headers,
+            })
+
+        row_errors = []
+        lesson_plan_rows = {}
+
+        for row_number, row in enumerate(imported_data.dict, start=2):
+            if self._is_blank_row(row):
+                continue
+
+            title = self._clean(row.get("Lesson Plan Title"))
+            unit_number = self._positive_int(row.get("Unit No"))
+            unit_title = self._clean(row.get("Unit Title"))
+            topics = self._clean(row.get("Topics"))
+            planned_lectures = self._positive_int(row.get("Planned Lectures"))
+            planned_start_date = self._parse_date(row.get("Planned Start Date"))
+            planned_end_date = self._parse_date(row.get("Planned End Date"))
+
+            errors = []
+            if title == "":
+                errors.append("Lesson Plan Title is required")
+            if unit_number is None:
+                errors.append("Unit No must be a positive number")
+            if unit_title == "":
+                errors.append("Unit Title is required")
+            if topics == "":
+                errors.append("Topics is required")
+            if planned_lectures is None:
+                errors.append("Planned Lectures must be a positive number")
+            if planned_start_date == "invalid":
+                errors.append("Planned Start Date must be yyyy-mm-dd")
+            if planned_end_date == "invalid":
+                errors.append("Planned End Date must be yyyy-mm-dd")
+            if planned_start_date not in (None, "invalid") and planned_end_date not in (None, "invalid") and planned_start_date > planned_end_date:
+                errors.append("Planned Start Date cannot be after Planned End Date")
+
+            if errors:
+                row_errors.append({
+                    "row": row_number,
+                    "errors": errors,
+                    "data": self._serialize_row(row),
+                })
+                continue
+
+            lesson_plan_rows.setdefault(title, []).append({
+                "unit_number": unit_number,
+                "unit_title": unit_title,
+                "topics": topics,
+                "planned_lectures": planned_lectures,
+                "planned_start_date": planned_start_date,
+                "planned_end_date": planned_end_date,
+                "teaching_method": self._clean(row.get("Teaching Method")),
+                "reference": self._clean(row.get("Reference")),
+                "co_mapping": self._clean(row.get("CO Mapping")),
+                "remarks": self._clean(row.get("Remarks")),
+            })
+
+        if row_errors:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "Lesson plan not uploaded",
+                "data": row_errors,
+                "headers": self.required_headers,
+            })
+
+        if not lesson_plan_rows:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "No lesson plan rows found",
+                "data": [],
+                "headers": self.required_headers,
+            })
+
+        created_count = 0
+        updated_count = 0
+        unit_count = 0
+        uploaded_plans = []
+
+        with transaction.atomic():
+            for title, unit_rows in lesson_plan_rows.items():
+                total_planned_lectures = sum(
+                    unit["planned_lectures"] for unit in unit_rows
+                )
+
+                lesson_plan, created = LessonPlan.objects.update_or_create(
+                    academic_year_id=academic_year_id,
+                    course_id=course_id,
+                    semester_id=semester_id,
+                    subject_id=subject_id,
+                    title=title,
+                    defaults={
+                        "prepared_by": str(request.user.id),
+                        "total_planned_lectures": total_planned_lectures,
+                        "status": "DRAFT",
+                        "createdBy": str(request.user.id),
+                        "isActive": True,
+                    },
+                )
+
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+                LessonPlanUnit.objects.filter(
+                    lesson_plan_id=lesson_plan.id,
+                    isActive=True,
+                ).update(isActive=False, updatedBy=str(request.user.id))
+
+                for sequence_number, unit in enumerate(unit_rows, start=1):
+                    LessonPlanUnit.objects.create(
+                        lesson_plan_id=lesson_plan.id,
+                        unit_number=unit["unit_number"],
+                        unit_title=unit["unit_title"],
+                        topics=unit["topics"],
+                        planned_lectures=unit["planned_lectures"],
+                        planned_start_date=unit["planned_start_date"],
+                        planned_end_date=unit["planned_end_date"],
+                        reference=unit["reference"],
+                        teaching_method=unit["teaching_method"],
+                        co_mapping=unit["co_mapping"],
+                        remarks=unit["remarks"],
+                        sequence_number=sequence_number,
+                        createdBy=str(request.user.id),
+                    )
+                    unit_count += 1
+
+                uploaded_plans.append({
+                    "lesson_plan_id": lesson_plan.id,
+                    "title": title,
+                    "total_planned_lectures": total_planned_lectures,
+                    "unit_count": len(unit_rows),
+                })
+
+        return self._respond(encryped_header, {
+            "n": 1,
+            "msg": "Lesson plan uploaded successfully",
+            "data": {
+                "created_count": created_count,
+                "updated_count": updated_count,
+                "unit_count": unit_count,
+                "lesson_plans": uploaded_plans,
+            },
+        })
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+    def _clean(self, value):
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    def _is_blank_row(self, row):
+        return all(self._clean(row.get(header)) == "" for header in self.required_headers)
+
+    def _serialize_row(self, row):
+        return {
+            header: self._clean(row.get(header))
+            for header in self.required_headers
+        }
+
+    def _positive_int(self, value):
+        if value is None or value == "":
+            return None
+        try:
+            number = int(float(value))
+        except (TypeError, ValueError):
+            return None
+        if number <= 0:
+            return None
+        return number
+
+    def _parse_date(self, value):
+        if value is None or value == "":
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+
+        value = str(value).strip()
+        for date_format in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+            try:
+                return datetime.strptime(value, date_format).date()
+            except ValueError:
+                pass
+        return "invalid"
 
 
+class LessonPlanFilterList(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        lesson_plan_objs = LessonPlan.objects.filter(isActive=True).order_by("-createdAt")
+
+        academic_year_id = request_data.get("academic_year_id")
+        course_id = request_data.get("course_id")
+        semester_id = request_data.get("semester_id")
+        subject_id = request_data.get("subject_id")
+        status = request_data.get("status")
+        search = request_data.get("search")
+
+        if academic_year_id not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(academic_year_id=academic_year_id)
+        if course_id not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(course_id=course_id)
+        if semester_id not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(semester_id=semester_id)
+        if subject_id not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(subject_id=subject_id)
+        if status not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(status=status)
+        if search not in (None, ""):
+            lesson_plan_objs = lesson_plan_objs.filter(
+                Q(title__icontains=search)
+                | Q(teaching_methodology__icontains=search)
+                | Q(objectives__icontains=search)
+            )
+
+        page = self.paginate_queryset(lesson_plan_objs)
+        data = self._serialize_lesson_plans(page)
+        response_ = self.get_paginated_response(data)
+        response_["msg"] = "Lesson plan list found successfully" if data else "lesson plan not found"
+        response_["n"] = 1 if data else 0
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+    def _serialize_lesson_plans(self, lesson_plan_objs):
+        lesson_plan_objs = list(lesson_plan_objs)
+
+        academic_year_ids = {
+            obj.academic_year_id for obj in lesson_plan_objs if obj.academic_year_id
+        }
+        course_ids = {
+            obj.course_id for obj in lesson_plan_objs if obj.course_id
+        }
+        semester_ids = {
+            obj.semester_id for obj in lesson_plan_objs if obj.semester_id
+        }
+        subject_ids = {
+            obj.subject_id for obj in lesson_plan_objs if obj.subject_id
+        }
+        lesson_plan_ids = [obj.id for obj in lesson_plan_objs]
+
+        academic_year_map = {
+            obj.id: obj.academic_year_name
+            for obj in AcademicYear.objects.filter(id__in=academic_year_ids)
+        }
+        course_map = {
+            obj.id: obj.course_name
+            for obj in Course.objects.filter(id__in=course_ids)
+        }
+        semester_map = {
+            obj.id: obj.semester_name
+            for obj in Semester.objects.filter(id__in=semester_ids)
+        }
+        subject_map = {
+            obj.id: obj.subject_name
+            for obj in Subject.objects.filter(id__in=subject_ids)
+        }
+
+        unit_map = {}
+        for unit in LessonPlanUnit.objects.filter(
+            lesson_plan_id__in=lesson_plan_ids,
+            isActive=True,
+        ).values(
+            "lesson_plan_id",
+            "planned_lectures",
+            "completed_lectures",
+        ):
+            summary = unit_map.setdefault(unit["lesson_plan_id"], {
+                "unit_count": 0,
+                "planned_lectures": 0,
+                "completed_lectures": 0,
+            })
+            summary["unit_count"] += 1
+            summary["planned_lectures"] += unit["planned_lectures"] or 0
+            summary["completed_lectures"] += float(unit["completed_lectures"] or 0)
+
+        data = []
+        for obj in lesson_plan_objs:
+            summary = unit_map.get(obj.id, {
+                "unit_count": 0,
+                "planned_lectures": obj.total_planned_lectures or 0,
+                "completed_lectures": 0,
+            })
+            planned_lectures = summary["planned_lectures"] or obj.total_planned_lectures or 0
+            completed_lectures = summary["completed_lectures"]
+            progress_percentage = 0
+            if planned_lectures:
+                progress_percentage = round((completed_lectures / planned_lectures) * 100, 2)
+
+            data.append({
+                "id": obj.id,
+                "academic_year_id": obj.academic_year_id,
+                "academic_year_name": academic_year_map.get(obj.academic_year_id, ""),
+                "course_id": obj.course_id,
+                "course_name": course_map.get(obj.course_id, ""),
+                "semester_id": obj.semester_id,
+                "semester_name": semester_map.get(obj.semester_id, ""),
+                "subject_id": obj.subject_id,
+                "subject_name": subject_map.get(obj.subject_id, ""),
+                "title": obj.title,
+                "teaching_methodology": obj.teaching_methodology,
+                "prepared_by": obj.prepared_by,
+                "approved_by": obj.approved_by,
+                "objectives": obj.objectives,
+                "references": obj.references,
+                "total_planned_lectures": obj.total_planned_lectures,
+                "unit_count": summary["unit_count"],
+                "completed_lectures": completed_lectures,
+                "progress_percentage": progress_percentage,
+                "status": obj.status,
+                "approved_at": obj.approved_at,
+                "approval_remarks": obj.approval_remarks,
+                "createdAt": obj.createdAt,
+                "createdBy": obj.createdBy,
+            })
+
+        return data
+
+
+class GetLessonPlanDetails(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        lesson_plan_id = request_data.get("lesson_plan_id") or request_data.get("id")
+        if lesson_plan_id in (None, ""):
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "lesson plan id not found",
+                "data": [],
+            })
+
+        lesson_plan_obj = LessonPlan.objects.filter(
+            id=lesson_plan_id,
+            isActive=True,
+        ).first()
+
+        if lesson_plan_obj is None:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "lesson plan not found",
+                "data": [],
+            })
+
+        data = self._serialize_lesson_plan(lesson_plan_obj)
+        return self._respond(encryped_header, {
+            "n": 1,
+            "msg": "Lesson plan details found successfully",
+            "data": data,
+        })
+
+    def _serialize_lesson_plan(self, obj):
+        academic_year_obj = AcademicYear.objects.filter(id=obj.academic_year_id).first()
+        course_obj = Course.objects.filter(id=obj.course_id).first()
+        semester_obj = Semester.objects.filter(id=obj.semester_id).first()
+        subject_obj = Subject.objects.filter(id=obj.subject_id).first()
+
+        unit_objs = LessonPlanUnit.objects.filter(
+            lesson_plan_id=obj.id,
+            isActive=True,
+        ).order_by("sequence_number", "unit_number", "id")
+
+        units = []
+        planned_lectures = 0
+        completed_lectures = 0
+
+        for unit in unit_objs:
+            unit_planned_lectures = unit.planned_lectures or 0
+            unit_completed_lectures = float(unit.completed_lectures or 0)
+            unit_progress_percentage = 0
+            if unit_planned_lectures:
+                unit_progress_percentage = round(
+                    (unit_completed_lectures / unit_planned_lectures) * 100,
+                    2,
+                )
+
+            planned_lectures += unit_planned_lectures
+            completed_lectures += unit_completed_lectures
+
+            units.append({
+                "id": unit.id,
+                "lesson_plan_id": unit.lesson_plan_id,
+                "unit_number": unit.unit_number,
+                "unit_title": unit.unit_title,
+                "topics": unit.topics,
+                "planned_lectures": unit.planned_lectures,
+                "completed_lectures": unit_completed_lectures,
+                "progress_percentage": unit_progress_percentage,
+                "planned_start_date": unit.planned_start_date,
+                "planned_end_date": unit.planned_end_date,
+                "reference": unit.reference,
+                "teaching_method": unit.teaching_method,
+                "co_mapping": unit.co_mapping,
+                "remarks": unit.remarks,
+                "sequence_number": unit.sequence_number,
+                "createdAt": unit.createdAt,
+                "createdBy": unit.createdBy,
+            })
+
+        progress_percentage = 0
+        if planned_lectures:
+            progress_percentage = round((completed_lectures / planned_lectures) * 100, 2)
+
+        return {
+            "id": obj.id,
+            "academic_year_id": obj.academic_year_id,
+            "academic_year_name": academic_year_obj.academic_year_name if academic_year_obj else "",
+            "course_id": obj.course_id,
+            "course_name": course_obj.course_name if course_obj else "",
+            "semester_id": obj.semester_id,
+            "semester_name": semester_obj.semester_name if semester_obj else "",
+            "subject_id": obj.subject_id,
+            "subject_name": subject_obj.subject_name if subject_obj else "",
+            "title": obj.title,
+            "teaching_methodology": obj.teaching_methodology,
+            "prepared_by": obj.prepared_by,
+            "approved_by": obj.approved_by,
+            "objectives": obj.objectives,
+            "references": obj.references,
+            "total_planned_lectures": obj.total_planned_lectures,
+            "unit_count": len(units),
+            "completed_lectures": completed_lectures,
+            "progress_percentage": progress_percentage,
+            "status": obj.status,
+            "approved_at": obj.approved_at,
+            "approval_remarks": obj.approval_remarks,
+            "createdAt": obj.createdAt,
+            "createdBy": obj.createdBy,
+            "units": units,
+        }
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+class DeleteLessonPlan(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        lesson_plan_id = request_data.get("lesson_plan_id") or request_data.get("id")
+        if lesson_plan_id in (None, ""):
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "lesson plan id not found",
+                "data": [],
+            })
+
+        lesson_plan_obj = LessonPlan.objects.filter(
+            id=lesson_plan_id,
+            isActive=True,
+        ).first()
+
+        if lesson_plan_obj is None:
+            return self._respond(encryped_header, {
+                "n": 0,
+                "msg": "lesson plan not found",
+                "data": [],
+            })
+
+        with transaction.atomic():
+            lesson_plan_obj.isActive = False
+            lesson_plan_obj.updatedBy = str(request.user.id)
+            lesson_plan_obj.save()
+
+            LessonPlanUnit.objects.filter(
+                lesson_plan_id=lesson_plan_obj.id,
+                isActive=True,
+            ).update(isActive=False, updatedBy=str(request.user.id))
+
+            LessonPlanExecution.objects.filter(
+                lesson_plan_id=lesson_plan_obj.id,
+                isActive=True,
+            ).update(isActive=False, updatedBy=str(request.user.id))
+
+        return self._respond(encryped_header, {
+            "n": 1,
+            "msg": "Lesson plan deleted successfully",
+            "data": [],
+        })
+
+    def _respond(self, encryped_header, response_):
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
 
