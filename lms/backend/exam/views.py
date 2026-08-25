@@ -29,6 +29,7 @@ from candidate.jwt import *
 import threading
 import requests
 import  pdfkit
+from datetime import timedelta
 from django.template import Template, Context
 from django.template.loader import get_template, render_to_string
 from django.db.models import Q
@@ -49,7 +50,7 @@ def find_combinations(questions, target_marks, target_time):
 
     for i in range(n):
         question = questions[i]
-        mark, time, q_id = int(question['marks']), int(question['time_to_solve']), question['id']
+        mark, time, q_id = int(float(question['marks'])), int(question['time_to_solve']), question['id']
         
         # Traverse the dp table in reverse to avoid reusing the same question
         for m in range(target_marks, mark - 1, -1):
@@ -91,9 +92,6 @@ class FindNumberOfExamQuestion(GenericAPIView):
         random.shuffle(questions_list)
         combination = find_combinations(questions_list, int(data['total_marks']), int(data['time_to_solve']))
         if combination:
-            for i in combination:
-                deactivate_exam_set = TemporaryQuestionExamSet.objects.filter(name=data['name'],course=data['course']).update(isActive=True)
-            
             shortlist_combination = combination[:4]
             response_={
                 "n": 1,
@@ -197,7 +195,7 @@ def generate_question_sets(filtered_questions, module_list, total_marks, total_t
             
             random.shuffle(full_set)
             # Validate overall constraints: total marks and total time.
-            sum_marks = sum(int(q['marks']) for q in full_set)
+            sum_marks = sum(int(float(q['marks'])) for q in full_set)
             sum_time = sum(int(q['time_to_solve']) for q in full_set)
             if sum_marks == int(total_marks) and sum_time == int(total_time):
                 valid_sets.append(full_set)
@@ -219,7 +217,7 @@ def generate_question_sets(filtered_questions, module_list, total_marks, total_t
             if len(set(q['id'] for q in comb)) != len(comb):
                 continue
             
-            sum_marks = sum(int(q['marks']) for q in comb)
+            sum_marks = sum(int(float(q['marks'])) for q in comb)
             sum_time = sum(int(q['time_to_solve']) for q in comb)
             if sum_marks == int(total_marks) and sum_time == int(total_time):
                 valid_sets.append(list(comb))
@@ -278,7 +276,7 @@ def generate_unique_question_sets(filtered_questions, module_list, total_marks, 
                 break  # No more valid sets can be created
             
             # Check total marks and time
-            sum_marks = sum(int(q['marks']) for q in current_set)
+            sum_marks = sum(int(float(q['marks'])) for q in current_set)
             sum_time = sum(int(q['time_to_solve']) for q in current_set)
             
             if sum_marks == int(total_marks) and sum_time == int(total_time):
@@ -298,7 +296,7 @@ def generate_unique_question_sets(filtered_questions, module_list, total_marks, 
             if len(set(q['id'] for q in comb)) != len(comb):
                 continue
             
-            sum_marks = sum(int(q['marks']) for q in comb)
+            sum_marks = sum(int(float(q['marks'])) for q in comb)
             sum_time = sum(int(q['time_to_solve']) for q in comb)
             
             if sum_marks == int(total_marks) and sum_time == int(total_time):
@@ -386,7 +384,7 @@ import math
 #                 break
                 
 #             # Check marks and time
-#             sum_marks = sum(int(q['marks']) for q in current_set)
+#             sum_marks = sum(int(float(q['marks'])) for q in current_set)
 #             sum_time = sum(int(q['time_to_solve']) for q in current_set)
             
 #             # Check difficulty distribution
@@ -456,7 +454,7 @@ import math
 #                 continue
                 
 #             # Check marks and time
-#             sum_marks = sum(int(q['marks']) for q in candidate_set)
+#             sum_marks = sum(int(float(q['marks'])) for q in candidate_set)
 #             sum_time = sum(int(q['time_to_solve']) for q in candidate_set)
             
 #             if sum_marks == int(total_marks) and sum_time == int(total_time):
@@ -546,7 +544,7 @@ import math
 #                 break
                 
 #             # Check marks and time
-#             sum_marks = sum(int(q['marks']) for q in current_set)
+#             sum_marks = sum(int(float(q['marks'])) for q in current_set)
 #             sum_time = sum(int(q['time_to_solve']) for q in current_set)
             
 #             # Check difficulty distribution
@@ -601,7 +599,7 @@ import math
 #                 continue
                 
 #             # Check marks and time
-#             sum_marks = sum(int(q['marks']) for q in candidate_set)
+#             sum_marks = sum(int(float(q['marks'])) for q in candidate_set)
 #             sum_time = sum(int(q['time_to_solve']) for q in candidate_set)
             
 #             if sum_marks == int(total_marks) and sum_time == int(total_time):
@@ -1308,11 +1306,35 @@ class GetScheduleandSetonbasisofCourse(GenericAPIView):
             return error_response
         
         course_id = request_data.get('course_id')
+        if course_id in (None, ''):
+            response_={
+                        "n": 0,
+                        "msg": 'course_id not provided',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+        if request.user.member_of is not None and request.user.member_of != '' :
+            training_center = str(request.user.member_of)
+        else:
+            training_center = str(request.user.id)
+
+        schedule_ids = list(ScheduleCourseMapping.objects.filter(
+            isActive=True, course_id=course_id
+        ).values_list('schedule_id', flat=True))
+        tc_schedule_ids = list(ScheduleTrainingCenterMapping.objects.filter(
+            isActive=True, schedule_id__in=schedule_ids, training_center_id=training_center
+        ).values_list('schedule_id', flat=True))
         
-        schedule_object = Schedule.objects.filter(isActive=True,course_ids__in=[course_id],college_ids__in=[str(request.user.id)])
+        schedule_object = Schedule.objects.filter(isActive=True, id__in=tc_schedule_ids)
         schedule_ser = ScheduleSerializer(schedule_object,many=True)
         
-        exam_set_object = ExamSet.objects.filter(isActive=True,course=course_id,college=str(request.user.id))
+        exam_set_object = ExamSet.objects.filter(isActive=True, course=course_id, college=training_center)
         exam_set_ser = ExamSetSerializer(exam_set_object,many=True)
         response_={
                     "n": 1,
@@ -1723,29 +1745,48 @@ class ViewCandidateExamQuestionSet(GenericAPIView):
         exam_set_question_objects = QuestionExamSet.objects.filter(isActive=True,id=exam_set_id).first()
         if exam_set_question_objects is not None:
             question_set_ser = QuestionExamSetSerializer(exam_set_question_objects)
-            
+            question_set_ser_data = question_set_ser.data
+
             #exam schedule
             exam_schedule_object = ScheduleExam.objects.filter(isActive=True,id=exam_schedule_id).first()
+            if exam_schedule_object is None:
+                response_={
+                            "n": 0,
+                            "msg": 'Schedule exam not found',
+                            "data":[]          
+                        }
+                if encryped_header == "1" :
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata,status=200)
+                else:
+                    return Response(response_,status=200)
+
             exam_schedule_ser = ScheduleExamSerializer(exam_schedule_object)
             exam_schedule_ser_data = exam_schedule_ser.data
             
-            if exam_schedule_ser.data['schedule_exam_date'] is not None and exam_schedule_ser.data['schedule_exam_date'] != "":
-                schedule_exam_date_convert_date =  datefilterchangeformat(exam_schedule_ser.data['schedule_exam_date'])
+            schedule_exam_date_convert_date = ""
+            if exam_schedule_ser.data.get('schedule_exam_date') is not None and exam_schedule_ser.data.get('schedule_exam_date') != "":
+                schedule_exam_date_convert_date = datefilterchangeformat(exam_schedule_ser.data['schedule_exam_date'])
             exam_schedule_ser_data.update({
                 'schedule_exam_date_convert_date':schedule_exam_date_convert_date
             })
             #exam candidate relation
             exam_candidate_relation_object = ExamCandidateSetRelation.objects.filter(isActive=True,exam_schedule_id=exam_schedule_id,exam_id=exam_id,exam_set=exam_set_id,candidate_id=candidate_id).first()
-            exam_candidate_relation_ser = ExamCandidateSetRelationSerializer(exam_candidate_relation_object)
-            exam_candidate_relation_ser_data = exam_candidate_relation_ser.data
+            if exam_candidate_relation_object is not None:
+                exam_candidate_relation_ser = ExamCandidateSetRelationSerializer(exam_candidate_relation_object)
+                exam_candidate_relation_ser_data = exam_candidate_relation_ser.data
+            else:
+                exam_candidate_relation_ser_data = {}
             
             #candidate data
             candidate_object = Candidate.objects.filter(isActive=True,id=candidate_id).first()
-            candidate_ser = CandidateSerializer(candidate_object)
-            candidate_ser_data = candidate_ser.data
+            if candidate_object is not None:
+                candidate_ser = CandidateSerializer(candidate_object)
+                candidate_ser_data = candidate_ser.data
+            else:
+                candidate_ser_data = {}
             
-            
-            question_set_ser_data = question_set_ser.data
             question_data = ""
             exam_detail_data = ""
             exam_detail_object = ExamSet.objects.filter(isActive=True,id=question_set_ser.data['exam_id']).first()
@@ -2128,10 +2169,33 @@ class ViewScheduleList(GenericAPIView):
             return error_response
         
         id = request_data.get('id')
+        if id in (None, ''):
+            response_={
+                        "n": 0,
+                        "msg": 'id not provided',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
         
         exam_object = ScheduleExam.objects.filter(id=id,isActive=True).first()
-        # paginate_object = self.paginate_queryset(exam_object)
-        # serializer =  ScheduleExamSerializer(paginate_object)
+        if exam_object is None:
+            response_={
+                        "n": 0,
+                        "msg": 'Schedule exam not found',
+                        "data":[]
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
         serializer =  ScheduleExamSerializer(exam_object)
         
         details = []
@@ -2351,17 +2415,17 @@ class GetCandidatesResults(GenericAPIView):
             for result in exam_serializer.data:
                 try:
                     exam_result_question_ser_data = ast.literal_eval(result['all_data'])
-                    if exam_result_question_ser_data['exam_schedule_data']['schedule_exam_date'] is not None and exam_result_question_ser_data['exam_schedule_data']['schedule_exam_date'] != "":
+                    if exam_result_question_ser_data.get('exam_schedule_data',{}).get('schedule_exam_date') is not None and exam_result_question_ser_data.get('exam_schedule_data',{}).get('schedule_exam_date') != "":
                         change_date_format = datefilterchangeformat(exam_result_question_ser_data['exam_schedule_data']['schedule_exam_date'])
                         
                         
                 except Exception as e:
                     exam_result_question_ser_data = {}
-                result['exam_data']=exam_result_question_ser_data['exam_detail_data']
-                result['candidate_data']=exam_result_question_ser_data['candidate_data']
-                result['exam_schedule_data']=exam_result_question_ser_data['exam_schedule_data']
+                result['exam_data']=exam_result_question_ser_data.get('exam_detail_data',{})
+                result['candidate_data']=exam_result_question_ser_data.get('candidate_data',{})
+                result['exam_schedule_data']=exam_result_question_ser_data.get('exam_schedule_data',{})
                 
-                if result['is_passed']:
+                if result.get('is_passed'):
                     result['status']='Passed'
                 else:
                     result['status']='Failed'
