@@ -159,7 +159,7 @@ class CandidateLogin(GenericAPIView):
         else:
             cd_ser = CandidateSerializer(cd_object)
 
-            if str(password) == str(cd_object.password):
+            if cd_object.check_password(password):
                 deactive_cd_token = CandidateToken.objects.filter(user_id=cd_object.id).update(isActive=False)           
                 cd_token= CandidateToken.objects.create(user_id=cd_object.id,authToken=cd_object.token)
                 response_={
@@ -246,7 +246,7 @@ class CandidateExamPortalLogin(GenericAPIView):
         else:
             cd_ser = CandidateSerializer(cd_object)
 
-            if str(password) == str(cd_object.password):
+            if cd_object.check_password(password):
                 deactive_cd_token = CandidateToken.objects.filter(user_id=cd_object.id).update(isActive=False)           
                 cd_token= CandidateToken.objects.create(user_id=cd_object.id,authToken=cd_object.token)
                 
