@@ -65,6 +65,8 @@ class Candidate(AbstractBaseUser, TrackingModel):
     address_line_one = models.TextField(null=True, blank=True)
     address_line_two = models.TextField(null=True, blank=True)
 
+
+
     department = models.CharField(max_length=255, null=True, blank=True)
     source = models.CharField(max_length=50, null=True, blank=True)
     candidate_status = models.CharField(max_length=50, null=True, blank=True, db_index=True)
@@ -76,6 +78,8 @@ class Candidate(AbstractBaseUser, TrackingModel):
     educational_certificate = models.TextField(null=True, blank=True)
     deleted_by = models.CharField(max_length=255, null=True, blank=True)
     walkin_by = models.CharField(max_length=255, null=True, blank=True)
+
+
 
     # College student fields. UUID-linked records are stored as strings.
     roll_number = models.CharField(max_length=255,null=True,blank=True,db_index=True,)

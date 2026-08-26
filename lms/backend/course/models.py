@@ -15,7 +15,7 @@ class Subject(TrackingModel):
     subject_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100, null=True, blank=True)
 
-    course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    # course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_type = models.CharField(
         max_length=30,
         choices=SUBJECT_TYPE_CHOICES,

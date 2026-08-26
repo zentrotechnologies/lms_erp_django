@@ -28,6 +28,7 @@ urlpatterns = [
 
         path('get-course-classes',v.GetCourseClases.as_view(),name='post'),
         path('get-class-semesters',v.GetClassSemesters.as_view(),name='post'),
+        path('get-course-semesters',v.GetCourseSemesters.as_view(),name='post'),
         path('subject-list-by-course-and-semester',v.SubjectListByCourseAndSemester.as_view(),name='post'),
         path('allocate-subjects-to-student',v.AllocateSubjectToStudent.as_view(),name='post'),
 
@@ -38,6 +39,10 @@ urlpatterns = [
         path('lesson-plan-filter-list',v.LessonPlanFilterList.as_view(),name='post'),
         path('get-lesson-plan-details',v.GetLessonPlanDetails.as_view(),name='post'),
         path('delete-lesson-plan',v.DeleteLessonPlan.as_view(),name='post'),
+
+        path('get-department-staff-list',v.GetDepartmentStaffList.as_view(),name='post'),
+        path('allocate-subjects-to-faculty',v.AllocateSubjectsToFaculty.as_view(),name='post'),
+        path('get-allocated-subjects-of-faculty',v.GetAllocatedSubjectsOfFaculty.as_view(),name='post'),
 
 
 ]

@@ -3896,16 +3896,7 @@ class AddAdmission(GenericAPIView):
             if request.user.is_parent_college:
                 data['college_id'] = str(request.user.id)
             else:
-                active_college=College.objects.filter(id=str(request.user.college_id),isActive=True).first()
-                if active_college is not None:
-                    data['college_id'] = active_college.id
-                else:
-                    response_ = {
-                        "n": 0,
-                        'msg': 'Please provide college id',
-                        'data': {}
-                    }
-                    return self._respond(encryped_header, response_)
+                data['college_id'] = str(request.user.college_id)
         else:
             data['college_id'] = _value('college_id')
 
