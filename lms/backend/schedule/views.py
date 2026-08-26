@@ -11,6 +11,7 @@ from adminauth.jwt import *
 from helpers.validations import *
 from rest_framework import permissions
 from course.models import *
+from course.serializers import SubjectSerializer
 from master.models import ClassGroup, AcademicYear, Department, Semester
 from master.serializers import ClassGroupSerializer
 # Create your views here.
@@ -256,22 +257,186 @@ class AddSchedule(GenericAPIView):
                     return Response(encdata,status=200)
                 else:
                     return Response(response_,status=200)
-                
-                
-                
-                
-        else:
-            response_={
-                        "n": 0,
-                        "msg": msg,
-                        "data":[]                     
-                    }
-            if encryped_header == "1" :
+
+
+
+class LectureTypeDropdown(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id not provided", "data": []}
+            if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        lecture_types = list(
+            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            .values_list('lecture_type', flat=True).distinct()
+        )
+
+        data = [{"id": i + 1, "name": lt} for i, lt in enumerate(lecture_types)]
+        response_ = {"n": 1, "msg": "Lecture type list found successfully", "data": data}
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+class SubjectDropdown(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id not provided", "data": []}
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        course_ids = list(
+            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            .values_list('course_id', flat=True).distinct()
+        )
+        if not course_ids:
+            response_ = {"n": 0, "msg": "No courses found for this template", "data": []}
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        subject_ids = list(
+            CourseSubjects.objects.filter(course_id__in=course_ids, isActive=True)
+            .values_list('subject_id', flat=True).distinct()
+        )
+        subjectlistobj = Subject.objects.filter(isActive=True, status=True, id__in=subject_ids).order_by('subject_name')
+        if subjectlistobj.exists():
+            serializer = SubjectSerializer(subjectlistobj, many=True)
+            response_ = {"n": 1, "msg": "Subject list found successfully", "data": serializer.data}
+        else:
+            response_ = {"n": 0, "msg": "Subject not found", "data": []}
+
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+class FacultyDropdown(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id not provided", "data": []}
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        raw_faculty_ids = list(
+            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            .exclude(faculty_id__isnull=True).exclude(faculty_id='')
+            .values_list('faculty_id', flat=True).distinct()
+        )
+        faculty_ids = []
+        for fid in raw_faculty_ids:
+            try:
+                faculty_ids.append(uuid.UUID(str(fid)))
+            except (AttributeError, TypeError, ValueError):
+                pass
+        faculty_objs = UserAdmin.objects.filter(id__in=faculty_ids, isActive=True).order_by('first_name', 'last_name')
+
+        data = []
+        for f in faculty_objs:
+            full_name = f"{f.first_name or ''} {f.last_name or ''}".strip()
+            data.append({
+                "id": str(f.id),
+                "name": full_name,
+                "email": f.email or "",
+                "employee_code": f.employee_code or "",
+                "department_id": f.department_id,
+            })
+
+        response_ = {"n": 1, "msg": "Faculty list found successfully", "data": data}
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
+
+class LocationDropdown(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id not provided", "data": []}
+            if encryped_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        room_numbers = list(
+            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            .exclude(room_number__isnull=True).exclude(room_number='')
+            .values_list('room_number', flat=True).distinct()
+        )
+
+        data = [{"id": i + 1, "name": rn} for i, rn in enumerate(room_numbers)]
+        response_ = {"n": 1, "msg": "Location list found successfully", "data": data}
+        if encryped_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
 
 
 class UpdateSchedule(GenericAPIView):
@@ -308,10 +473,8 @@ class UpdateSchedule(GenericAPIView):
             validation_status=False 
             
         request_data['college_ids']=college_ids
-            
-            
 
-        
+
         start_date=request_data.get('start_date')
         if start_date is None or start_date =='':
             msg="Please provide schedule start date "
