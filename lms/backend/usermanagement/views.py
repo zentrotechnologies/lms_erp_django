@@ -4,6 +4,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 import json
 import uuid
+from django.utils import timezone
 from .models import *
 from usermanagement.serializers import *
 from adminauth.serializers import *
@@ -82,7 +83,7 @@ class AddDesignation(GenericAPIView):
         if role_name in (None, ''):
             return _error_response(request, 'role_name is required.')
 
-        if Roles.objects.filter(role_code=role_code).exists():
+        if Designation.objects.filter(role_code=role_code).exists():
             return _error_response(request, 'Designation with this role_code already exists.')
 
         data = {
@@ -90,8 +91,9 @@ class AddDesignation(GenericAPIView):
             'role_name': role_name,
             'description': request_data.get('description'),
             'is_active': request_data.get('is_active', True),
+            'createdBy': str(request.user.id),
         }
-        ser = RolesSerializer(data=data)
+        ser = DesignationSerializer(data=data)
         if ser.is_valid():
             ser.save()
             response_ = {
@@ -108,8 +110,8 @@ class DesignationList(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request):
-        obj = Roles.objects.filter(is_active=True).order_by('id')
-        ser = RolesSerializer(obj, many=True)
+        obj = Designation.objects.filter(is_active=True).order_by('id')
+        ser = DesignationSerializer(obj, many=True)
         response_ = {
             "n": 1,
             'msg': 'Designation list found successfully.',
@@ -127,10 +129,10 @@ class DesignationList(GenericAPIView):
         if id in (None, ''):
             return _error_response(request, 'id is required.')
 
-        obj = Roles.objects.filter(id=id, is_active=True).first()
+        obj = Designation.objects.filter(id=id, is_active=True).first()
         if obj is None:
             return _error_response(request, 'Designation not found.')
-        ser = RolesSerializer(obj)
+        ser = DesignationSerializer(obj)
         response_ = {
             "n": 1,
             'msg': 'Designation details found.',
@@ -153,13 +155,13 @@ class UpdateDesignation(GenericAPIView):
         if id in (None, ''):
             return _error_response(request, 'id is required.')
 
-        obj = Roles.objects.filter(id=id).first()
+        obj = Designation.objects.filter(id=id).first()
         if obj is None:
             return _error_response(request, 'Designation not found.')
 
         role_code = request_data.get('role_code')
         if role_code not in (None, ''):
-            if Roles.objects.filter(role_code=role_code).exclude(id=id).exists():
+            if Designation.objects.filter(role_code=role_code).exclude(id=id).exists():
                 return _error_response(request, 'Designation with this role_code already exists.')
             obj.role_code = role_code
 
@@ -169,9 +171,11 @@ class UpdateDesignation(GenericAPIView):
             obj.description = request_data.get('description')
         if request_data.get('is_active') is not None:
             obj.is_active = bool(request_data.get('is_active'))
+        obj.updatedBy = str(request.user.id)
+        obj.updatedAt = timezone.now()
         obj.save()
 
-        ser = RolesSerializer(obj)
+        ser = DesignationSerializer(obj)
         response_ = {
             "n": 1,
             'msg': 'Designation updated successfully.',
@@ -194,7 +198,7 @@ class DeleteDesignation(GenericAPIView):
         if id in (None, ''):
             return _error_response(request, 'id is required.')
 
-        obj = Roles.objects.filter(id=id).first()
+        obj = Designation.objects.filter(id=id).first()
         if obj is None:
             return _error_response(request, 'Designation not found.')
 

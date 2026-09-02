@@ -7,6 +7,12 @@ class RolesSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Designation
+        fields = "__all__"
+
+
 class ParentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parent

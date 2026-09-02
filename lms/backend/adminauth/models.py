@@ -41,6 +41,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
 
     # Legacy college fields retained for data migration
     is_parent_college = models.BooleanField(default=False)
+    is_parent_training_center = models.BooleanField(default=False)
     parent_college = models.CharField(max_length=150, null=True, blank=True)
     no_of_classroom = models.PositiveIntegerField(default=0)
 
