@@ -15,6 +15,7 @@ from adminauth.models import *
 from adminauth.serializers import *
 from candidate.models import *
 from candidate.serializers import *
+from master.models import Department
 
 # Create your views here.
 
@@ -60,6 +61,153 @@ class StaticRoleList(GenericAPIView):
             "n": 1,
             'msg': 'Roles found successfully.',
             'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class AddDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        role_code = request_data.get('role_code')
+        role_name = request_data.get('role_name')
+        if role_code in (None, ''):
+            return _error_response(request, 'role_code is required.')
+        if role_name in (None, ''):
+            return _error_response(request, 'role_name is required.')
+
+        if Roles.objects.filter(role_code=role_code).exists():
+            return _error_response(request, 'Designation with this role_code already exists.')
+
+        data = {
+            'role_code': role_code,
+            'role_name': role_name,
+            'description': request_data.get('description'),
+            'is_active': request_data.get('is_active', True),
+        }
+        ser = RolesSerializer(data=data)
+        if ser.is_valid():
+            ser.save()
+            response_ = {
+                "n": 1,
+                'msg': 'Designation added successfully.',
+                'data': ser.data
+            }
+            return _final_response(request, response_)
+        return _error_response(request, 'Designation not added.', ser.errors)
+
+
+class DesignationList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        obj = Roles.objects.filter(is_active=True).order_by('id')
+        ser = RolesSerializer(obj, many=True)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation list found successfully.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Roles.objects.filter(id=id, is_active=True).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+        ser = RolesSerializer(obj)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation details found.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class UpdateDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Roles.objects.filter(id=id).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+
+        role_code = request_data.get('role_code')
+        if role_code not in (None, ''):
+            if Roles.objects.filter(role_code=role_code).exclude(id=id).exists():
+                return _error_response(request, 'Designation with this role_code already exists.')
+            obj.role_code = role_code
+
+        if request_data.get('role_name') not in (None, ''):
+            obj.role_name = request_data.get('role_name')
+        if request_data.get('description') is not None:
+            obj.description = request_data.get('description')
+        if request_data.get('is_active') is not None:
+            obj.is_active = bool(request_data.get('is_active'))
+        obj.save()
+
+        ser = RolesSerializer(obj)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation updated successfully.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class DeleteDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Roles.objects.filter(id=id).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+
+        check_mapping = UserAdmin.objects.filter(role_code=obj.role_code, isActive=True).first()
+        if check_mapping is not None:
+            return _error_response(request, 'This designation is mapped to a user.')
+
+        obj.is_active = False
+        obj.save()
+        response_ = {
+            "n": 1,
+            'msg': 'Designation deleted successfully.',
+            'data': {}
         }
         return _final_response(request, response_)
 
@@ -246,10 +394,20 @@ class AddUser(GenericAPIView):
         return _error_response(request, 'role_code is not valid.')
 
 
+def _enrich_useradmin_display_fields(item):
+    department_id = item.get('department_id')
+    if department_id not in (None, ""):
+        dept = Department.objects.filter(id=department_id).first()
+        item['department_name'] = dept.department_name if dept is not None else None
+    else:
+        item['department_name'] = None
+    return item
+
+
 def _user_list_data(request, request_data):
     college_id = request_data.get('college_id') or _requesting_college_id(request)
     search = request_data.get('search')
-    role_code = request_data.get('role_code')
+    role_code = request_data.get('role_code') or 'faculty'
 
     result = []
 
@@ -267,7 +425,7 @@ def _user_list_data(request, request_data):
             qs = qs.filter(**{column: college_id})
         return qs
 
-    if role_code in (None, "", 'admin', 'faculty'):
+    if role_code in ('admin', 'faculty'):
         qs = UserAdmin.objects.filter(isActive=True, role_code__in=['admin', 'faculty'])
         if role_code in ('admin', 'faculty'):
             qs = qs.filter(role_code=role_code)
@@ -280,6 +438,7 @@ def _user_list_data(request, request_data):
                 item['display_name'] = item['name']
             else:
                 item['display_name'] = ((item.get('first_name') or '') + ' ' + (item.get('last_name') or '')).strip()
+            _enrich_useradmin_display_fields(item)
             result.append(item)
 
     if role_code in (None, "", 'student'):
@@ -366,6 +525,8 @@ class UserDetails(GenericAPIView):
         if ser is None:
             return _error_response(request, 'User not found.')
         ser['role_code'] = role_code
+        if role_code in ('admin', 'faculty'):
+            _enrich_useradmin_display_fields(ser)
         return _final_response(request, {
             "n": 1,
             'msg': 'User details found successfully.',
