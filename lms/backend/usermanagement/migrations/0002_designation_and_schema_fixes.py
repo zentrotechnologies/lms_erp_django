@@ -36,6 +36,17 @@ def apply_schema_changes(apps, schema_editor):
             "ALTER COLUMN semester_ids TYPE jsonb USING semester_ids::jsonb"
         )
 
+        # 4. UserAdmin profile fields (faculty/staff) used by add-user/update-user.
+        for col, typ in (
+            ("qualification", "varchar(255)"),
+            ("category", "varchar(100)"),
+            ("caste", "varchar(100)"),
+        ):
+            cursor.execute(
+                "ALTER TABLE adminauth_useradmin "
+                f"ADD COLUMN IF NOT EXISTS {col} {typ} NULL"
+            )
+
 
 def revert(apps, schema_editor):
     pass
