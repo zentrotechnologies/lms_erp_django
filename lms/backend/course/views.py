@@ -510,6 +510,7 @@ class UpdateCourse(GenericAPIView):
                                 subjectexist.isActive=True
                                 subjectexist.save()
 
+
                 CourseClass.objects.filter(course_id=courseid,isActive=True).update(isActive=False)
                 if classlist !=[]:
                     for c in classlist:
@@ -821,7 +822,7 @@ class AddSubject(GenericAPIView):
 
         subject_object = Subject.objects.filter(
             isActive=True,
-            course_id=data["course_id"],
+            
             subject_code=data["subject_code"],
             og_code=data['og_code'],
             
@@ -864,13 +865,11 @@ class CollegeSubjectFilterList(GenericAPIView):
             return error_response
 
         subjectlistobj = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by("-createdAt")
-        course_id = request_data.get("course_id")
         subject_type = request_data.get("subject_type")
         status = request_data.get("status")
         search = request_data.get("search")
 
-        if course_id not in (None, ""):
-            subjectlistobj = subjectlistobj.filter(course_id=course_id)
+
         if subject_type not in (None, ""):
             subjectlistobj = subjectlistobj.filter(subject_type=subject_type)
         if status not in (None, ""):
@@ -934,11 +933,8 @@ class CollegeSubjectList(GenericAPIView):
             og_code=str(request.user.og_code)
         ).order_by("subject_name")
 
-        course_id = request_data.get("course_id")
         subject_type = request_data.get("subject_type")
 
-        if course_id not in (None, ""):
-            subjectlistobj = subjectlistobj.filter(course_id=course_id)
         if subject_type not in (None, ""):
             subjectlistobj = subjectlistobj.filter(subject_type=subject_type)
 
@@ -981,11 +977,9 @@ class UpdateSubject(GenericAPIView):
 
         data = _build_subject_update_data(request_data, request.user)
         subject_code = data.get("subject_code", subjectobj.subject_code)
-        course_id = data.get("course_id", subjectobj.course_id)
         if subject_code not in (None, ""):
             subject_object = Subject.objects.filter(
                 isActive=True,
-                course_id=course_id,
                 subject_code=subject_code,
                 og_code=str(request.user.og_code)
             ).exclude(id=subjectid)
