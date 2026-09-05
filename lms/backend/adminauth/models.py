@@ -66,6 +66,13 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     city = models.CharField(max_length=150, null=True, blank=True)
     pincode = models.CharField(max_length=20, null=True, blank=True)
 
+    permanent_address_line_one = models.TextField(null=True, blank=True)
+    permanent_address_line_two = models.TextField(null=True, blank=True)
+    permanent_country = models.BigIntegerField(null=True, blank=True, db_index=True)
+    permanent_state = models.CharField(max_length=150, null=True, blank=True)
+    permanent_city = models.CharField(max_length=150, null=True, blank=True)
+    permanent_pincode = models.CharField(max_length=20, null=True, blank=True)
+
     is_member = models.BooleanField(default=False)
     member_type = models.BigIntegerField(null=True, blank=True, db_index=True)
     member_of = models.CharField(max_length=150, null=True, blank=True, db_index=True)
@@ -88,6 +95,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     work_group = models.CharField(max_length=100, null=True, blank=True)
     work_category = models.CharField(max_length=100, null=True, blank=True)
     employment_type = models.CharField(max_length=50, null=True, blank=True)
+    current_status = models.CharField(max_length=50, null=True, blank=True)
     official_email = models.EmailField(_("official email address"), null=True, blank=True)
     pf_no = models.CharField(max_length=100, null=True, blank=True)
     employee_code = models.CharField(max_length=100, null=True, blank=True, unique=True)
