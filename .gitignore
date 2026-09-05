@@ -82,9 +82,7 @@ target/
 profile_default/
 ipython_config.py
 
-**/migrations/*
-*/migrations/
-backend/*/migrations/
+
 
 **/media/*
 */media/
