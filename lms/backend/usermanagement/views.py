@@ -128,6 +128,39 @@ def _valid_role(role_code):
     return Roles.objects.filter(role_code=role_code, is_active=True).first()
 
 
+MASTER_ID_FIELDS = {
+    'designation': Designation,
+    'department_id': Department,
+    'city': Cities,
+    'state': State,
+}
+
+
+def _as_int_or_none(value):
+    if value is None or str(value).strip() == '':
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _validate_master_id_fields(request_data):
+    errors = []
+    for field_name, model in MASTER_ID_FIELDS.items():
+        value = request_data.get(field_name)
+        if value is None or str(value).strip() == '':
+            continue
+        try:
+            master_id = int(value)
+        except (TypeError, ValueError):
+            errors.append({'field': field_name, 'message': '%s must be a valid id (integer).' % field_name})
+            continue
+        if not model.objects.filter(id=master_id).exists():
+            errors.append({'field': field_name, 'message': '%s with id %s not found.' % (field_name, master_id)})
+    return errors
+
+
 class StaticRoleList(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -323,14 +356,14 @@ class AddUser(GenericAPIView):
             data['middle_name'] = request_data.get('middle_name')
             data['last_name'] = request_data.get('last_name')
             data['name'] = request_data.get('name')
-            data['designation'] = request_data.get('designation')
+            data['designation'] = _as_int_or_none(request_data.get('designation'))
             data['mobilenumber'] = request_data.get('mobilenumber')
             data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber')
             data['email'] = str(request_data.get('email') or '').lower()
             data['gender'] = request_data.get('gender')
             data['dob'] = request_data.get('dob')
-            data['city'] = request_data.get('city')
-            data['state'] = request_data.get('state')
+            data['city'] = _as_int_or_none(request_data.get('city'))
+            data['state'] = _as_int_or_none(request_data.get('state'))
             data['country'] = request_data.get('country')
             data['pincode'] = request_data.get('pincode')
             data['address_line_one'] = request_data.get('address_line_one')
@@ -342,7 +375,7 @@ class AddUser(GenericAPIView):
             data['permanent_country'] = request_data.get('permanent_country')
             data['permanent_pincode'] = request_data.get('permanent_pincode')
             data['joining_date'] = request_data.get('joining_date')
-            data['department_id'] = request_data.get('department_id')
+            data['department_id'] = _as_int_or_none(request_data.get('department_id'))
             data['marital_status'] = request_data.get('marital_status')
             data['blood_group'] = request_data.get('blood_group')
             data['religion'] = request_data.get('religion')
@@ -392,6 +425,10 @@ class AddUser(GenericAPIView):
             email_object = UserAdmin.objects.filter(isActive=True, email=data['email']).first()
             if email_object is not None:
                 return _error_response(request, 'Email already exists')
+
+            master_errors = _validate_master_id_fields(request_data)
+            if master_errors:
+                return _error_response(request, 'Master id validation failed.', master_errors)
 
             doc_errors = _validate_user_documents(request)
             if doc_errors:
@@ -510,6 +547,27 @@ def _enrich_useradmin_display_fields(item):
         item['department_name'] = dept.department_name if dept is not None else None
     else:
         item['department_name'] = None
+
+    designation_id = item.get('designation')
+    if designation_id not in (None, ""):
+        designation = Designation.objects.filter(id=designation_id).first()
+        item['designation_name'] = designation.role_name if designation is not None else None
+    else:
+        item['designation_name'] = None
+
+    city_id = item.get('city')
+    if city_id not in (None, ""):
+        city_obj = Cities.objects.filter(id=city_id).first()
+        item['city_name'] = city_obj.name if city_obj is not None else None
+    else:
+        item['city_name'] = None
+
+    state_id = item.get('state')
+    if state_id not in (None, ""):
+        state_obj = State.objects.filter(id=state_id).first()
+        item['state_name'] = state_obj.name if state_obj is not None else None
+    else:
+        item['state_name'] = None
     return item
 
 
@@ -679,6 +737,12 @@ class UpdateUser(GenericAPIView):
         if role_code in ('admin', 'faculty'):
             if 'college_id' in data and data['college_id'] not in (None, ""):
                 data['college_id'] = int(data['college_id'])
+            master_errors = _validate_master_id_fields(data)
+            if master_errors:
+                return _error_response(request, 'Master id validation failed.', master_errors)
+            for field_name in MASTER_ID_FIELDS:
+                if field_name in data:
+                    data[field_name] = _as_int_or_none(data[field_name])
             obj = UserAdmin.objects.filter(id=user_id, isActive=True).first()
             if obj is None:
                 return _error_response(request, 'User not found.')
@@ -1209,7 +1273,7 @@ class AddMember(GenericAPIView):
             data['first_name'] = request_data.get('first_name')
             data['middle_name'] = request_data.get('middle_name')
             data['last_name'] = request_data.get('last_name')
-            data['designation'] = request_data.get('designation')
+            data['designation'] = _as_int_or_none(request_data.get('designation'))
             data['mobilenumber'] = request_data.get('mobilenumber')
             data['email'] = str(request_data.get('email')).lower()
             data['password'] = make_password(request_data.get('password'))
@@ -1217,9 +1281,9 @@ class AddMember(GenericAPIView):
             data['reporting_to'] = request_data.get('reporting_to')
             data['gender'] = request_data.get('gender')
             data['dob'] = request_data.get('dob')
-            data['city'] = request_data.get('city')
+            data['city'] = _as_int_or_none(request_data.get('city'))
             data['country'] = request_data.get('country')
-            data['state'] = request_data.get('state')
+            data['state'] = _as_int_or_none(request_data.get('state'))
             data['pincode'] = request_data.get('pincode')
             data['joining_date'] = request_data.get('joining_date')
             data['is_member'] = True
