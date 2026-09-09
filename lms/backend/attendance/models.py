@@ -62,7 +62,51 @@ class LeaveApplication(TrackingModel):
     end_date = models.DateField(null=True, blank=True)
     number_of_days = models.DecimalField(max_digits=5, decimal_places=1)
     reason = models.TextField()
+    day_type = models.CharField(max_length=20, default="Full Day")
+    document = models.CharField(max_length=500, null=True, blank=True)
+    application_date = models.DateField(null=True, blank=True)
+    hod_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    hr_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    admin_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     status = models.CharField(max_length=20, default="PENDING", db_index=True)
+    approval_level = models.CharField(max_length=20, default="HOD")
+    hod_status = models.CharField(max_length=20, default="PENDING")
+    hr_status = models.CharField(max_length=20, default="PENDING")
     reviewed_by = models.CharField(max_length=255, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_remarks = models.TextField(null=True, blank=True)
+
+
+class LeaveAdjacentLecture(TrackingModel):
+    leave_application_id = models.CharField(max_length=255, db_index=True)
+    lecture_date = models.DateField(db_index=True)
+    period_number = models.PositiveSmallIntegerField()
+    subject_id = models.BigIntegerField(null=True, blank=True)
+    slot_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    primary_faculty_id = models.CharField(max_length=255, db_index=True)
+    adjacent_faculty_id = models.CharField(max_length=255, db_index=True)
+    status = models.CharField(max_length=20, default='PENDING')
+
+    class Meta:
+        db_table = 'attendance_leave_adjacent_lecture'
+
+
+class LeaveType(TrackingModel):
+    leave_type_name = models.CharField(max_length=255, unique=True, db_index=True)
+    units = models.CharField(max_length=50, default="Days")
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'attendance_leave_type'
+
+
+class LeaveTypeAllotment(TrackingModel):
+    leave_type_id = models.BigIntegerField(db_index=True)
+    designation_id = models.BigIntegerField(db_index=True)
+    academic_year_id = models.BigIntegerField(db_index=True)
+    allowed = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    opening_balance = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'attendance_leave_type_allotment'
+        unique_together = ('leave_type_id', 'designation_id', 'academic_year_id')

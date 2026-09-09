@@ -116,7 +116,8 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     @property
     def token(self):
         return jwt.encode(
-            {"id": self.id.hex, "createdAt": timezone.now().isoformat()},
+            {"id": self.id.hex, "createdAt": timezone.now().isoformat(),
+             "designation": self.designation},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
