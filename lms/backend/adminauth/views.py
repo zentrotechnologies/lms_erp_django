@@ -1613,9 +1613,9 @@ class AddFaculty(GenericAPIView):
         data['user_type'] = 5
         data['role'] = 5
         data['og_code'] = str(request.user.og_code)
-        data['college_id'] =str(request.user.id)
+        data['college_id'] = str(request.user.id)
         data['createdBy'] = str(request.user.id)
-        data['password'] =make_password('Default@123')
+        data['password'] = make_password('Default@123')
         userid = request.user.id
         
         adminobj = UserAdmin.objects.filter(id=userid).first()
