@@ -179,8 +179,8 @@ class TimetableTemplateListSerializer(serializers.ModelSerializer):
     def get_semester(self, obj):
         """Get semester name from ClassGroup -> Semester"""
         class_group = self.context.get('class_group_map', {}).get(obj.class_group_id)
-        if class_group and class_group.semester_id:
-            semester = self.context.get('semester_map', {}).get(class_group.semester_id)
+        if class_group and class_group.semester_ids:
+            semester = self.context.get('semester_map', {}).get(int(class_group.semester_ids[0]))
             if semester:
                 return semester.semester_name
         return ""

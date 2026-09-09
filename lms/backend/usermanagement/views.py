@@ -4,6 +4,9 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 import json
 import uuid
+import os
+from django.utils import timezone
+from django.conf import settings
 from .models import *
 from usermanagement.serializers import *
 from adminauth.serializers import *
@@ -13,8 +16,10 @@ from adminauth.jwt import UserAdminJWTAuthentication
 from django.contrib.auth.hashers import make_password,check_password
 from adminauth.models import *
 from adminauth.serializers import *
+from adminauth.views import save_file
 from candidate.models import *
 from candidate.serializers import *
+from master.models import Department
 
 # Create your views here.
 
@@ -37,6 +42,79 @@ def _error_response(request, msg, data=None, n=0):
 def _requesting_admin(request):
     return UserAdmin.objects.filter(id=request.user.id, isActive=True).first()
 
+
+def _safe_getlist(data, key):
+    if hasattr(data, 'getlist'):
+        return data.getlist(key)
+    value = data.get(key)
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return [value]
+
+
+USER_DOCUMENT_TYPES = {
+    'aadhar card': 'Aadhar Card',
+    'pan card': 'PAN Card',
+    'passport': 'Passport',
+}
+
+
+def _validate_user_documents(request):
+    errors = []
+    doc_names = _safe_getlist(request.data, 'doc_name')
+    files = request.FILES.getlist('document_file_upload')
+
+    if not doc_names and not files:
+        return errors
+
+    lowered = [str(name).strip().lower() for name in doc_names if str(name).strip()]
+    valid_types = set(USER_DOCUMENT_TYPES.keys())
+
+    if len(lowered) != len(files):
+        errors.append('Each document type must have an attachment file.')
+
+    provided = set(lowered)
+    if provided - valid_types:
+        errors.append('Allowed document types are: Aadhar Card, PAN Card, Passport.')
+    if len(lowered) != len(set(lowered)):
+        errors.append('Duplicate document types are not allowed.')
+
+    missing = valid_types - provided
+    if missing:
+        errors.append(
+            'Required documents missing: ' + ', '.join(USER_DOCUMENT_TYPES[key] for key in sorted(missing))
+        )
+    return errors
+
+
+def _attach_user_documents(request, user_id):
+    doc_names = _safe_getlist(request.data, 'doc_name')
+    doc_ids = _safe_getlist(request.data, 'doc_id')
+    files = request.FILES.getlist('document_file_upload')
+    if not files:
+        return []
+    folder_path = os.path.join(settings.MEDIA_ROOT, 'media', 'Documents', 'Faculty')
+    attachments = []
+    for index, uploaded_file in enumerate(files):
+        raw_name = doc_names[index] if index < len(doc_names) else None
+        doc_name = USER_DOCUMENT_TYPES.get(str(raw_name).strip().lower(), raw_name)
+        doc_id = doc_ids[index] if index < len(doc_ids) else None
+        file_url = save_file(folder_path, uploaded_file, request)
+        UserDocuments.objects.create(
+            user_id=str(user_id),
+            document_id=doc_id,
+            document_name=doc_name,
+            document_url=file_url,
+        )
+        attachments.append({
+            'doc_name': doc_name,
+            'file_name': uploaded_file.name,
+            'document_url': file_url,
+        })
+    return attachments
+
 def _requesting_college_id(request):
     admin_obj = _requesting_admin(request)
     if admin_obj is not None and admin_obj.college_id is not None:
@@ -46,7 +124,41 @@ def _requesting_college_id(request):
 def _valid_role(role_code):
     if role_code in (None, ""):
         return None
+    role_code = str(role_code).strip()
     return Roles.objects.filter(role_code=role_code, is_active=True).first()
+
+
+MASTER_ID_FIELDS = {
+    'designation': Designation,
+    'department_id': Department,
+    'city': Cities,
+    'state': State,
+}
+
+
+def _as_int_or_none(value):
+    if value is None or str(value).strip() == '':
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _validate_master_id_fields(request_data):
+    errors = []
+    for field_name, model in MASTER_ID_FIELDS.items():
+        value = request_data.get(field_name)
+        if value is None or str(value).strip() == '':
+            continue
+        try:
+            master_id = int(value)
+        except (TypeError, ValueError):
+            errors.append({'field': field_name, 'message': '%s must be a valid id (integer).' % field_name})
+            continue
+        if not model.objects.filter(id=master_id).exists():
+            errors.append({'field': field_name, 'message': '%s with id %s not found.' % (field_name, master_id)})
+    return errors
 
 
 class StaticRoleList(GenericAPIView):
@@ -60,6 +172,156 @@ class StaticRoleList(GenericAPIView):
             "n": 1,
             'msg': 'Roles found successfully.',
             'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class AddDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        role_code = request_data.get('role_code')
+        role_name = request_data.get('role_name')
+        if role_code in (None, ''):
+            return _error_response(request, 'role_code is required.')
+        if role_name in (None, ''):
+            return _error_response(request, 'role_name is required.')
+
+        if Designation.objects.filter(role_code=role_code).exists():
+            return _error_response(request, 'Designation with this role_code already exists.')
+
+        data = {
+            'role_code': role_code,
+            'role_name': role_name,
+            'description': request_data.get('description'),
+            'is_active': request_data.get('is_active', True),
+            'createdBy': str(request.user.id),
+        }
+        ser = DesignationSerializer(data=data)
+        if ser.is_valid():
+            ser.save()
+            response_ = {
+                "n": 1,
+                'msg': 'Designation added successfully.',
+                'data': ser.data
+            }
+            return _final_response(request, response_)
+        return _error_response(request, 'Designation not added.', ser.errors)
+
+
+class DesignationList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        obj = Designation.objects.filter(is_active=True).order_by('id')
+        ser = DesignationSerializer(obj, many=True)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation list found successfully.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Designation.objects.filter(id=id, is_active=True).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+        ser = DesignationSerializer(obj)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation details found.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class UpdateDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Designation.objects.filter(id=id).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+
+        role_code = request_data.get('role_code')
+        if role_code not in (None, ''):
+            if Designation.objects.filter(role_code=role_code).exclude(id=id).exists():
+                return _error_response(request, 'Designation with this role_code already exists.')
+            obj.role_code = role_code
+
+        if request_data.get('role_name') not in (None, ''):
+            obj.role_name = request_data.get('role_name')
+        if request_data.get('description') is not None:
+            obj.description = request_data.get('description')
+        if request_data.get('is_active') is not None:
+            obj.is_active = bool(request_data.get('is_active'))
+        obj.updatedBy = str(request.user.id)
+        obj.updatedAt = timezone.now()
+        obj.save()
+
+        ser = DesignationSerializer(obj)
+        response_ = {
+            "n": 1,
+            'msg': 'Designation updated successfully.',
+            'data': ser.data
+        }
+        return _final_response(request, response_)
+
+
+class DeleteDesignation(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = _encrypted_header(request)
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        id = request_data.get('id')
+        if id in (None, ''):
+            return _error_response(request, 'id is required.')
+
+        obj = Designation.objects.filter(id=id).first()
+        if obj is None:
+            return _error_response(request, 'Designation not found.')
+
+        check_mapping = UserAdmin.objects.filter(role_code=obj.role_code, isActive=True).first()
+        if check_mapping is not None:
+            return _error_response(request, 'This designation is mapped to a user.')
+
+        obj.is_active = False
+        obj.save()
+        response_ = {
+            "n": 1,
+            'msg': 'Designation deleted successfully.',
+            'data': {}
         }
         return _final_response(request, response_)
 
@@ -78,6 +340,8 @@ class AddUser(GenericAPIView):
         role_obj = _valid_role(role_code)
         if role_obj is None:
             return _error_response(request, 'role_code is required or not valid.')
+        if role_code is not None:
+            role_code = str(role_code).strip()
 
         admin_obj = _requesting_admin(request)
         if admin_obj is None:
@@ -92,24 +356,44 @@ class AddUser(GenericAPIView):
             data['middle_name'] = request_data.get('middle_name')
             data['last_name'] = request_data.get('last_name')
             data['name'] = request_data.get('name')
-            data['designation'] = request_data.get('designation')
+            data['designation'] = _as_int_or_none(request_data.get('designation'))
             data['mobilenumber'] = request_data.get('mobilenumber')
             data['alternate_mobilenumber'] = request_data.get('alternate_mobilenumber')
             data['email'] = str(request_data.get('email') or '').lower()
             data['gender'] = request_data.get('gender')
             data['dob'] = request_data.get('dob')
-            data['city'] = request_data.get('city')
-            data['state'] = request_data.get('state')
+            data['city'] = _as_int_or_none(request_data.get('city'))
+            data['state'] = _as_int_or_none(request_data.get('state'))
             data['country'] = request_data.get('country')
             data['pincode'] = request_data.get('pincode')
             data['address_line_one'] = request_data.get('address_line_one')
             data['address_line_two'] = request_data.get('address_line_two')
+            data['permanent_address_line_one'] = request_data.get('permanent_address_line_one')
+            data['permanent_address_line_two'] = request_data.get('permanent_address_line_two')
+            data['permanent_city'] = request_data.get('permanent_city')
+            data['permanent_state'] = request_data.get('permanent_state')
+            data['permanent_country'] = request_data.get('permanent_country')
+            data['permanent_pincode'] = request_data.get('permanent_pincode')
             data['joining_date'] = request_data.get('joining_date')
-            data['department_id'] = request_data.get('department_id')
+            data['department_id'] = _as_int_or_none(request_data.get('department_id'))
+            data['marital_status'] = request_data.get('marital_status')
+            data['blood_group'] = request_data.get('blood_group')
+            data['religion'] = request_data.get('religion')
+            data['qualification'] = request_data.get('qualification')
+            data['category'] = request_data.get('category')
+            data['caste'] = request_data.get('caste')
             data['faculty_sub_role'] = request_data.get('faculty_sub_role')
             data['employee_code'] = request_data.get('employee_code')
             data['employment_type'] = request_data.get('employment_type')
+            data['current_status'] = request_data.get('current_status')
             data['official_email'] = request_data.get('official_email')
+            data['work_group'] = request_data.get('work_group')
+            data['work_category'] = request_data.get('work_category')
+            data['pf_no'] = request_data.get('pf_no')
+            data['pan_number'] = request_data.get('pan_number')
+            data['adhar_number'] = request_data.get('adhar_number')
+            data['bank_name'] = request_data.get('bank_name')
+            data['account_number'] = request_data.get('account_number')
             data['years_of_experience'] = request_data.get('years_of_experience')
             data['specialization'] = request_data.get('specialization')
             data['reporting_to'] = request_data.get('reporting_to')
@@ -142,13 +426,23 @@ class AddUser(GenericAPIView):
             if email_object is not None:
                 return _error_response(request, 'Email already exists')
 
+            master_errors = _validate_master_id_fields(request_data)
+            if master_errors:
+                return _error_response(request, 'Master id validation failed.', master_errors)
+
+            doc_errors = _validate_user_documents(request)
+            if doc_errors:
+                return _error_response(request, 'Document validation failed.', doc_errors)
+
             serializer = UserAdminSerializer(data=data)
             if serializer.is_valid():
-                serializer.save()
+                user_obj = serializer.save()
+                response_data = serializer.data.copy()
+                response_data['documents'] = _attach_user_documents(request, user_obj.id)
                 return _final_response(request, {
                     "n": 1,
                     'msg': 'User added successfully.',
-                    'data': serializer.data
+                    'data': response_data
                 })
             return _error_response(request, 'User not added.', serializer.errors)
 
@@ -246,10 +540,41 @@ class AddUser(GenericAPIView):
         return _error_response(request, 'role_code is not valid.')
 
 
+def _enrich_useradmin_display_fields(item):
+    department_id = item.get('department_id')
+    if department_id not in (None, ""):
+        dept = Department.objects.filter(id=department_id).first()
+        item['department_name'] = dept.department_name if dept is not None else None
+    else:
+        item['department_name'] = None
+
+    designation_id = item.get('designation')
+    if designation_id not in (None, ""):
+        designation = Designation.objects.filter(id=designation_id).first()
+        item['designation_name'] = designation.role_name if designation is not None else None
+    else:
+        item['designation_name'] = None
+
+    city_id = item.get('city')
+    if city_id not in (None, ""):
+        city_obj = Cities.objects.filter(id=city_id).first()
+        item['city_name'] = city_obj.name if city_obj is not None else None
+    else:
+        item['city_name'] = None
+
+    state_id = item.get('state')
+    if state_id not in (None, ""):
+        state_obj = State.objects.filter(id=state_id).first()
+        item['state_name'] = state_obj.name if state_obj is not None else None
+    else:
+        item['state_name'] = None
+    return item
+
+
 def _user_list_data(request, request_data):
     college_id = request_data.get('college_id') or _requesting_college_id(request)
     search = request_data.get('search')
-    role_code = request_data.get('role_code')
+    role_code = request_data.get('role_code') or 'faculty'
 
     result = []
 
@@ -267,7 +592,7 @@ def _user_list_data(request, request_data):
             qs = qs.filter(**{column: college_id})
         return qs
 
-    if role_code in (None, "", 'admin', 'faculty'):
+    if role_code in ('admin', 'faculty'):
         qs = UserAdmin.objects.filter(isActive=True, role_code__in=['admin', 'faculty'])
         if role_code in ('admin', 'faculty'):
             qs = qs.filter(role_code=role_code)
@@ -280,6 +605,7 @@ def _user_list_data(request, request_data):
                 item['display_name'] = item['name']
             else:
                 item['display_name'] = ((item.get('first_name') or '') + ' ' + (item.get('last_name') or '')).strip()
+            _enrich_useradmin_display_fields(item)
             result.append(item)
 
     if role_code in (None, "", 'student'):
@@ -366,11 +692,19 @@ class UserDetails(GenericAPIView):
         if ser is None:
             return _error_response(request, 'User not found.')
         ser['role_code'] = role_code
+        if role_code in ('admin', 'faculty'):
+            _enrich_useradmin_display_fields(ser)
         return _final_response(request, {
             "n": 1,
             'msg': 'User details found successfully.',
             'data': ser
         })
+
+
+def _flatten_request_data(request_data):
+    if hasattr(request_data, 'getlist'):
+        return {key: request_data[key] for key in request_data.keys()}
+    return request_data
 
 
 class UpdateUser(GenericAPIView):
@@ -390,9 +724,11 @@ class UpdateUser(GenericAPIView):
         if role_code in (None, ""):
             return _error_response(request, 'role_code is required.')
 
-        data = dict(request_data)
+        data = _flatten_request_data(request_data)
         data.pop('id', None)
         data.pop('role_code', None)
+        data.pop('doc_name', None)
+        data.pop('doc_id', None)
 
         password = data.pop('password', None)
         if password not in (None, ""):
@@ -401,6 +737,12 @@ class UpdateUser(GenericAPIView):
         if role_code in ('admin', 'faculty'):
             if 'college_id' in data and data['college_id'] not in (None, ""):
                 data['college_id'] = int(data['college_id'])
+            master_errors = _validate_master_id_fields(data)
+            if master_errors:
+                return _error_response(request, 'Master id validation failed.', master_errors)
+            for field_name in MASTER_ID_FIELDS:
+                if field_name in data:
+                    data[field_name] = _as_int_or_none(data[field_name])
             obj = UserAdmin.objects.filter(id=user_id, isActive=True).first()
             if obj is None:
                 return _error_response(request, 'User not found.')
@@ -418,12 +760,18 @@ class UpdateUser(GenericAPIView):
         else:
             return _error_response(request, 'role_code is not valid.')
 
+        doc_errors = _validate_user_documents(request)
+        if doc_errors:
+            return _error_response(request, 'Document validation failed.', doc_errors)
+
         if serializer.is_valid():
             serializer.save()
+            response_data = serializer.data.copy()
+            response_data['documents'] = _attach_user_documents(request, obj.id)
             return _final_response(request, {
                 "n": 1,
                 'msg': 'User updated successfully.',
-                'data': serializer.data
+                'data': response_data
             })
         return _error_response(request, 'User not updated.', serializer.errors)
 
@@ -925,7 +1273,7 @@ class AddMember(GenericAPIView):
             data['first_name'] = request_data.get('first_name')
             data['middle_name'] = request_data.get('middle_name')
             data['last_name'] = request_data.get('last_name')
-            data['designation'] = request_data.get('designation')
+            data['designation'] = _as_int_or_none(request_data.get('designation'))
             data['mobilenumber'] = request_data.get('mobilenumber')
             data['email'] = str(request_data.get('email')).lower()
             data['password'] = make_password(request_data.get('password'))
@@ -933,9 +1281,9 @@ class AddMember(GenericAPIView):
             data['reporting_to'] = request_data.get('reporting_to')
             data['gender'] = request_data.get('gender')
             data['dob'] = request_data.get('dob')
-            data['city'] = request_data.get('city')
+            data['city'] = _as_int_or_none(request_data.get('city'))
             data['country'] = request_data.get('country')
-            data['state'] = request_data.get('state')
+            data['state'] = _as_int_or_none(request_data.get('state'))
             data['pincode'] = request_data.get('pincode')
             data['joining_date'] = request_data.get('joining_date')
             data['is_member'] = True

@@ -174,11 +174,15 @@ class CollegeCourseFilterList(GenericAPIView):
         if error_response:
             return error_response
         course_status = request_data.get('course_status')
-        if course_status is not None and course_status != '':
-            courselistobj = Course.objects.filter(course_status__iexact=course_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
+        is_active = request_data.get('is_active')
+        filter_kwargs = {'og_code': str(request.user.og_code)}
+        if is_active is not None:
+            filter_kwargs['isActive'] = is_active in (True, 'true', 'True', 1, '1')
         else:
-            courselistobj = Course.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
-
+            filter_kwargs['isActive'] = True
+        if course_status is not None and course_status != '':
+            filter_kwargs['course_status__iexact'] = course_status
+        courselistobj = Course.objects.filter(**filter_kwargs).order_by('-createdAt')
 
         if courselistobj.exists():
 

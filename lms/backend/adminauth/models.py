@@ -41,6 +41,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
 
     # Legacy college fields retained for data migration
     is_parent_college = models.BooleanField(default=False)
+    is_parent_training_center = models.BooleanField(default=False)
     parent_college = models.CharField(max_length=150, null=True, blank=True)
     no_of_classroom = models.PositiveIntegerField(default=0)
 
@@ -48,7 +49,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     first_name = models.CharField(max_length=255, null=True, blank=True)
     middle_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
-    designation = models.CharField(max_length=255, null=True, blank=True)
+    designation = models.BigIntegerField(null=True, blank=True)
     reporting_to = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     dob = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=30, null=True, blank=True)
@@ -61,9 +62,16 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     address_line_one = models.TextField(null=True, blank=True)
     address_line_two = models.TextField(null=True, blank=True)
     country = models.BigIntegerField(null=True, blank=True, db_index=True)
-    state = models.CharField(max_length=150, null=True, blank=True)
-    city = models.CharField(max_length=150, null=True, blank=True)
+    state = models.BigIntegerField(null=True, blank=True, db_index=True)
+    city = models.BigIntegerField(null=True, blank=True, db_index=True)
     pincode = models.CharField(max_length=20, null=True, blank=True)
+
+    permanent_address_line_one = models.TextField(null=True, blank=True)
+    permanent_address_line_two = models.TextField(null=True, blank=True)
+    permanent_country = models.BigIntegerField(null=True, blank=True, db_index=True)
+    permanent_state = models.CharField(max_length=150, null=True, blank=True)
+    permanent_city = models.CharField(max_length=150, null=True, blank=True)
+    permanent_pincode = models.CharField(max_length=20, null=True, blank=True)
 
     is_member = models.BooleanField(default=False)
     member_type = models.BigIntegerField(null=True, blank=True, db_index=True)
@@ -76,6 +84,9 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     marital_status = models.CharField(max_length=100, null=True, blank=True)
     blood_group = models.CharField(max_length=100, null=True, blank=True)
     religion  = models.CharField(max_length=250, null=True, blank=True)
+    qualification = models.CharField(max_length=255, null=True, blank=True)
+    category = models.CharField(max_length=100, null=True, blank=True)
+    caste = models.CharField(max_length=100, null=True, blank=True)
     pan_number  = models.CharField(max_length=250, null=True, blank=True)
     adhar_number  = models.CharField(max_length=250, null=True, blank=True)
     faculty_sub_role = models.CharField(max_length=20, choices=FACULTY_SUB_ROLE_CHOICES, null=True, blank=True, db_index=True)
@@ -84,6 +95,7 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     work_group = models.CharField(max_length=100, null=True, blank=True)
     work_category = models.CharField(max_length=100, null=True, blank=True)
     employment_type = models.CharField(max_length=50, null=True, blank=True)
+    current_status = models.CharField(max_length=50, null=True, blank=True)
     official_email = models.EmailField(_("official email address"), null=True, blank=True)
     pf_no = models.CharField(max_length=100, null=True, blank=True)
     employee_code = models.CharField(max_length=100, null=True, blank=True, unique=True)
@@ -104,7 +116,8 @@ class UserAdmin(AbstractBaseUser, TrackingModel):
     @property
     def token(self):
         return jwt.encode(
-            {"id": self.id.hex, "createdAt": timezone.now().isoformat()},
+            {"id": self.id.hex, "createdAt": timezone.now().isoformat(),
+             "designation": self.designation},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

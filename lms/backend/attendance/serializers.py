@@ -6,3 +6,21 @@ class CandidateAttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateAttendance
         fields ="__all__"
+
+
+class LeaveApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveApplication
+        fields = "__all__"
+
+
+class LeaveTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveType
+        fields = "__all__"
+
+
+class LeaveTypeAllotmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveTypeAllotment
+        fields = "__all__"

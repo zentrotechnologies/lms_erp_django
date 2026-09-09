@@ -39,5 +39,10 @@ urlpatterns = [
     path('get-schedule-candidates-attendance',v.GetScheduleCandidatesAttendance.as_view(),name='get-schedule-candidates-attendance'),
     path('class-list-by-course',v.ClassListByCourse.as_view(),name='post'),
 
+    path('lecture-type-dropdown',v.LectureTypeDropdown.as_view(),name='lecture-type-dropdown'),
+    path('subject-dropdown',v.SubjectDropdown.as_view(),name='subject-dropdown'),
+    path('faculty-dropdown',v.FacultyDropdown.as_view(),name='faculty-dropdown'),
+    path('location-dropdown',v.LocationDropdown.as_view(),name='location-dropdown'),
+
 
 ]

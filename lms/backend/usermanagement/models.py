@@ -22,6 +22,24 @@ class Roles(models.Model):
         return self.role_name
 
 
+class Designation(models.Model):
+    role_code = models.CharField(max_length=50, unique=True, db_index=True)
+    role_name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(null=True)
+    createdBy = models.CharField(max_length=255, null=True, blank=True)
+    updatedBy = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = "usermanagement_designation"
+        ordering = ("id",)
+
+    def __str__(self):
+        return self.role_name
+
+
 class ParentManager(UserManager):
     def _create_user(self, email, password, **extra_fields):
         if not email:

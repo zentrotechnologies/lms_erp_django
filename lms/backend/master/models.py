@@ -198,3 +198,4 @@ class Vessel(TrackingModel):
 
 class EducationalQualifications(TrackingModel):
     qualification_name = models.CharField(max_length=555, null=True, blank=True)
+    status = models.BooleanField(default=True)
