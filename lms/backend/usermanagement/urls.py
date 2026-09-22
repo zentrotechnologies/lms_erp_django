@@ -19,7 +19,7 @@ urlpatterns = [
     path('update-member',views.UpdateMember.as_view(), name='post'),
 
     # static roles + unified user management
-    path('designations',views.StaticRoleList.as_view(), name='get'),
+    path('designations',views.DesignationList.as_view(), name='get'),
     path('add-user',views.AddUser.as_view(), name='post'),
     path('user-list',views.UserList.as_view(), name='get'),
     path('user-details',views.UserDetails.as_view(), name='get'),
