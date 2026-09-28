@@ -48,8 +48,23 @@ class FacultyAttendance(TrackingModel):
     attendance_date = models.DateField(db_index=True,null=True, blank=True)
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
-    attendance_status = models.CharField(max_length=20, db_index=True)
+    total_hours = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    is_late = models.BooleanField(default=False)
+    is_early = models.BooleanField(default=False)
+    day_status = models.CharField(max_length=20, default='PRESENT', db_index=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('faculty_id', 'attendance_date')
+
+
+class AttendanceHoliday(TrackingModel):
+    holiday_date = models.DateField(unique=True, db_index=True)
+    name = models.CharField(max_length=150)
+
+    class Meta:
+        db_table = 'attendance_holiday'
+        ordering = ('holiday_date',)
 
 
 
