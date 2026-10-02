@@ -464,9 +464,11 @@ class UpdateCourse(GenericAPIView):
             classlist = request_data.get('class_list')
         else:
             classlist = []
+
         data['category_id'] = request_data.get('category_id')
         data['sub_category_id'] = request_data.get('sub_category_id')
         semister_count=0
+        print("classlist",classlist)
         if classlist !=[]:
             for c in classlist:
                 if c['class_id'] != '':
@@ -521,10 +523,16 @@ class UpdateCourse(GenericAPIView):
                         if c['class_id'] != '':
                             classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id']).first()
                             if classexist is None:
+                                print("1")
                                 CourseClass.objects.create(course_id=courseid,class_id=c['class_id'])
                             else:
+                                print("2",classexist)
+
                                 classexist.isActive=True
                                 classexist.save()
+
+
+
 
                 response_={
                             "n": 1,
@@ -666,9 +674,12 @@ class getCoursedetails(GenericAPIView):
 
 
                 class_ids = list(CourseClass.objects.filter(course_id=courseid,isActive=True).values_list('class_id',flat=True))
+                print("class_ids",class_ids,courseid)
                 class_obj=ClassGroup.objects.filter(id__in=class_ids,isActive=True)
+                print("class_obj",class_obj)
                 if class_obj.exists():
                     classser = ClassGroupSerializer(class_obj,many=True)
+                    print("classser.data",classser.data)
                     serializer_data.update({
                         'classs_list':classser.data
                     })
@@ -2074,8 +2085,19 @@ class LessonPlanFilterList(GenericAPIView):
             planned_lectures = summary["planned_lectures"] or obj.total_planned_lectures or 0
             completed_lectures = summary["completed_lectures"]
             progress_percentage = 0
+
+            
             if planned_lectures:
                 progress_percentage = round((completed_lectures / planned_lectures) * 100, 2)
+            if obj.semester_id in [1,2]:
+                class_name='FY'
+            elif obj.semester_id in [3,4]:
+                class_name='SY'
+            elif obj.semester_id in [5,6]:
+                class_name='TY'
+            else :
+                class_name='NA'
+
 
             data.append({
                 "id": obj.id,
@@ -2083,6 +2105,7 @@ class LessonPlanFilterList(GenericAPIView):
                 "academic_year_name": academic_year_map.get(obj.academic_year_id, ""),
                 "course_id": obj.course_id,
                 "course_name": course_map.get(obj.course_id, ""),
+                "class_name":class_name,
                 "semester_id": obj.semester_id,
                 "semester_name": semester_map.get(obj.semester_id, ""),
                 "subject_id": obj.subject_id,
@@ -2299,7 +2322,6 @@ class DeleteLessonPlan(GenericAPIView):
 class GetDepartmentStaffList(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
-
     pagination_class = CustomPagination
 
     def post(self,request):
@@ -2320,6 +2342,10 @@ class GetDepartmentStaffList(GenericAPIView):
         department_id = getattr(self, "department_id", None) or request.POST.get("department_id")
         if department_id is not None and department_id != "":
             facultyobj = facultyobj.filter(department_id=str(department_id).upper())
+            print("department_id",department_id,facultyobj)
+
+
+
         page4 = self.paginate_queryset(facultyobj)
         facultyser = UserAdminSerializer(page4,many=True)
         for i in facultyser.data:
@@ -2329,7 +2355,7 @@ class GetDepartmentStaffList(GenericAPIView):
             else:
                 i['country_name'] = ""
             if request.POST.get("academic_year_id") is not None and request.POST.get("academic_year_id") !='':
-                allocated_courses_count = FacultyCourseAllocation.objects.filter(academic_year_id=request.POST.get("academic_year_id"),faculty_id=str(i['id'])).order_by('course_id').distinct('course_id').count()
+                allocated_courses_count = FacultyCourseAllocation.objects.filter(academic_year_id=request.POST.get("academic_year_id"),faculty_id=str(i['id'])).order_by('subject_id').distinct('subject_id').count()
                 i['allocated_courses_count'] = allocated_courses_count
             else:
                 i['allocated_courses_count'] = "0"
@@ -2454,6 +2480,7 @@ class AllocateSubjectsToFaculty(GenericAPIView):
         if faculty_objs is not None:
             FacultyCourseAllocation.objects.filter(course_id=course_id,academic_year_id=academic_year_id,faculty_id=faculty_objs.id,isActive=True).update(isActive=False)
             for subject_id in subject_ids:
+                print("subject_id",subject_id)
                 FacultyCourseAllocation.objects.update_or_create(
                     course_id=course_id,
                     academic_year_id=academic_year_id,
@@ -2461,6 +2488,7 @@ class AllocateSubjectsToFaculty(GenericAPIView):
                     subject_id=subject_id,
                     defaults={"isActive": True},
                 )
+
 
 
             response_={

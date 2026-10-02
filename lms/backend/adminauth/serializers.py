@@ -48,4 +48,21 @@ class PermissionsSerializer(serializers.ModelSerializer):
         model = Permissions
         fields = "__all__"
         
-     
+
+
+class CustomUserAdminSerializer(serializers.ModelSerializer):
+
+    designation_name = serializers.SerializerMethodField()
+    def get_designation_name(self, obj):
+        if str(obj.designation) is not None and str(obj.designation) !='':
+            cor_obj=Country.objects.filter(id=obj.designation,isActive=True).first()
+            if cor_obj is not None:
+                return cor_obj.name
+            else:
+                return ''
+        else:
+            return ''
+
+    class Meta:
+        model = UserAdmin
+        fields ="__all__"

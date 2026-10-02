@@ -4915,7 +4915,9 @@ class GetCourseStudentList(GenericAPIView):
             return self._respond(encryped_header, response_)
 
         student_ids=list(AdmissionApplication.objects.filter(academic_year_id=academic_year_id,course_id=course_id,og_code=str(request.user.og_code)).values_list('candidate_id',flat=True))
-        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id)
+        print("ids",student_ids)
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,)
+        print("student_objs",student_objs)
         serializer=CandidateSerializer(student_objs,many=True)
         students_list=serializer.data
         for student in students_list:

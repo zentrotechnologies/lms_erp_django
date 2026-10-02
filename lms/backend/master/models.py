@@ -63,6 +63,7 @@ class ClassGroup(TrackingModel):
     # course_id = models.BigIntegerField(db_index=True)
     semester_ids = models.JSONField(default=list, blank=True)
     class_name = models.CharField(max_length=150)
+    batch_name = models.CharField(max_length=150,null=True, blank=True)
     division = models.CharField(max_length=30, null=True, blank=True)
     capacity = models.PositiveIntegerField(default=0)
     status = models.BooleanField(default=True)

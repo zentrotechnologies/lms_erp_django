@@ -7889,7 +7889,6 @@ class AddClassGroup(GenericAPIView):
         if error_response:
             return error_response
         data = {}
-        data['course_id'] = request_data.get('course_id')
         data['semester_ids'] = request_data.get('semester_ids')
         data['class_name'] = request_data.get('class_name')
         data['division'] = request_data.get('division')
@@ -7900,36 +7899,9 @@ class AddClassGroup(GenericAPIView):
 
 
 
-        # course validation
-        if (data['course_id'] is None or data['course_id'] == ""):
-            response_ = {
-                "n": 0,
-                "msg": "course id is required.",
-                "data": {}
-            }
 
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
 
-            return Response(response_, status=200)
 
-        course_obj = Course.objects.filter(id=data['course_id'],isActive=True,og_code=str(request.user.og_code)).first()
-
-        if course_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Active course not found.",
-                "data": {}
-            }
-
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-
-            return Response(response_, status=200)
 
 
 
@@ -7978,7 +7950,6 @@ class AddClassGroup(GenericAPIView):
             return Response(response_, status=200)
 
         duplicate_query = ClassGroup.objects.filter(
-            course_id=data['course_id'],
             class_name=data['class_name'],
             og_code=str(request.user.og_code),
             isActive=True
@@ -7998,8 +7969,8 @@ class AddClassGroup(GenericAPIView):
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
+        
         serializer = ClassGroupSerializer(data=data)
-
         if serializer.is_valid():
             serializer.save()
             response_ = {
@@ -8007,7 +7978,6 @@ class AddClassGroup(GenericAPIView):
                 "msg": "Class group added successfully.",
                 "data": serializer.data
             }
-
             if encryped_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -8038,14 +8008,7 @@ class ClassGroupList(GenericAPIView):
             encryped_header = request.headers.get('encrypted')
 
         class_group_obj = ClassGroup.objects.filter(isActive=True,og_code=str(request.user.og_code))
-        course_id = request.GET.get('course_id')
         status = request.GET.get('status')
-
-
-        if (course_id is not None and course_id != ""):
-            class_group_obj = class_group_obj.filter(course_id=course_id)
-
-
 
         if status is not None and status != "":
             if str(status).lower() in ["true""1""active"]:
@@ -8056,18 +8019,6 @@ class ClassGroupList(GenericAPIView):
         serializer = ClassGroupSerializer(class_group_obj,many=True)
 
         class_group_data = serializer.data
-
-        for item in class_group_data:
-
-            course_obj = Course.objects.filter(id=item['course_id'],isActive=True).first()
-
-            if course_obj is not None:
-                item['course_name'] = (course_obj.course_name)                
-                item['course_code'] = (course_obj.course_code)
-            else:
-                item['course_name'] = ""
-                item['course_code'] = ""
-
 
         response_ = {
             "n": 1,
@@ -8175,8 +8126,8 @@ class UpdateClassGroup(GenericAPIView):
             return Response(response_, status=200)
         data = {}
         data['semester_ids'] = request_data.get('semester_ids',class_group_obj.semester_ids)
-        data['course_id'] = request_data.get('course_id',class_group_obj.course_id)
         data['class_name'] = request_data.get('class_name',class_group_obj.class_name)
+        data['batch_name'] = request_data.get('batch_name',class_group_obj.batch_name)
         data['division'] = request_data.get('division',class_group_obj.division)
         data['capacity'] = request_data.get('capacity',class_group_obj.capacity)
         data['status'] = request_data.get('status',class_group_obj.status)
@@ -8225,7 +8176,6 @@ class UpdateClassGroup(GenericAPIView):
             return Response(response_, status=200)
 
         duplicate_query = ClassGroup.objects.filter(
-            course_id=data['course_id'],
             class_name__iexact=data['class_name'],
             og_code=str(request.user.og_code),
             isActive=True).exclude(id=class_group_id)

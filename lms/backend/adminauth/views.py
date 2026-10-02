@@ -206,11 +206,19 @@ class UserLogin(GenericAPIView):
             else:
                 return Response(response_,status=200)
         else:
+            designation_name='NA'
             if role_obj.id == 6:
                 user_ser = CandidateSerializer(user_object)
-            if role_obj.id == 7:
+                designation_name="Student"
+            elif role_obj.id == 7:
                 user_ser = ParentSerializer(user_object)
+                designation_name="Parent"
+            elif role_obj.id == 5:
+
+                user_ser = CustomUserAdminSerializer(user_object)
+                designation_name=user_ser.data['designation_name']
             else:
+                designation_name="Admin"
                 user_ser = UserAdminSerializer(user_object)
 
 
@@ -221,14 +229,15 @@ class UserLogin(GenericAPIView):
                 user_token= UserAdminToken.objects.create(user_id=user_object.id,authToken=user_object.token)
                 menuobj = MenuDetails.objects.filter(isActive=True,user_type__icontains = str(user_object.user_type)).order_by('sort_order')
                 menu_serializer = MenuDetailsSerializer(menuobj, many=True)
-                
-               
+                user_data=user_ser.data
+                user_data['designation_name']=designation_name
+
                 response_={
                         "n": 1,                    
                         "msg": 'User logged in successfully',
                         "token":user_token.authToken,
                         'menuItems':menu_serializer.data,
-                        "data":user_ser.data,   
+                        "data":user_data,   
                         
                                  
                     }
@@ -2094,7 +2103,7 @@ class MenuDetailList(GenericAPIView):
 class AddPermission(GenericAPIView):
     def post(self,request):
         data={}
-        data['role_id'] = request.data.get('Role_id')
+        data['role_id'] = request.data.get('role_id')
         data['menu_id'] = list(map(int, request.data.getlist('menu_id')))
         if data['role_id'] is not None and data['role_id'] != '':
             roleobj = Permissions.objects.filter(role_id= data['role_id'],isActive=True).first()
@@ -2273,4 +2282,3 @@ class GetCollegeCourses(GenericAPIView):
             else:
                 return Response(response_,status=200)
                 
-
