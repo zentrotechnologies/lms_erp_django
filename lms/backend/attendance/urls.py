@@ -7,6 +7,14 @@ urlpatterns = [
 
     path('mark-candidate-attendance',v.MarkCandidateAttendance.as_view(),name='mark-candidate-attendance'),
 
+    path('mark-faculty-attendance',v.MarkFacultyAttendance.as_view(),name='mark-faculty-attendance'),
+    path('faculty-daily-attendance',v.FacultyDailyAttendance.as_view(),name='faculty-daily-attendance'),
+    path('faculty-attendance-summary',v.FacultyAttendanceSummary.as_view(),name='faculty-attendance-summary'),
+
+    path('add-holiday',v.AddHoliday.as_view(),name='add-holiday'),
+    path('holiday-list',v.HolidayList.as_view(),name='holiday-list'),
+    path('delete-holiday',v.DeleteHoliday.as_view(),name='delete-holiday'),
+
     path('apply-leave',v.ApplyLeave.as_view(),name='apply-leave'),
     path('save-leave',v.SaveLeave.as_view(),name='save-leave'),
     path('leave-list',v.LeaveList.as_view(),name='leave-list'),

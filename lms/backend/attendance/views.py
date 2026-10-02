@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 import json
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from django.utils import timezone
 
 from .models import *
@@ -983,6 +983,433 @@ class FacultyTimetable(GenericAPIView):
             "n": 1,
             'msg': 'Faculty timetable found successfully.',
             'data': result
+        })
+
+
+WORK_START = time(9, 30)
+WORK_END = time(18, 30)
+LATE_THRESHOLD = time(10, 30)
+EARLY_THRESHOLD = time(17, 30)
+
+
+def _designation_name(designation_id):
+    if designation_id in (None, ""):
+        return ""
+    desig = Designation.objects.filter(id=designation_id).first()
+    return desig.role_name if desig is not None else ""
+
+
+def _faculty_profile(faculty_id):
+    u = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+    if u is None:
+        return None
+    return {
+        'faculty_id': str(u.id),
+        'name': _faculty_display(u),
+        'email': u.email or '',
+        'employee_code': u.employee_code or '',
+        'designation_id': u.designation,
+        'designation': _designation_name(u.designation),
+    }
+
+
+def _approved_leave_on(faculty_id, d):
+    return LeaveApplication.objects.filter(
+        applicant_id=str(faculty_id), isActive=True, status='APPROVED',
+        start_date__lte=d, end_date__gte=d).exists()
+
+
+def _is_holiday(d):
+    return AttendanceHoliday.objects.filter(holiday_date=d, isActive=True).exists()
+
+
+def _parse_clock(value, field_name, base_date):
+    if value in (None, ""):
+        return None, None
+    raw = str(value).strip()
+    try:
+        parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+        if parsed.tzinfo is None:
+            parsed = timezone.make_aware(parsed)
+        return parsed, None
+    except ValueError:
+        pass
+    try:
+        parsed_time = datetime.strptime(raw, '%H:%M').time()
+    except ValueError:
+        return None, '%s must be HH:MM or ISO datetime.' % field_name
+    combined = datetime.combine(base_date, parsed_time)
+    if timezone.is_naive(combined):
+        combined = timezone.make_aware(combined)
+    return combined, None
+
+
+def _facility_day_status(faculty_id, d):
+    base = {
+        'date': d,
+        'day_name': d.strftime('%A'),
+        'week_day': d.weekday(),
+        'check_in': None,
+        'check_out': None,
+        'total_hours': None,
+        'is_late': False,
+        'is_early': False,
+        'remarks': '',
+    }
+    if _approved_leave_on(faculty_id, d):
+        base['status'] = 'LEAVE'
+        base['remarks'] = 'Approved leave'
+        return base
+    fa = FacultyAttendance.objects.filter(faculty_id=str(faculty_id), attendance_date=d, isActive=True).first()
+    if fa is not None and (fa.check_in is not None or fa.check_out is not None):
+        late = fa.check_in is not None and fa.check_in.time() > LATE_THRESHOLD
+        early = fa.check_out is not None and fa.check_out.time() < EARLY_THRESHOLD
+        if late and early:
+            status = 'LATE_EARLY'
+        elif late:
+            status = 'LATE'
+        elif early:
+            status = 'EARLY'
+        else:
+            status = 'PRESENT'
+        base.update({
+            'status': status,
+            'check_in': fa.check_in,
+            'check_out': fa.check_out,
+            'total_hours': float(fa.total_hours) if fa.total_hours is not None else None,
+            'is_late': late,
+            'is_early': early,
+            'remarks': fa.remarks or '',
+        })
+        return base
+    if d.weekday() >= 5:
+        base['status'] = 'WEEKLY_OFF'
+        base['remarks'] = 'Weekly off'
+        return base
+    if _is_holiday(d):
+        base['status'] = 'HOLIDAY'
+        base['remarks'] = 'Holiday'
+        return base
+    base['status'] = 'ABSENT'
+    base['remarks'] = 'No attendance entry'
+    return base
+
+
+class MarkFacultyAttendance(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        user = _requesting_admin(request)
+        if user is None:
+            return _error_response(request, 'logged in user not found')
+
+        faculty_id = request_data.get('faculty_id') or str(user.id)
+        if faculty_id in (None, ""):
+            return _error_response(request, 'Could not determine the faculty.')
+        if str(faculty_id) != str(user.id) and not _is_admin_user(user):
+            return _error_response(request, 'You are only allowed to mark your own attendance.')
+
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        if faculty_user is None:
+            return _error_response(request, 'Faculty not found.')
+
+        attendance_date, err = _parse_date(request_data.get('attendance_date') or request_data.get('date'), 'attendance_date')
+        if err:
+            return _error_response(request, err)
+        if attendance_date is None:
+            attendance_date = timezone.localdate()
+
+        if _approved_leave_on(faculty_id, attendance_date):
+            return _error_response(request, 'Faculty is on approved leave on this date (check-in/check-out not applicable).')
+        if attendance_date.weekday() >= 5:
+            return _error_response(request, 'Cannot mark attendance on a weekly off day.')
+        if _is_holiday(attendance_date):
+            return _error_response(request, 'Cannot mark attendance on a holiday.')
+
+        check_in, err = _parse_clock(request_data.get('check_in'), 'check_in', attendance_date)
+        if err:
+            return _error_response(request, err)
+        check_out, err = _parse_clock(request_data.get('check_out'), 'check_out', attendance_date)
+        if err:
+            return _error_response(request, err)
+        if check_in is None and check_out is None:
+            return _error_response(request, 'Provide check_in and/or check_out.')
+
+        fa, _ = FacultyAttendance.objects.get_or_create(
+            faculty_id=str(faculty_id),
+            attendance_date=attendance_date,
+            defaults={'createdBy': str(user.id), 'isActive': True})
+        fa.updatedBy = str(user.id)
+        fa.updatedAt = timezone.now()
+        if check_in is not None:
+            fa.check_in = check_in
+        if check_out is not None:
+            fa.check_out = check_out
+
+        late = fa.check_in is not None and fa.check_in.time() > LATE_THRESHOLD
+        early = fa.check_out is not None and fa.check_out.time() < EARLY_THRESHOLD
+        if fa.check_in is not None and fa.check_out is not None:
+            fa.total_hours = round((fa.check_out - fa.check_in).total_seconds() / 3600.0, 2)
+        fa.is_late = late
+        fa.is_early = early
+        if late and early:
+            fa.day_status = 'LATE_EARLY'
+        elif late:
+            fa.day_status = 'LATE'
+        elif early:
+            fa.day_status = 'EARLY'
+        elif fa.check_in is not None or fa.check_out is not None:
+            fa.day_status = 'PRESENT'
+        fa.save()
+
+        item = {
+            'faculty': _faculty_profile(faculty_id),
+            'attendance_date': fa.attendance_date,
+            'day_name': fa.attendance_date.strftime('%A'),
+            'check_in': fa.check_in,
+            'check_out': fa.check_out,
+            'total_hours': float(fa.total_hours) if fa.total_hours is not None else None,
+            'day_status': fa.day_status,
+            'is_late': fa.is_late,
+            'is_early': fa.is_early,
+            'remarks': fa.remarks or '',
+        }
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Attendance marked successfully.',
+            'data': item
+        })
+
+
+class FacultyDailyAttendance(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        user = _requesting_admin(request)
+        if user is None:
+            return _error_response(request, 'logged in user not found')
+
+        faculty_id = request_data.get('faculty_id') or str(user.id)
+        if faculty_id in (None, ""):
+            return _error_response(request, 'Could not determine the faculty.')
+
+        start_date, err = _parse_date(request_data.get('start_date') or request_data.get('from_date'), 'start_date')
+        if err or start_date is None:
+            return _error_response(request, 'start_date is required (YYYY-MM-DD).')
+        end_date, err = _parse_date(request_data.get('end_date') or request_data.get('to_date') or request_data.get('start_date'), 'end_date')
+        if err:
+            return _error_response(request, err)
+        if start_date > end_date:
+            return _error_response(request, 'end_date must be on or after start_date.')
+        if (end_date - start_date).days + 1 > 90:
+            return _error_response(request, 'Date range is too large (maximum 90 days).')
+
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        if faculty_user is None:
+            return _error_response(request, 'Faculty not found.')
+
+        rows = []
+        d = start_date
+        while d <= end_date:
+            rows.append(_facility_day_status(faculty_id, d))
+            d += timedelta(days=1)
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Faculty attendance found successfully.',
+            'data': {
+                'faculty': _faculty_profile(faculty_id),
+                'rows': rows,
+            }
+        })
+
+
+class FacultyAttendanceSummary(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        user = _requesting_admin(request)
+        if user is None:
+            return _error_response(request, 'logged in user not found')
+
+        faculty_id = request_data.get('faculty_id') or str(user.id)
+        if faculty_id in (None, ""):
+            return _error_response(request, 'Could not determine the faculty.')
+
+        start_date, err = _parse_date(request_data.get('start_date'), 'start_date')
+        if err:
+            return _error_response(request, err)
+        end_date, err = _parse_date(request_data.get('end_date'), 'end_date')
+        if err:
+            return _error_response(request, err)
+        month = request_data.get('month') or request_data.get('month_year')
+        if start_date is None and month in (None, ""):
+            today = timezone.localdate()
+            start_date = today.replace(day=1)
+            end_date = today
+        elif start_date is not None and end_date is None:
+            end_date = start_date
+        elif start_date is None and month not in (None, ""):
+            try:
+                m = datetime.strptime(str(month), '%Y-%m').date()
+                start_date = m.replace(day=1)
+                next_month = (m.replace(day=28) + timedelta(days=4)).replace(day=1)
+                end_date = next_month - timedelta(days=1)
+            except ValueError:
+                return _error_response(request, 'month must be YYYY-MM.')
+        if end_date is None:
+            end_date = start_date
+        if start_date > end_date:
+            return _error_response(request, 'end_date must be on or after start_date.')
+        if (end_date - start_date).days + 1 > 90:
+            return _error_response(request, 'Date range is too large (maximum 90 days).')
+
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        if faculty_user is None:
+            return _error_response(request, 'Faculty not found.')
+
+        summary_counts = {}
+        total_attended_hours_seconds = 0
+        attended_days = 0
+        d = start_date
+        while d <= end_date:
+            status = _facility_day_status(faculty_id, d)['status']
+            summary_counts[status] = summary_counts.get(status, 0) + 1
+            fa = FacultyAttendance.objects.filter(faculty_id=str(faculty_id), attendance_date=d, isActive=True).first()
+            if fa is not None and fa.total_hours is not None and status in ('PRESENT', 'LATE', 'EARLY', 'LATE_EARLY'):
+                total_attended_hours_seconds += float(fa.total_hours)
+                attended_days += 1
+            d += timedelta(days=1)
+
+        late_marks = summary_counts.get('LATE', 0) + summary_counts.get('LATE_EARLY', 0)
+        early_marks = summary_counts.get('EARLY', 0) + summary_counts.get('LATE_EARLY', 0)
+
+        eat = late_marks
+        deduction_days = 0.0
+        while eat >= 6:
+            deduction_days += 1.0
+            eat -= 6
+        while eat >= 3:
+            deduction_days += 0.5
+            eat -= 3
+
+        avg_daily_hours = round(total_attended_hours_seconds / attended_days, 2) if attended_days else 0
+
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Faculty attendance summary found successfully.',
+            'data': {
+                'faculty': _faculty_profile(faculty_id),
+                'start_date': start_date,
+                'end_date': end_date,
+                'total_days': (end_date - start_date).days + 1,
+                'present_days': summary_counts.get('PRESENT', 0),
+                'late_days': summary_counts.get('LATE', 0),
+                'early_days': summary_counts.get('EARLY', 0),
+                'late_early_days': summary_counts.get('LATE_EARLY', 0),
+                'leave_days': summary_counts.get('LEAVE', 0),
+                'weekly_off_days': summary_counts.get('WEEKLY_OFF', 0),
+                'holiday_days': summary_counts.get('HOLIDAY', 0),
+                'absent_days': summary_counts.get('ABSENT', 0),
+                'late_marks': late_marks,
+                'early_marks': early_marks,
+                'avg_daily_hours': avg_daily_hours,
+                'late_deduction_days': deduction_days,
+            }
+        })
+
+
+class AddHoliday(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        user = _requesting_admin(request)
+        if user is None:
+            return _error_response(request, 'logged in user not found')
+        if not _is_admin_user(user):
+            return _error_response(request, 'Admin access required.')
+        holiday_date, err = _parse_date(request_data.get('holiday_date'), 'holiday_date')
+        if err or holiday_date is None:
+            return _error_response(request, 'holiday_date is required (YYYY-MM-DD).')
+        name = request_data.get('name')
+        if name in (None, ""):
+            return _error_response(request, 'name is required.')
+        obj, created = AttendanceHoliday.objects.get_or_create(
+            holiday_date=holiday_date,
+            defaults={'name': name, 'createdBy': str(user.id), 'isActive': True})
+        if not created:
+            obj.name = name
+            obj.isActive = True
+            obj.updatedBy = str(user.id)
+            obj.updatedAt = timezone.now()
+            obj.save()
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Holiday saved successfully.',
+            'data': {
+                'id': obj.id,
+                'holiday_date': obj.holiday_date,
+                'name': obj.name,
+            }
+        })
+
+
+class HolidayList(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        holidays = AttendanceHoliday.objects.filter(isActive=True).order_by('holiday_date')
+        data = [{'id': h.id, 'holiday_date': h.holiday_date, 'name': h.name} for h in holidays]
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Holidays found successfully.',
+            'data': data
+        })
+
+
+class DeleteHoliday(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        user = _requesting_admin(request)
+        if user is None:
+            return _error_response(request, 'logged in user not found')
+        if not _is_admin_user(user):
+            return _error_response(request, 'Admin access required.')
+        holiday_obj = AttendanceHoliday.objects.filter(id=request_data.get('id'), isActive=True).first()
+        if holiday_obj is None:
+            return _error_response(request, 'Holiday not found.')
+        holiday_obj.isActive = False
+        holiday_obj.updatedBy = str(user.id)
+        holiday_obj.updatedAt = timezone.now()
+        holiday_obj.save()
+        return _final_response(request, {
+            "n": 1,
+            'msg': 'Holiday deleted successfully.',
+            'data': {'id': holiday_obj.id, 'holiday_date': holiday_obj.holiday_date, 'name': holiday_obj.name}
         })
 
 
