@@ -1143,7 +1143,8 @@ class MarkFacultyAttendance(GenericAPIView):
             return _error_response(request, err)
         if check_in is None and check_out is None:
             return _error_response(request, 'Provide check_in and/or check_out.')
-
+        if check_out is not None and check_in is None:
+            return _error_response(request, 'check_in is required when providing check_out.')
         if check_in is not None and check_out is not None:
             if check_out < check_in:
                 return _error_response(request, 'Check-out cannot be before check-in.')
