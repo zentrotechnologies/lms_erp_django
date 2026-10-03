@@ -1124,6 +1124,10 @@ class MarkFacultyAttendance(GenericAPIView):
         if attendance_date is None:
             attendance_date = timezone.localdate()
 
+        today = timezone.localdate()
+        if attendance_date > today:
+            return _error_response(request, 'Attendance cannot be marked for a future date.')
+
         if _approved_leave_on(faculty_id, attendance_date):
             return _error_response(request, 'Faculty is on approved leave on this date (check-in/check-out not applicable).')
         if attendance_date.weekday() >= 5:
@@ -1139,6 +1143,10 @@ class MarkFacultyAttendance(GenericAPIView):
             return _error_response(request, err)
         if check_in is None and check_out is None:
             return _error_response(request, 'Provide check_in and/or check_out.')
+
+        if check_in is not None and check_out is not None:
+            if check_out < check_in:
+                return _error_response(request, 'Check-out cannot be before check-in.')
 
         fa, _ = FacultyAttendance.objects.get_or_create(
             faculty_id=str(faculty_id),
