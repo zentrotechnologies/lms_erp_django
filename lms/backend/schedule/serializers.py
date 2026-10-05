@@ -167,7 +167,7 @@ class TimetableTemplateListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TimetableTemplate
-        fields = ['id', 'template_name', 'class_name', 'semester', 'total_lectures', 'created_by_name', 'created_date']
+        fields = ['id', 'template_name', 'class_name', 'semester', 'total_lectures', 'created_by_name', 'created_date','isActive']
 
     def get_class_name(self, obj):
         """Get class name from ClassGroup"""

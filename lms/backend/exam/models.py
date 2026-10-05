@@ -27,13 +27,13 @@ class ExamSet(TrackingModel):
     class_group_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     exam_type = models.CharField(max_length=30, null=True, blank=True, db_index=True)
     status = models.CharField(max_length=30, default="DRAFT", db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class QuestionExamSet(TrackingModel):
     exam_id = models.BigIntegerField(null=True, db_index=True)
     question_id = models.JSONField(default=list, blank=True)
     set_number = models.CharField(max_length=50, null=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class ScheduleExam(TrackingModel):
     college = models.CharField(max_length=255, null=True, blank=True)
@@ -50,6 +50,7 @@ class ScheduleExam(TrackingModel):
     schedule_exam_date = models.DateField(null=True, db_index=True)
     exam_note = models.TextField(null=True)
     attempt = models.PositiveIntegerField(default=1)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class ExamCandidateSetRelation(TrackingModel):
@@ -58,6 +59,7 @@ class ExamCandidateSetRelation(TrackingModel):
     exam_set = models.BigIntegerField(null=True, db_index=True)
     candidate_id = models.CharField(max_length=255, db_index=True)
     exam_link = models.TextField(null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class ExamCandidateResult(TrackingModel):
@@ -75,6 +77,7 @@ class ExamCandidateResult(TrackingModel):
     final_submit = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     verified_by = models.CharField(max_length=255, null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 
@@ -87,6 +90,7 @@ class ExamCandidateResultAnswer(TrackingModel):
     mark_for_review = models.BooleanField(default=False)
     correct_answer_option = models.BigIntegerField(null=True, blank=True)
     marks = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class CertificateTemplateMaster(TrackingModel):
@@ -105,6 +109,7 @@ class CertificateTemplateMaster(TrackingModel):
     pincode = models.CharField(max_length=20, null=True, blank=True)
     auth_sign = models.TextField(null=True)
     auth_person_name = models.CharField(max_length=150, null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class MockExamQuestionSet(TrackingModel):
@@ -118,6 +123,7 @@ class MockExamQuestionSet(TrackingModel):
     no_of_questions = models.PositiveIntegerField(default=0)
     exam_duration = models.PositiveIntegerField(default=0)
     mandatory_questions = models.PositiveIntegerField(default=0)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class MockExamCandidateResult(TrackingModel):
@@ -131,6 +137,7 @@ class MockExamCandidateResult(TrackingModel):
     marks_obtained = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     is_passed = models.BooleanField(default=False)
     final_submit = models.BooleanField(default=False)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class MockExamCandidateResultAnswer(TrackingModel):
@@ -142,3 +149,4 @@ class MockExamCandidateResultAnswer(TrackingModel):
     mark_for_review = models.BooleanField(default=False)
     correct_answer_option = models.BigIntegerField(null=True, blank=True)
     marks = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

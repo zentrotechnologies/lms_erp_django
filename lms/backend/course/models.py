@@ -70,11 +70,11 @@ class CourseSubjects(TrackingModel):
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     semester_no = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class CourseClass(TrackingModel):
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     class_id = models.BigIntegerField(null=True, blank=True, db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 
@@ -85,7 +85,7 @@ class StudentSubjectAllocation(TrackingModel):
     semester_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     student_id = models.CharField(max_length=255, null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class CourseMaterial(TrackingModel):
     VISIBILITY_CHOICES = (
@@ -106,13 +106,13 @@ class CourseMaterial(TrackingModel):
     uploaded_by = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default="CLASS")
     is_published = models.BooleanField(default=False)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class FacultyCourseAllocation(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
     faculty_id = models.CharField(max_length=255, db_index=True)
     course_id = models.BigIntegerField(db_index=True)
     subject_id = models.BigIntegerField(db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 
@@ -145,8 +145,7 @@ class LessonPlan(TrackingModel):
 
     approved_at = models.DateTimeField(null=True, blank=True)
     approval_remarks = models.TextField(null=True, blank=True)
-
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class LessonPlanUnit(TrackingModel):
     lesson_plan_id = models.BigIntegerField(db_index=True)
 
@@ -166,7 +165,7 @@ class LessonPlanUnit(TrackingModel):
     remarks = models.TextField(null=True, blank=True)
 
     sequence_number = models.PositiveIntegerField(default=1)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class LessonPlanExecution(TrackingModel):
     lesson_plan_id = models.BigIntegerField(db_index=True)
     lesson_plan_unit_id = models.BigIntegerField(db_index=True)
@@ -179,3 +178,4 @@ class LessonPlanExecution(TrackingModel):
     remarks = models.TextField(null=True, blank=True)
 
     completed_by = models.CharField(max_length=255, db_index=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

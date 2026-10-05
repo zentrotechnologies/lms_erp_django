@@ -32,13 +32,13 @@ class TicketAssign(TrackingModel):
     userid = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     comment = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class TicketAttachments(TrackingModel):
     ticket = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     attachment = models.FileField(upload_to="attachment/", blank=True, null=True)
     comment = models.TextField(null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class TicketActivity(TrackingModel):
     ticket = models.CharField(max_length=255, null=True, blank=True, db_index=True)
@@ -47,7 +47,7 @@ class TicketActivity(TrackingModel):
     comment = models.TextField(null=True, blank=True)
     attachment = models.FileField(upload_to="media/activity/attachment/", blank=True, null=True)
     isread = models.BooleanField(default=False)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class FAQTicket(TrackingModel):
     ticket = models.CharField(max_length=255, null=True, blank=True, db_index=True)
@@ -55,3 +55,4 @@ class FAQTicket(TrackingModel):
     departmentId = models.CharField(max_length=255, null=True, blank=True)
     tags = models.CharField(max_length=255, null=True, blank=True)
     attachment = models.FileField(upload_to="media/activity/attachment/", blank=True, null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

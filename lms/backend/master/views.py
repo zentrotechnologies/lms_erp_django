@@ -5807,7 +5807,7 @@ class AddAcademicYear(GenericAPIView):
 
         duplicate = AcademicYear.objects.filter(
             isActive=True,
-            academic_year_name__iexact=str(name).strip(),
+            academic_year_name__iexact=str(name).strip(),og_code=str(request.user.og_code)
 ).first()
 
         if duplicate is not None:
@@ -5829,7 +5829,7 @@ class AddAcademicYear(GenericAPIView):
         if is_current:
             AcademicYear.objects.filter(
                 isActive=True,
-                is_current=True,
+                is_current=True,og_code=str(request.user.og_code),
     ).update(is_current=False)
 
         data = {
@@ -5845,6 +5845,7 @@ class AddAcademicYear(GenericAPIView):
             "is_current": is_current,
             "status": request_data.get("status", True),
             "createdBy": str(request.user.id),
+            "og_code":str(request.user.og_code)
         }
 
         serializer = AcademicYearSerializer(data=data)
@@ -5877,7 +5878,7 @@ class SetCurrentAcademicYear(GenericAPIView):
         academic_year = AcademicYear.objects.filter(
             id=request_data.get("id"),
             isActive=True,
-            status=True,
+            status=True,og_code=str(request.user.og_code),
 ).first()
 
         if academic_year is None:
@@ -5889,7 +5890,7 @@ class SetCurrentAcademicYear(GenericAPIView):
 
         AcademicYear.objects.filter(
             isActive=True,
-            is_current=True,
+            is_current=True,og_code=str(request.user.og_code),
 ).update(is_current=False)
 
         academic_year.is_current = True
@@ -5913,7 +5914,7 @@ class CurrentAcademicYear(GenericAPIView):
         academic_year = AcademicYear.objects.filter(
             isActive=True,
             status=True,
-            is_current=True,
+            is_current=True,og_code=str(request.user.og_code),
 ).first()
 
         if academic_year is None:
@@ -5946,7 +5947,7 @@ class AcademicYearList(GenericAPIView):
             encryped_header = request.headers.get('encrypted')
 
         academic_year_obj = AcademicYear.objects.filter(
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).order_by(
             '-is_current',
             '-start_date',
@@ -6072,7 +6073,7 @@ class AcademicYearList(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).first()
 
         if academic_year_obj is None:
@@ -6172,7 +6173,7 @@ class AcademicYearListByActive(GenericAPIView):
 
         is_active = request_data.get('is_active')
 
-        academic_year_obj = AcademicYear.objects.all().order_by(
+        academic_year_obj = AcademicYear.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by(
             '-is_current',
             '-start_date',
             '-id'
@@ -6260,7 +6261,7 @@ class UpdateAcademicYear(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).first()
 
         if academic_year_obj is None:
@@ -6380,7 +6381,7 @@ class UpdateAcademicYear(GenericAPIView):
             academic_year_name__iexact=(
                 data['academic_year_name']
     ),
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).exclude(
             id=academic_year_id
 ).first()
@@ -6497,7 +6498,7 @@ class UpdateAcademicYear(GenericAPIView):
         if data['is_current']:
             AcademicYear.objects.filter(
                 isActive=True,
-                is_current=True
+                is_current=True,og_code=str(request.user.og_code)
     ).exclude(
                 id=academic_year_id
     ).update(
@@ -6633,7 +6634,7 @@ class DeleteAcademicYear(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).first()
 
         if academic_year_obj is None:
@@ -6701,7 +6702,7 @@ class DeleteAcademicYear(GenericAPIView):
 
         class_group_exists = ClassGroup.objects.filter(
             academic_year_id=academic_year_obj.id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).exists()
 
         if class_group_exists:
@@ -6836,7 +6837,7 @@ class ChangeAcademicYearStatus(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             id=academic_year_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
 ).first()
 
         if academic_year_obj is None:

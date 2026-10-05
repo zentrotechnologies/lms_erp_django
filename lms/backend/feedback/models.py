@@ -5,12 +5,14 @@ from helpers.models import TrackingModel
 class FeedbackCategory(TrackingModel):
     name = models.CharField(max_length=255)
     status = models.BooleanField(default=False)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class FeedbackSubCategory(TrackingModel):
     name = models.CharField(max_length=255)
     parent_feedback_category = models.BigIntegerField(null=True, blank=True, db_index=True)
     status = models.BooleanField(default=False)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class FeedbackForm(TrackingModel):
@@ -21,6 +23,7 @@ class FeedbackForm(TrackingModel):
     question = models.TextField(null=True, blank=True)
     upload_img = models.TextField(null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class FeedbackActivation(TrackingModel):
@@ -33,6 +36,7 @@ class FeedbackActivation(TrackingModel):
     college_feedbackform = models.TextField(null=True, blank=True)
     send_via = models.CharField(max_length=50, null=True, blank=True)
     certification_choice = models.BooleanField(default=False)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class FeedbackQuestion(TrackingModel):
@@ -40,6 +44,7 @@ class FeedbackQuestion(TrackingModel):
     question = models.TextField(null=True, blank=True)
     upload_img = models.TextField(null=True, blank=True)
     sequence_number = models.PositiveIntegerField(default=1)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class FeedbackResponse(TrackingModel):
@@ -49,3 +54,4 @@ class FeedbackResponse(TrackingModel):
     respondent_id = models.CharField(max_length=255, db_index=True)
     rating_value = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     response_text = models.TextField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

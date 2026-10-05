@@ -14,6 +14,7 @@ class Roles(models.Model):
     role_name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -31,7 +32,7 @@ class Designation(models.Model):
     updatedAt = models.DateTimeField(null=True)
     createdBy = models.CharField(max_length=255, null=True, blank=True)
     updatedBy = models.CharField(max_length=255, null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         db_table = "usermanagement_designation"
         ordering = ("id",)
@@ -79,7 +80,7 @@ class Parent(AbstractBaseUser, TrackingModel):
     role_code = models.CharField(max_length=50, null=True, blank=True, default="parent", db_index=True)
     student_ids = models.JSONField(default=list, blank=True)
     source = models.CharField(max_length=50, null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

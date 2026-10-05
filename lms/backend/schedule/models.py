@@ -18,45 +18,46 @@ class Schedule(TrackingModel):
     schedulename = models.CharField(max_length=255, null=True, blank=True)
     action_status = models.CharField(max_length=50, default="Approved", db_index=True)
     decline_reason = models.TextField(null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class ScheduleCourseMapping(TrackingModel):
     schedule_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class ScheduleCollegeMapping(TrackingModel):
     schedule_id = models.BigIntegerField(db_index=True)
     college_id = models.CharField(max_length=255, db_index=True)
 
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class TimetableTemplate(TrackingModel):
-    academic_year_id = models.BigIntegerField(db_index=True)
-    class_group_id = models.BigIntegerField(db_index=True)
     template_name = models.CharField(max_length=150)
+    academic_year_id = models.BigIntegerField(db_index=True)
+    course_id = models.BigIntegerField(db_index=True)
+    class_group_id = models.BigIntegerField(db_index=True)
+    semester_id = models.BigIntegerField(db_index=True)
     effective_from = models.DateField(null=True, blank=True)
     effective_to = models.DateField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
     created_by = models.CharField(max_length=255)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class TimetableSlot(TrackingModel):
     timetable_template_id = models.BigIntegerField(db_index=True)
+    period_number = models.PositiveSmallIntegerField()#lecture no
     day_of_week = models.PositiveSmallIntegerField()
-    period_number = models.PositiveSmallIntegerField()
     start_time =models.CharField(max_length=250, null=True, blank=True)
     end_time =models.CharField(max_length=250, null=True, blank=True)
-    course_id = models.BigIntegerField(db_index=True)
-    faculty_id = models.CharField(max_length=255, db_index=True)
-    room_number = models.CharField(max_length=50, null=True, blank=True)
     entry_for = models.CharField(default="lecture", max_length=50, null=True, blank=True)
     lecture_type = models.CharField(max_length=30, default="THEORY")
-    is_active = models.BooleanField(default=True)
+    subject_id = models.CharField(max_length=30, null=True, blank=True)
+    faculty_id = models.CharField(max_length=255, db_index=True)
+    room_number = models.CharField(max_length=50, null=True, blank=True)
     
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -83,7 +84,7 @@ class LectureEntry(TrackingModel):
     lecture_status = models.CharField(max_length=30, default="SCHEDULED", db_index=True)
     remarks = models.TextField(null=True, blank=True)
     created_by = models.CharField(max_length=255)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class RescheduleLog(TrackingModel):
     schedule_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
@@ -96,3 +97,4 @@ class RescheduleLog(TrackingModel):
     new_start_time = models.CharField(max_length=255, null=True, blank=True)
     new_end_time = models.CharField(max_length=255, null=True, blank=True)
     reschedule_reason = models.TextField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

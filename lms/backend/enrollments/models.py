@@ -51,6 +51,7 @@ class Enrollments(TrackingModel):
         null=True,
         blank=True,
     )
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class EnrollPayment(TrackingModel):
     billing_address = models.TextField(null=True, blank=True)
@@ -74,7 +75,7 @@ class EnrollPayment(TrackingModel):
     payment_gateway = models.CharField(max_length=100, null=True, blank=True)
     gateway_payment_id = models.CharField(max_length=255, null=True, blank=True)
     payment_status = models.CharField(max_length=50, default="PENDING", db_index=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class CandidateSubjectSelection(TrackingModel):
     candidate_id = models.CharField(
@@ -125,5 +126,5 @@ class CandidateSubjectSelection(TrackingModel):
     )
 
     mandatory = models.BooleanField(default=False)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 

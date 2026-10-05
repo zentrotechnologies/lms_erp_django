@@ -143,7 +143,7 @@ class CandidateLogin(GenericAPIView):
             else:
                 return Response(response_,status=200)
             
-        cd_object = Candidate.objects.filter(isActive=True,email=email).first()
+        cd_object = Candidate.objects.filter(isActive=True,email=email,og_code=str(request.user.og_code)).first()
         if cd_object is None:
             response_={
                         "n": 0,                    
@@ -230,7 +230,7 @@ class CandidateExamPortalLogin(GenericAPIView):
             else:
                 return Response(response_,status=200)
             
-        cd_object = Candidate.objects.filter(isActive=True,email=email).first()
+        cd_object = Candidate.objects.filter(isActive=True,email=email,og_code=str(request.user.og_code)).first()
         if cd_object is None:
             response_={
                         "n": 0,                    
@@ -258,7 +258,7 @@ class CandidateExamPortalLogin(GenericAPIView):
                 
                 todays_exam_schedule_ids= list(ScheduleExam.objects.filter(
                     isActive=True,
-                    schedule_exam_date=str(today_date),
+                    schedule_exam_date=str(today_date),og_code=str(request.user.og_code),
                     # start_time__gte=one_hour_after,
                     # end_time__lte=current_time,
 
@@ -268,7 +268,7 @@ class CandidateExamPortalLogin(GenericAPIView):
                 exam_link_object = ExamCandidateSetRelation.objects.filter(
                     isActive=True,
                     exam_schedule_id__in=todays_exam_schedule_ids,
-                    candidate_id=cd_object.id
+                    candidate_id=cd_object.id,og_code=str(request.user.og_code)
                     ).first()
 
                 exam_expired = False
@@ -276,9 +276,9 @@ class CandidateExamPortalLogin(GenericAPIView):
                 encrypt_base_test_examination_link1=''
                 finally_submit = False
                 if exam_link_object is not None:
-                    schedule_obj= ScheduleExam.objects.filter(id=exam_link_object.exam_schedule_id,isActive=True).first()
+                    schedule_obj= ScheduleExam.objects.filter(id=exam_link_object.exam_schedule_id,isActive=True,og_code=str(request.user.og_code)).first()
                     if schedule_obj is not None:
-                        finally_submit_obj=ExamCandidateResult.objects.filter(candidate_id=cd_object.id, exam_schedule_id=exam_link_object.exam_schedule_id).first()
+                        finally_submit_obj=ExamCandidateResult.objects.filter(candidate_id=cd_object.id, exam_schedule_id=exam_link_object.exam_schedule_id,og_code=str(request.user.og_code)).first()
                         if finally_submit_obj is not None:
                             finally_submit = finally_submit_obj.final_submit
                         else:
@@ -364,7 +364,7 @@ class CandidateLogout(GenericAPIView):
         
         token = request_data.get('token')
         if token is not None and token !="":
-            cd_tokenobj = CandidateToken.objects.filter(authToken=token,isActive=True).first()
+            cd_tokenobj = CandidateToken.objects.filter(authToken=token,isActive=True,og_code=str(request.user.og_code)).first()
             if cd_tokenobj is not None:
                 cd_tokenobj.isActive = False
                 cd_tokenobj.save()
@@ -459,8 +459,8 @@ class AddCandidate(GenericAPIView):
         data['createdBy']=str(request.user.id)
 
         
-        email_object = Candidate.objects.filter(isActive=True,email=data['email']).first()
-        number_object = Candidate.objects.filter(isActive=True,mobilenumber=data['mobilenumber']).first()
+        email_object = Candidate.objects.filter(isActive=True,email=data['email'],og_code=str(request.user.og_code)).first()
+        number_object = Candidate.objects.filter(isActive=True,mobilenumber=data['mobilenumber'],og_code=str(request.user.og_code)).first()
         if email_object is not None:
             response_={
                 "n": 0,                    
@@ -488,11 +488,11 @@ class AddCandidate(GenericAPIView):
                 return Response(response_,status=200)
 
         crby = str(request.user.id)
-        userobj = UserAdmin.objects.filter(id=crby).first()
+        userobj = UserAdmin.objects.filter(id=crby,og_code=str(request.user.og_code)).first()
         if userobj is not None:
             usertype = userobj.user_type
             if usertype is not None and usertype != '':
-                roleobj = MainRoles.objects.filter(id=usertype).first()
+                roleobj = MainRoles.objects.filter(id=usertype,og_code=str(request.user.og_code)).first()
                 source = roleobj.name
             else:
                 source = ''
@@ -574,9 +574,8 @@ class CandidateList(GenericAPIView):
                 if isinstance(field, models.CharField):  # Check for empty string on CharFields
                     query |= Q(**{f'{field.name}__exact': ""})
 
-        # obj = Candidate.objects.filter(Q(isActive=True,customer_id__icontains=search_keyword),candidate_status=candidate_status)
         cand = request.GET.get('id')
-        candidateobj = Candidate.objects.filter(id=cand).first()
+        candidateobj = Candidate.objects.filter(id=cand,og_code=str(request.user.og_code)).first()
         if candidateobj is not None:
             cand_ser =CandidateSerializer(candidateobj)
             country_id=cand_ser.data['country']
@@ -589,10 +588,10 @@ class CandidateList(GenericAPIView):
             document_ids=[]
 
 
-            country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True).values_list('id',flat=True))
+            country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True,og_code=str(request.user.og_code)).values_list('id',flat=True))
             if rank_id !='' and rank_id is not None and rank_id !='Select rank':
 
-                find_combination_obj=GeneralEligibilityDepartmentRankCombinations.objects.filter(general_eligibility_rule_id__in=country_rules_ids,departments=department_id,ranks=rank_id,isActive=True).first()
+                find_combination_obj=GeneralEligibilityDepartmentRankCombinations.objects.filter(general_eligibility_rule_id__in=country_rules_ids,departments=department_id,ranks=rank_id,isActive=True,og_code=str(request.user.og_code)).first()
             
 
                 if find_combination_obj is not None:
@@ -602,27 +601,27 @@ class CandidateList(GenericAPIView):
                     min_age_required=find_combination_obj.minimum_age
                     age = calculate_age(cand_ser.data['dob'])
 
-                    qualification_ids=list(GeneralEligibilityEducationalQualifications.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('educational_qualification_id',flat=True))
+                    qualification_ids=list(GeneralEligibilityEducationalQualifications.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True,og_code=str(request.user.og_code)).values_list('educational_qualification_id',flat=True))
 
                     if age > int(min_age_required) and  int(qualid) in qualification_ids:
-                        document_ids=list(GeneralEligibilityMandatoryDocuments.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('document_id',flat=True))
+                        document_ids=list(GeneralEligibilityMandatoryDocuments.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True,og_code=str(request.user.og_code)).values_list('document_id',flat=True))
                         if len(document_ids) != 0:
-                            documents_required_object = Documents.objects.filter(id__in=document_ids,isActive=True,role=6)
+                            documents_required_object = Documents.objects.filter(id__in=document_ids,isActive=True,og_code=str(request.user.og_code),role=6)
                         else:
-                            documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
+                            documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6,og_code=str(request.user.og_code))
                     else:
-                        documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
+                        documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6,og_code=str(request.user.og_code))
                     
                 else:
-                    documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
+                    documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6,og_code=str(request.user.og_code))
             else:
-                documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
+                documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6,og_code=str(request.user.og_code))
 
 
             documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
             
             for d in documents_required_ser.data:
-                doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id']).first()
+                doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id'],og_code=str(request.user.og_code)).first()
                 if doc_object is not None:
                     d['uploaded_proof'] = doc_object.document_url
                 else:
@@ -655,7 +654,7 @@ class CandidateList(GenericAPIView):
                 state_name = ""
 
             if cand_ser.data['department'] is not None and cand_ser.data['department'] != "":
-                department_object = Department.objects.filter(id=cand_ser.data['department']).first()
+                department_object = Department.objects.filter(id=cand_ser.data['department'],og_code=str(request.user.og_code)).first()
                 if department_object is not None:
                     department_name = department_object.department_name
                 else:
@@ -663,7 +662,7 @@ class CandidateList(GenericAPIView):
             else:
                 department_name = ""
             if cand_ser.data['rank'] is not None and cand_ser.data['rank'] != "" and cand_ser.data['rank'] !='Select rank':
-                rank_object = Rank.objects.filter(id=cand_ser.data['rank']).first()
+                rank_object = Rank.objects.filter(id=cand_ser.data['rank'],og_code=str(request.user.og_code)).first()
                 if rank_object is not None:
                     rank_name = rank_object.rank
                 else:
@@ -690,7 +689,7 @@ class CandidateList(GenericAPIView):
 
 
             if qualid is not None and qualid !='' and qualid !='Select Qualification':
-                EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid)).first()
+                EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid),og_code=str(request.user.og_code)).first()
                 educatser = EducationalQualificationsSerializer(EducationalQualificationsobj)
                 educatser_data = educatser.data
                 educatser_data.update({
@@ -760,18 +759,18 @@ class CandidateList(GenericAPIView):
             candidate_status = '4'
             
         # if candidate_status is not None and candidate_status != "":
-        userobj=Candidate.objects.filter(candidate_status=candidate_status,isActive=True,)
+        userobj=Candidate.objects.filter(candidate_status=candidate_status,isActive=True,og_code=str(request.user.og_code),)
         
 
         if userobj.exists():
             serializer = CandidateSerializer(userobj,many=True)
             for c in serializer.data:
                 
-                documents_required_object = Documents.objects.filter(isActive=True,role=6)
+                documents_required_object = Documents.objects.filter(isActive=True,role=6,og_code=str(request.user.og_code))
                 documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
                 
                 for d in documents_required_ser.data:
-                    doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=id,document_id=d['id']).first()
+                    doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=id,document_id=d['id'],og_code=str(request.user.og_code)).first()
                     if doc_object is not None:
                         d['uploaded_proof'] = doc_object.document_url
                     else:
@@ -789,7 +788,7 @@ class CandidateList(GenericAPIView):
                     c['country'] = ""
 
                 if c['department'] is not None and c['department'] != "":
-                    department_object = Department.objects.filter(id=c['department']).first()
+                    department_object = Department.objects.filter(id=c['department'],og_code=str(request.user.og_code)).first()
                     if department_object is not None:
                         c['department_name'] = department_object.department_name
                     else:
@@ -797,7 +796,7 @@ class CandidateList(GenericAPIView):
                 else:
                     c['department_name'] = ""
                 if c['rank'] is not None and c['rank'] != "":
-                    rank_object = Rank.objects.filter(id=c['rank']).first()
+                    rank_object = Rank.objects.filter(id=c['rank'],og_code=str(request.user.og_code)).first()
                     if rank_object is not None:
                         c['rank_name'] = rank_object.rank
                     else:
@@ -920,7 +919,7 @@ class PaginationCandidateList(GenericAPIView):
             candidate_status = '4'
             
         # if candidate_status is not None and candidate_status != "":
-        userobj=Candidate.objects.filter(candidate_status=candidate_status,isActive=True).order_by('-createdAt')
+        userobj=Candidate.objects.filter(candidate_status=candidate_status,isActive=True,og_code=str(request.user.og_code)).order_by('-createdAt')
         if request.user.user_type == 2:
             userobj=userobj
         else:
@@ -929,7 +928,7 @@ class PaginationCandidateList(GenericAPIView):
             else:
                 tc_id=str(request.user.id)
             
-            userobj=userobj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(college_id=tc_id,isActive=True,enrollments_status='2').values_list('candidate',flat=True)))).order_by('id').distinct('id')
+            userobj=userobj.filter(Q(walkin_by=str(tc_id))|Q(id__in=list(Enrollments.objects.filter(college_id=tc_id,isActive=True,enrollments_status='2',og_code=str(request.user.og_code)).values_list('candidate',flat=True)))).order_by('id').distinct('id')
 
 
 
@@ -952,11 +951,11 @@ class PaginationCandidateList(GenericAPIView):
 
 
 
-                documents_required_object = Documents.objects.filter(isActive=True,role=6)
+                documents_required_object = Documents.objects.filter(isActive=True,role=6,og_code=str(request.user.og_code))
                 documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
                 
                 for d in documents_required_ser.data:
-                    doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=id,document_id=d['id']).first()
+                    doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=id,document_id=d['id'],og_code=str(request.user.og_code)).first()
                     if doc_object is not None:
                         d['uploaded_proof'] = doc_object.document_url
                     else:
@@ -1056,7 +1055,7 @@ class DeleteCandidate(GenericAPIView):
         
         id = request_data.get('id')
         if id is not None and id !="":
-            cobj=Candidate.objects.filter(id=id,isActive=True).first()
+            cobj=Candidate.objects.filter(id=id,isActive=True,og_code=str(request.user.og_code)).first()
             if cobj is not None:
                 cobj.isActive = False
                 cobj.deleted_by = str(request.user.id)
@@ -1140,7 +1139,7 @@ class UpdateCandidate(GenericAPIView):
             data = apply_student_fields(data, request_data)
             data['updatedBy'] = str(request.user.id)
             
-            obj = Candidate.objects.filter(isActive=True).exclude(id=id)
+            obj = Candidate.objects.filter(isActive=True,og_code=str(request.user.og_code)).exclude(id=id)
             ser = CandidateSerializer(obj,many=True)
             # for p in ser.data:
             #     if str(p['first_name']).lower() == str(data['first_name']).lower():
@@ -1156,7 +1155,7 @@ class UpdateCandidate(GenericAPIView):
             #         else:
             #             return Response(response_,status=200)
             
-            peobj=Candidate.objects.filter(id=id,isActive=True).first()
+            peobj=Candidate.objects.filter(id=id,isActive=True,og_code=str(request.user.og_code)).first()
             if request.FILES.get('profile_pic') is not None and request.FILES.get('profile_pic') !='':
                 fileInput=request.FILES.get('profile_pic')
                 folder_path = os.path.join(settings.MEDIA_ROOT,'media','Candidate Profile Pictures')
@@ -1248,11 +1247,9 @@ class UpdateDetailsCandidatePage(GenericAPIView):
             data['rank'] = request_data.get('rank')
             data = apply_student_fields(data, request_data)
             
-            # obj = Candidate.objects.filter(isActive=True).exclude(id=id)
-           
-            # ser = CandidateSerializer(obj,many=True)
 
-            peobj=Candidate.objects.filter(id=id,isActive=True).first()
+
+            peobj=Candidate.objects.filter(id=id,isActive=True,og_code=str(request.user.og_code)).first()
             if peobj is not None:
                 serializer = CandidateSerializer(peobj,data=data,partial=True)
                 if serializer.is_valid():
@@ -1332,7 +1329,7 @@ class UploadCandidateDocumentFormData(GenericAPIView):
 
         educational_certificate_upload = request.FILES.get('educational_certificate_upload')
         certificate_name = request_data.get('certificate_name')
-        cdobj = Candidate.objects.filter(id=candidate_id).first()
+        cdobj = Candidate.objects.filter(id=candidate_id,og_code=str(request.user.og_code)).first()
 
         department = request_data.get('department')
         rank = request_data.get('rank')
@@ -1387,7 +1384,7 @@ class UploadCandidateDocumentFormData(GenericAPIView):
         if result != []:
             for i in result:
                 file_url=save_file(folder_path,i['document_file_upload'],request)
-                user_doc = CandidateDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_id=i['doc_id']).update(isActive=False)
+                user_doc = CandidateDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_id=i['doc_id'],og_code=str(request.user.og_code)).update(isActive=False)
                 
                 # if user_doc is None:
                 CandidateDocuments.objects.create(
@@ -1451,7 +1448,7 @@ class ApprovedCandidateStatus(GenericAPIView):
         id = request_data.get('id')
 
         userid = str(request.user.id)
-        userobj = UserAdmin.objects.filter(id=userid).first()
+        userobj = UserAdmin.objects.filter(id=userid,og_code=str(request.user.og_code)).first()
         if userobj is not None:
             usertype = userobj.user_type
         else:
@@ -1520,7 +1517,7 @@ class DeclinedCandidateStatus(GenericAPIView):
         
         id = request_data.get('id')
         userid = str(request.user.id)
-        userobj = UserAdmin.objects.filter(id=userid).first()
+        userobj = UserAdmin.objects.filter(id=userid,og_code=str(request.user.og_code)).first()
         if userobj is not None:
             usertype = userobj.user_type
         else:
@@ -1528,7 +1525,7 @@ class DeclinedCandidateStatus(GenericAPIView):
 
         decline_reason = request_data.get('decline_reason')
         if id is not None:
-            candiobj = Candidate.objects.filter(id=id,isActive=True).first()
+            candiobj = Candidate.objects.filter(id=id,isActive=True,og_code=str(request.user.og_code)).first()
             if candiobj is not None:
                 candiobj.decline_reason = decline_reason
                 candiobj.candidate_status = 4
@@ -1591,7 +1588,7 @@ class SendMailOTP(GenericAPIView):
         
         email = request_data.get('email')
         if email is not None and email != '':
-            cand_object = Candidate.objects.filter(isActive=True,email=email).first()
+            cand_object = Candidate.objects.filter(isActive=True,email=email,og_code=str(request.user.og_code)).first()
             if cand_object is not None:
                 response_={
                 'n':0,
@@ -1834,7 +1831,7 @@ class CandidateDetails (GenericAPIView):
             data['highest_qualification']=request_data.get('highest_qualification')
             data = apply_student_fields(data, request_data)
           
-            peobj=Candidate.objects.filter(id=candidate_id,isActive=True).first()
+            peobj=Candidate.objects.filter(id=candidate_id,isActive=True,og_code=str(request.user.og_code)).first()
             if peobj is not None:
                 serializer = CandidateSerializer(peobj,data=data,partial=True)
                 if serializer.is_valid():
@@ -1888,316 +1885,18 @@ class CandidateDetails (GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-            
-
-# class CandidateDocsList(GenericAPIView):
-#     def get(self,request):
-#         encryped_header = ""
-#         if 'encrypted' in request.headers.keys():
-#             encryped_header = request.headers.get('encrypted')
-
-#         documents_required_object = Documents.objects.filter(isActive=True,role=6)
-#         if documents_required_object is not None:
-#             documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-            
-#             response_={
-#                 "n": 1,
-#                 'msg':'documents list found Successfully.',
-#                 'data':documents_required_ser.data
-#             }
-#             if encryped_header == "1" :
-#                 data_to_serialize = convert_decimals_to_float(response_)
-#                 encdata = encrypt_data(json.dumps(data_to_serialize))
-#                 return Response(encdata,status=200)
-#             else:
-#                 return Response(response_,status=200)
-#         else:
-#             response_={
-#                             "n": 0,
-#                             "msg": 'documents list not found',
-#                             "data":[]                     
-#                         }
-#             if encryped_header == "1" :
-#                 data_to_serialize = convert_decimals_to_float(response_)
-#                 encdata = encrypt_data(json.dumps(data_to_serialize))
-#                 return Response(encdata,status=200)
-#             else:
-#                 return Response(response_,status=200)
-import ast
-class candidatedocumentssubmit(GenericAPIView):
-     def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        # request_data, error_response = handle_request_body(request)
-        # if error_response:
-        #     return error_response
-
-        user_ids = request.data.getlist('user_id')
-        if len(user_ids) == 1 and user_ids[0].startswith('['):
-            try:
-                user_ids = ast.literal_eval(user_ids[0])
-            except Exception as e:
-                return Response({"error": f"Invalid user_id format: {str(e)}"}, status=400)
-        else:
-            user_ids = user_ids
-      
-        doc_ids = request.data.getlist('doc_id')
-        if len(doc_ids) == 1 and doc_ids[0].startswith('['):
-            try:
-                doc_ids = list(map(int,ast.literal_eval(doc_ids[0])))
-            except Exception as e:
-                return Response({"error": f"Invalid doc_id format: {str(e)}"}, status=400)
-        else:
-            doc_ids = list(map(int, doc_ids))
-     
-        doc_names = request.data.getlist('doc_name')
-        if len(doc_names) == 1 and doc_names[0].startswith('['):
-            try:
-                doc_names = ast.literal_eval(doc_names[0])
-            except Exception as e:
-                return Response({"error": f"Invalid user_id format: {str(e)}"}, status=400)
-        else:
-            doc_names = doc_names
-
-
-        file_uploads = request.FILES.getlist('document_file_upload')
-        educational_certificate_upload = request.FILES.get('educational_certificate_upload')
-        certificate_name = request.data.get('certificate_name')
-
-
-        # Creating the list of dictionaries
-        result = [
-            {
-                'user_id': user_id,
-                'doc_id': doc_id,
-                'doc_name': doc_name,
-                'document_file_upload': file_upload,
-            }
-            for user_id, doc_id, doc_name, file_upload in zip(user_ids, doc_ids, doc_names, file_uploads)
-        ]
-
-        docsUpload = request.FILES.getlist('document_file_upload')
-        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','candidate')
-
-        
-        file_url_list = []
-        for i in result:
-            userid = i['user_id']
-            file_url=save_file(folder_path,i['document_file_upload'],request)
-            user_doc = CandidateDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_url =file_url).update(isActive=False)
-            
-            # if user_doc is None:
-            CandidateDocuments.objects.create(
-                document_id = i['doc_id'],
-                document_name = i['doc_name'],
-                user_id = i['user_id'],
-                document_url =file_url
-            )
-        cduserid = user_ids[0]
-        cdobj = Candidate.objects.filter(id=cduserid).first()
-        if educational_certificate_upload is not None:
-            cer_file_url=save_file(folder_path,educational_certificate_upload,request)
-            cdobj.certificate_name = certificate_name
-            cdobj.educational_certificate = cer_file_url
-            cdobj.save()
-
-       
-        cdobj.candidate_status = '2'
-        cdobj.save()
-
-
-        response_={
-            "n": 1,
-            "msg": 'Files uploaded successfully',
-            "data":[]               
-        }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-        
-
-
-
-
-class getenrollmentdocuments (GenericAPIView):
-   
-     def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-        
-        cand = request.data.get('candidateid')
-        candidateobj = Candidate.objects.filter(id=cand).first()
-        if candidateobj is not None:
-            cand_ser =CandidateSerializer(candidateobj)
-            country_id=cand_ser.data['country']
-            department_id=cand_ser.data['department']
-            rank_id=cand_ser.data['rank']
-            qualid = cand_ser.data['highest_qualification']
-            document_ids=[]
-
-
-            country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True).values_list('id',flat=True))
-
-            find_combination_obj=GeneralEligibilityDepartmentRankCombinations.objects.filter(general_eligibility_rule_id__in=country_rules_ids,departments=department_id,ranks=rank_id,isActive=True).first()
-            
-
-            if find_combination_obj is not None:
-
-                combination_rule_id=find_combination_obj.general_eligibility_rule_id
-               
-                min_age_required=find_combination_obj.minimum_age
-                age = calculate_age(cand_ser.data['dob'])
-
-                qualification_ids=list(GeneralEligibilityEducationalQualifications.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('educational_qualification_id',flat=True))
-
-                if age > int(min_age_required) and  int(qualid) in qualification_ids:
-                    document_ids=list(GeneralEligibilityMandatoryDocuments.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('document_id',flat=True))
-                    if len(document_ids) != 0:
-                        documents_required_object = Documents.objects.filter(id__in=document_ids,isActive=True,role=6)
-                    else:
-                        documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-                else:
-                    documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-                
-            else:
-                documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-
-
-            documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-            
-            for d in documents_required_ser.data:
-                doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id']).first()
-                if doc_object is not None:
-                    d['uploaded_proof'] = doc_object.document_url
-                else:
-                    d['uploaded_proof'] = ""
-               
-                   
-            country_name = ""
-            state_name = ""
-            if cand_ser.data['country'] is not None and cand_ser.data['country'] != "":
-                country_object = Country.objects.filter(id=cand_ser.data['country']).first()
-                if country_object is not None:
-                    country_name = country_object.name
-                else:
-                    country_name = ""
-            else:
-                country_name = ""
-
-
-            if cand_ser.data['state'] is not None and cand_ser.data['state'] != "":
-                state_object = State.objects.filter(id=cand_ser.data['state']).first()
-                if state_object is not None:
-                    state_name = state_object.name
-                else:
-                    state_name = ""
-            else:
-                state_name = ""
-                
-            proof_data = documents_required_ser.data
-            state_name = state_name
-            country_name = country_name
-            serializer_data = cand_ser.data
-            if qualid is not None:
-                EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid)).first()
-                educatser = EducationalQualificationsSerializer(EducationalQualificationsobj)
-                educatser_data = educatser.data
-                educatser_data.update({
-                    'uploaded_certificate' : cand_ser.data['educational_certificate'],
-                    'certificate_name' : cand_ser.data['certificate_name']
-                })
-                # datestring = serializer_data['createdAt']
-                # date = datetime.strptime(datestring, "%d %b %Y")
-                # createdAt = convertcreationdate(datestring) 
-
-                serializer_data.update({
-                    "education_document_data":educatser_data,
-                    "proof_data":documents_required_ser.data,
-                    "state_name":state_name,
-                    "country_name":country_name,
-                    # "createdAt":date
-                })
-                
-            response_={
-                "n": 1,
-                'msg':'Candidate found Successfully.',
-                'data':serializer_data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            response_={
-                "n": 0,
-                'msg':'Candidate not found.',
-                'data':serializer_data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-
-from itertools import chain
-
-class candidatecoursecategories(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)        
-    def get(self,request):
-       
-        cadid = str(request.user.id)
-        enrollobjs = Enrollments.objects.filter(candidate=cadid,isActive=True,enrollments_status='2').values_list('course',flat=True)
-        enroll_list = list(map(int,enrollobjs))
-        if enroll_list != []:
-            courseobj =  CourseEligibility.objects.filter(course_id__in=enroll_list).order_by('id')
-            category_lists = courseobj.values_list('category', flat=True)
-            # Flatten and remove duplicates using set
-            unique_categories = set(chain.from_iterable(filter(None, category_lists)))
-            category_list = list(map(int,unique_categories))
-            categobj =  Category.objects.filter(id__in=category_list).order_by('category_name')
-            catser = CategorySerializer(categobj,many=True)
-
-            response_={
-            "n": 1,
-            'msg':'category list found Successfully.',
-            'data':catser.data
-            }
-            return Response(response_,status=200)
-        else:
-            response_={
-                        "n": 0,
-                        "msg": 'course list not found',
-                        "data":[]                     
-                    }
-           
-            return Response(response_,status=200)
-
-
 class getcertificates(GenericAPIView):
     authentication_classes=[CandidateJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)        
     def get(self,request):
         cadid = str(request.user.id)
-        examschedilelist = ExamCandidateResult.objects.filter(candidate_id=cadid,isActive=True,is_passed=True).values_list('exam_schedule_id',flat=True)
+        examschedilelist = ExamCandidateResult.objects.filter(candidate_id=cadid,isActive=True,is_passed=True,og_code=str(request.user.og_code)).values_list('exam_schedule_id',flat=True)
         if examschedilelist.exists():
             examsclist = list(map(int,examschedilelist))
-            courselistobj = ScheduleExam.objects.filter(id__in=examsclist,isActive=True).values_list('course',flat=True)
+            courselistobj = ScheduleExam.objects.filter(id__in=examsclist,isActive=True,og_code=str(request.user.og_code)).values_list('course',flat=True)
             if courselistobj.exists():
                 newcourselist =list(set(courselistobj))
-                courseobj = Course.objects.filter(id__in=newcourselist).order_by('id')
+                courseobj = Course.objects.filter(id__in=newcourselist,og_code=str(request.user.og_code)).order_by('id')
                 courseser = CourseSerializer(courseobj,many=True)
                 for c in courseser.data:
                     expiry_date_str = c['expiry']
@@ -2210,9 +1909,9 @@ class getcertificates(GenericAPIView):
 
 
                     
-                    ScheduleExamids = ScheduleExam.objects.filter(course = c['id'],isActive=True).values_list('id',flat=True)
-                    ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,candidate_id = cadid).order_by('start_created_time').last()
-                    modeschobj = ScheduleExam.objects.filter(id=ExamCandidateResultids.exam_schedule_id).first()
+                    ScheduleExamids = ScheduleExam.objects.filter(course = c['id'],isActive=True,og_code=str(request.user.og_code)).values_list('id',flat=True)
+                    ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,og_code=str(request.user.og_code),candidate_id = cadid).order_by('start_created_time').last()
+                    modeschobj = ScheduleExam.objects.filter(id=ExamCandidateResultids.exam_schedule_id,og_code=str(request.user.og_code)).first()
                     mode = modeschobj.exam_mode
                     if mode == 1:
                         c['mode'] = 'Virtual'
@@ -2247,15 +1946,6 @@ class getcertificates(GenericAPIView):
                 "data":[]                     
             }
             return Response(response_,status=200)
-
-
-
-
-
-
-
-
-
 class getresults(GenericAPIView):
     authentication_classes=[CandidateJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)        
@@ -2274,10 +1964,10 @@ class getresults(GenericAPIView):
         cadid = str(request.user.id)
 
 
-        examschedilelist = ExamCandidateResult.objects.filter(candidate_id=cadid,isActive=True).values_list('exam_schedule_id',flat=True)
+        examschedilelist = ExamCandidateResult.objects.filter(candidate_id=cadid,isActive=True,og_code=str(request.user.og_code)).values_list('exam_schedule_id',flat=True)
         if examschedilelist.exists():
             examsclist = list(map(int,examschedilelist))
-            courselistobj = ScheduleExam.objects.filter(id__in=examsclist,isActive=True).values_list('course',flat=True)
+            courselistobj = ScheduleExam.objects.filter(id__in=examsclist,isActive=True,og_code=str(request.user.og_code)).values_list('course',flat=True)
             if courselistobj.exists():
                 if categoryid != 'all':
                     category_id = str(categoryid)
@@ -2287,11 +1977,11 @@ class getresults(GenericAPIView):
                     newcourselist =list(set(courselistobj))
 
                 if newcourselist != []:
-                    courseobj = Course.objects.filter(id__in=newcourselist).order_by('id')
+                    courseobj = Course.objects.filter(id__in=newcourselist,og_code=str(request.user.og_code)).order_by('id')
                     courseser = CourseSerializer(courseobj,many=True)
                     for c in courseser.data:
-                        ScheduleExamids = ScheduleExam.objects.filter(course = c['id'],isActive=True).values_list('id',flat=True)
-                        ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,candidate_id = cadid).order_by('start_created_time')
+                        ScheduleExamids = ScheduleExam.objects.filter(course = c['id'],isActive=True,og_code=str(request.user.og_code)).values_list('id',flat=True)
+                        ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,candidate_id = cadid,og_code=str(request.user.og_code)).order_by('start_created_time')
                         Examser = ExamCandidateResultSerializer(ExamCandidateResultids,many=True)
                         for e in Examser.data:
                             e['start_created_time'] = getdatewithtime(str(e['start_created_time']))
@@ -2300,7 +1990,7 @@ class getresults(GenericAPIView):
                             else:
                                 e['pass_status'] = 'Not Yet Competent'
 
-                            eemodeschobj = ScheduleExam.objects.filter(id=e['exam_schedule_id']).first()
+                            eemodeschobj = ScheduleExam.objects.filter(id=e['exam_schedule_id'],og_code=str(request.user.og_code)).first()
                             eemode = eemodeschobj.exam_mode
                             if eemode == 1:
                                 e['mode'] = 'Virtual'
@@ -2315,7 +2005,7 @@ class getresults(GenericAPIView):
                             attempts_left = 3-attemptsgiven
                         c['attempts_left'] =attempts_left
 
-                        ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,candidate_id = cadid).order_by('start_created_time').last()
+                        ExamCandidateResultids = ExamCandidateResult.objects.filter(exam_schedule_id__in=ScheduleExamids,candidate_id = cadid,og_code=str(request.user.og_code)).order_by('start_created_time').last()
                         modeschobj = ScheduleExam.objects.filter(id=ExamCandidateResultids.exam_schedule_id).first()
                         mode = modeschobj.exam_mode
                         if mode == 1:
@@ -2323,7 +2013,7 @@ class getresults(GenericAPIView):
                         else:
                             c['mode'] = 'Offline'
 
-                        adminobj = UserAdmin.objects.filter(id=modeschobj.college).first()
+                        adminobj = UserAdmin.objects.filter(id=modeschobj.college,og_code=str(request.user.og_code)).first()
                         if adminobj is not None:
                             c['inst_name'] = adminobj.name
                         else:
@@ -2391,107 +2081,6 @@ class getresults(GenericAPIView):
 
 
 
-class CountryList(GenericAPIView):
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        countryobj = Country.objects.filter(isActive=True,)
-        if countryobj is not None:
-            country_ser =CountrySerializer(countryobj,many=True)
-            
-            response_={
-                "n": 1,
-                'msg':'country list found Successfully.',
-                'data':country_ser.data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            response_={
-                            "n": 0,
-                            "msg": 'country list not found',
-                            "data":[]                     
-                        }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-class NonEligibleCountryList(GenericAPIView):
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        countryobj = Country.objects.filter(isActive=True,is_eligibile=False)
-        if countryobj is not None:
-            country_ser =CountrySerializer(countryobj,many=True)
-            
-            response_={
-                "n": 1,
-                'msg':'country list found Successfully.',
-                'data':country_ser.data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            response_={
-                            "n": 0,
-                            "msg": 'country list not found',
-                            "data":[]                     
-                        }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-class EligibleCountryList(GenericAPIView):
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        countryobj = Country.objects.filter(isActive=True,is_eligibile=True)
-        if countryobj is not None:
-            country_ser =CountrySerializer(countryobj,many=True)
-            
-            response_={
-                "n": 1,
-                'msg':'country list found Successfully.',
-                'data':country_ser.data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            response_={
-                            "n": 0,
-                            "msg": 'country list not found',
-                            "data":[]                     
-                        }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
 
 class ForgotPassword(GenericAPIView):
     # authentication_classes=[UserAdminJWTAuthentication]
@@ -2508,7 +2097,7 @@ class ForgotPassword(GenericAPIView):
         
         email = request.data.get('email')
         if email is not None and email != '':
-            checkexist = Candidate.objects.filter(email = email,isActive=True).first()
+            checkexist = Candidate.objects.filter(email = email,isActive=True,og_code=str(request.user.og_code)).first()
             if checkexist is not None:
                 curruser = checkexist.first_name +" "+checkexist.last_name
                 dicti = {'email': email,'Name':curruser,'frontUrl':frontURL,'userid':checkexist.id}
@@ -2561,7 +2150,6 @@ class ForgotPassword(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
- 
 class ResetPassword(GenericAPIView):
     # authentication_classes=[UserAdminJWTAuthentication]
     # permission_classes = (permissions.IsAuthenticated,)        
@@ -2580,7 +2168,7 @@ class ResetPassword(GenericAPIView):
         userid = request.data.get('userid')
         if newpassword is not None and newpassword != '':
             if userid is not None and userid != '':
-                checkexistuser = Candidate.objects.filter(id = userid,isActive=True).first()
+                checkexistuser = Candidate.objects.filter(id = userid,isActive=True,og_code=str(request.user.og_code)).first()
                 if checkexistuser is not None:
                     checkexistuser.password = newpassword
                     checkexistuser.save()
@@ -2631,9 +2219,6 @@ class ResetPassword(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-
-        
-      
 class SendPasswordVerificationOTP(GenericAPIView):
     # authentication_classes=[CandidateJWTAuthentication]
     # permission_classes = (permissions.IsAuthenticated,)     
@@ -2650,7 +2235,7 @@ class SendPasswordVerificationOTP(GenericAPIView):
         
         email = request_data.get('email')
         if email is not None and email != '':
-            cand_object = Candidate.objects.filter(isActive=True,email=email).first()
+            cand_object = Candidate.objects.filter(isActive=True,email=email,og_code=str(request.user.og_code)).first()
             if cand_object is None:
                 response_={
                 'n':0,
@@ -2708,9 +2293,6 @@ class SendPasswordVerificationOTP(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
- 
-
-    
 class SetPassword(GenericAPIView):
     # authentication_classes=[UserAdminJWTAuthentication]
     # permission_classes = (permissions.IsAuthenticated,)        
@@ -2729,7 +2311,7 @@ class SetPassword(GenericAPIView):
         email = request.data.get('email')
         if newpassword is not None and newpassword != '':
             if email is not None and email != '':
-                checkexistuser = Candidate.objects.filter(email=email, isActive=True).first()
+                checkexistuser = Candidate.objects.filter(email=email, isActive=True,og_code=str(request.user.og_code)).first()
                 if checkexistuser is not None:
                     checkexistuser.password = newpassword
                     checkexistuser.save()
@@ -2780,305 +2362,6 @@ class SetPassword(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-
-        
-
-
-
-class GetGeneralDetails(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        cand = request.user.id
-        candidateobj = Candidate.objects.filter(id=cand).first()
-        if candidateobj is not None:
-            cand_ser =CandidateSerializer(candidateobj)
-
-
-            # department_id=cand_ser.data['department']
-            # if cand_ser.data['rank'] !='' and cand_ser.data['rank'] is not None and cand_ser.data['rank'] !='Select rank':
-            #     rank_id=cand_ser.data['rank']
-            # else:
-            #     rank_id=''
-            # qualid = cand_ser.data['highest_qualification']
-            # document_ids=[]
-
-            # country_id=cand_ser.data['country']
-            # country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True).values_list('id',flat=True))
-            # if rank_id !='' and rank_id is not None and rank_id !='Select rank':
-
-            #     find_combination_obj=GeneralEligibilityDepartmentRankCombinations.objects.filter(general_eligibility_rule_id__in=country_rules_ids,departments=department_id,ranks=rank_id,isActive=True).first()
-            
-
-            #     if find_combination_obj is not None:
-
-            #         combination_rule_id=find_combination_obj.general_eligibility_rule_id
-                
-            #         min_age_required=find_combination_obj.minimum_age
-            #         age = calculate_age(cand_ser.data['dob'])
-
-            #         qualification_ids=list(GeneralEligibilityEducationalQualifications.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('educational_qualification_id',flat=True))
-
-            #         if age > int(min_age_required) and  int(qualid) in qualification_ids:
-            #             document_ids=list(GeneralEligibilityMandatoryDocuments.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('document_id',flat=True))
-            #             if len(document_ids) != 0:
-            #                 documents_required_object = Documents.objects.filter(id__in=document_ids,isActive=True,role=6)
-            #             else:
-            #                 documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-            #         else:
-            #             documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-                    
-            #     else:
-            #         documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-            # else:
-            #     documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-
-
-            # documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-            
-            # for d in documents_required_ser.data:
-            #     doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id']).first()
-            #     if doc_object is not None:
-            #         d['uploaded_proof'] = doc_object.document_url
-            #     else:
-            #         d['uploaded_proof'] = ""
-               
-                   
-            # country_name = ""
-            # if cand_ser.data['country'] is not None and cand_ser.data['country'] != "":
-            #     country_object = Country.objects.filter(id=cand_ser.data['country']).first()
-            #     if country_object is not None:
-            #         country_name = country_object.name
-            #     else:
-            #         country_name = ""
-            # else:
-            #     country_name = ""
-
-            # city_name = cand_ser.data['city']
-
-
-
-            # state_name = ""
-
-            # if cand_ser.data['state'] is not None and cand_ser.data['state'] != "":
-            #     state_object = State.objects.filter(id=cand_ser.data['state']).first()
-            #     if state_object is not None:
-            #         state_name = state_object.name
-            #     else:
-            #         state_name = ""
-            # else:
-            #     state_name = ""
-
-            # if cand_ser.data['department'] is not None and cand_ser.data['department'] != "":
-            #     department_object = Department.objects.filter(id=cand_ser.data['department']).first()
-            #     if department_object is not None:
-            #         department_name = department_object.department_name
-            #     else:
-            #         department_name = ""
-            # else:
-            #     department_name = ""
-            # if cand_ser.data['rank'] is not None and cand_ser.data['rank'] != "" and cand_ser.data['rank'] !='Select rank':
-            #     rank_object = Rank.objects.filter(id=cand_ser.data['rank']).first()
-            #     if rank_object is not None:
-            #         rank_name = rank_object.rank
-            #     else:
-            #         rank_name = ""
-            # else:
-            #     rank_name = ""
-
-            # proof_data = documents_required_ser.data
-            # state_name = state_name
-            # country_name = country_name
-            serializer_data = cand_ser.data
-
-
-            # serializer_data.update({
-            #     "proof_data":documents_required_ser.data,
-            #     "state_name":state_name,
-            #     "country_name":country_name,
-            #     "department_name":department_name,
-            #     "rank_name":rank_name,
-            #     "city_name":city_name,
-            #     "state_name":state_name,
-            #     # "createdAt":date
-            # })
-
-
-            # if qualid is not None and qualid !='' and qualid !='Select Qualification':
-            #     EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid)).first()
-            #     educatser = EducationalQualificationsSerializer(EducationalQualificationsobj)
-            #     educatser_data = educatser.data
-            #     educatser_data.update({
-            #         'uploaded_certificate' : cand_ser.data['educational_certificate'],
-            #         'certificate_name' : cand_ser.data['certificate_name']
-            #     })
-            #     # datestring = serializer_data['createdAt']
-            #     # date = datetime.strptime(datestring, "%d %b %Y")
-            #     # createdAt = convertcreationdate(datestring) 
-
-            #     serializer_data.update({
-            #         "education_document_data":educatser_data,
-            #     })
-                
-            response_={
-                "n": 1,
-                'msg':'Candidate found Successfully.',
-                'data':serializer_data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-class UpdateGeneralDetails(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def post(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        data = {}
-        first_name = request_data.get('first_name')
-        if first_name is not None and first_name != '':
-
-            data['first_name']=request_data.get('first_name')
-
-        middle_name = request_data.get('middle_name')
-        if middle_name is not None and middle_name != '':
-            data['middle_name']=request_data.get('middle_name')
-        last_name = request_data.get('last_name')
-        if last_name is not None and last_name != '':
-            data['last_name']=request_data.get('last_name')
-
-        dob = request_data.get('dob')
-        if dob is not None and dob != '':
-            data['dob']=request_data.get('dob')
-
-        data = apply_student_fields(data, request_data)
-
-
-
-
-
-
-
-
-            
-        if request.FILES.get('profile_pic') is not None and request.FILES.get('profile_pic') !='':
-            fileInput=request.FILES.get('profile_pic')
-            folder_path = os.path.join(settings.MEDIA_ROOT,'media','Candidate Profile Pictures')
-            file_url=save_file(folder_path,fileInput,request)
-            data['profile_pic'] = file_url
-
-
-
-        
-        cand = request.user.id
-        candidateobj = Candidate.objects.filter(id=cand,isActive=True).first()
-        if candidateobj is not None:
-
-            email = request_data.get('email')
-            if email is not None and email != '':
-                data['email']=request_data.get('email')
-                check_email = Candidate.objects.filter(email=data['email'],isActive=True).exclude(id=cand).first()
-                if check_email is not None:
-                    response_={
-                        "n": 0,
-                        "msg": 'Email already exists',
-                        "data":[]                     
-                    }
-                    if encryped_header == "1" :
-                        data_to_serialize = convert_decimals_to_float(response_)
-                        encdata = encrypt_data(json.dumps(data_to_serialize))
-                        return Response(encdata,status=200)
-                    else:
-                        return Response(response_,status=200)
-            mobilenumber = request_data.get('mobilenumber')
-            if mobilenumber is not None and mobilenumber != '':
-                data['mobilenumber']=request_data.get('mobilenumber')
-
-                check_mobile = Candidate.objects.filter(mobilenumber=data['mobilenumber'],isActive=True).exclude(id=cand).first()
-                if check_mobile is not None:
-                    response_={
-                        "n": 0,
-                        "msg": 'Mobile number already exists',
-                        "data":[]                     
-                    }
-                    if encryped_header == "1" :
-                        data_to_serialize = convert_decimals_to_float(response_)
-                        encdata = encrypt_data(json.dumps(data_to_serialize))
-                        return Response(encdata,status=200)
-                    else:
-                        return Response(response_,status=200)
-                
-
-            cand_ser =CandidateSerializer(candidateobj,data=data,partial=True)
-            if cand_ser.is_valid():
-                cand_ser.save()
-                serializer_data = cand_ser.data
-                response_={
-                    "n": 1,
-                    'msg':'Candidate general details updated successfully.',
-                    'data':serializer_data
-                }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-                
-            else:
-                first_key, first_value = next(iter(cand_ser.errors.items()))
-                response_={
-                            "n": 0,
-                            "msg": first_key+' : '+ first_value[0],
-                            "data":cand_ser.errors                    
-                        }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
 class UpdateCandidatePassword(GenericAPIView):
     authentication_classes=[CandidateJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -3094,7 +2377,7 @@ class UpdateCandidatePassword(GenericAPIView):
 
         cand = request.user.id
         newpassword = request_data.get('newpassword')
-        checkexistuser = Candidate.objects.filter(id = cand,isActive=True).first()
+        checkexistuser = Candidate.objects.filter(id = cand,isActive=True,og_code=str(request.user.og_code)).first()
         if checkexistuser is not None:
             checkexistuser.password = newpassword
             checkexistuser.save()
@@ -3124,8 +2407,6 @@ class UpdateCandidatePassword(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-
-
 class UpdateCandidateProfilePicture(GenericAPIView):
     authentication_classes=[CandidateJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -3147,7 +2428,7 @@ class UpdateCandidateProfilePicture(GenericAPIView):
             data['profile_pic'] = file_url
 
             cand = request.user.id
-            candidateobj = Candidate.objects.filter(id=cand,isActive=True).first()
+            candidateobj = Candidate.objects.filter(id=cand,isActive=True,og_code=str(request.user.og_code)).first()
             if candidateobj is not None:
                 cand_ser =CandidateSerializer(candidateobj,data=data,partial=True)
                 if cand_ser.is_valid():
@@ -3209,549 +2490,6 @@ class UpdateCandidateProfilePicture(GenericAPIView):
 
 
 
-
-
-class GetSeafarersDetails(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        cand = request.user.id
-        candidateobj = Candidate.objects.filter(id=cand).first()
-        if candidateobj is not None:
-            cand_ser =CandidateSerializer(candidateobj)
-            
-            
-            if cand_ser.data['rank'] !='' and cand_ser.data['rank'] is not None and cand_ser.data['rank'] !='Select rank':
-                rank_id=cand_ser.data['rank']
-            else:
-                rank_id=''
-            # qualid = cand_ser.data['highest_qualification']
-            # document_ids=[]
-
-            # country_id=cand_ser.data['country']
-            # country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True).values_list('id',flat=True))
-           
-            # documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-            
-            # for d in documents_required_ser.data:
-            #     doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id']).first()
-            #     if doc_object is not None:
-            #         d['uploaded_proof'] = doc_object.document_url
-            #     else:
-            #         d['uploaded_proof'] = ""
-               
-                   
-            country_name = ""
-            if cand_ser.data['country'] is not None and cand_ser.data['country'] != "":
-                country_object = Country.objects.filter(id=cand_ser.data['country']).first()
-                if country_object is not None:
-                    country_name = country_object.name
-                else:
-                    country_name = ""
-            else:
-                country_name = ""
-
-
-
-
-            state_name = ""
-
-            if cand_ser.data['state'] is not None and cand_ser.data['state'] != "":
-                state_object = State.objects.filter(id=cand_ser.data['state']).first()
-                if state_object is not None:
-                    state_name = state_object.name
-                else:
-                    state_name = ""
-            else:
-                state_name = ""
-
-            if cand_ser.data['department'] is not None and cand_ser.data['department'] != "":
-                department_object = Department.objects.filter(id=cand_ser.data['department']).first()
-                if department_object is not None:
-                    department_name = department_object.department_name
-                else:
-                    department_name = ""
-            else:
-                department_name = ""
-
-            if cand_ser.data['rank'] is not None and cand_ser.data['rank'] != "" and cand_ser.data['rank'] !='Select rank':
-                rank_object = Rank.objects.filter(id=cand_ser.data['rank']).first()
-                if rank_object is not None:
-                    rank_name = rank_object.rank
-                else:
-                    rank_name = ""
-            else:
-                rank_name = ""
-
-
-            city_name = cand_ser.data['city']
-
-
-            # proof_data = documents_required_ser.data
-
-            serializer_data = cand_ser.data
-
-
-            serializer_data.update({
-                # "proof_data":documents_required_ser.data,
-                "state_name":state_name,
-                "country_name":country_name,
-                "department_name":department_name,
-                "rank_name":rank_name,
-                "city_name":city_name,
-
-            })
-
-
-            # if qualid is not None and qualid !='' and qualid !='Select Qualification':
-            #     EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid)).first()
-            #     educatser = EducationalQualificationsSerializer(EducationalQualificationsobj)
-            #     educatser_data = educatser.data
-            #     educatser_data.update({
-            #         'uploaded_certificate' : cand_ser.data['educational_certificate'],
-            #         'certificate_name' : cand_ser.data['certificate_name']
-            #     })
-            #     # datestring = serializer_data['createdAt']
-            #     # date = datetime.strptime(datestring, "%d %b %Y")
-            #     # createdAt = convertcreationdate(datestring) 
-
-            #     serializer_data.update({
-            #         "education_document_data":educatser_data,
-            #     })
-                
-            response_={
-                "n": 1,
-                'msg':'Candidate seafarers details found Successfully.',
-                'data':serializer_data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-
-
-class UpdateSeafarersDetails(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def post(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return Response(error_response,status=400)
-        data = {}
-        seaman_book_number = request_data.get('seaman_book_number')
-        if seaman_book_number is not None and seaman_book_number != '':
-            data['seaman_book_number']=request_data.get('seaman_book_number')
-        passport_number = request_data.get('passport_number')
-        if passport_number is not None and passport_number != '':
-            data['passport_number']=request_data.get('passport_number')
-        department= request_data.get('department')
-        if department is not None and department != '' and department != 'Select Department':
-            data['department']=request_data.get('department')
-        rank = request_data.get('rank')
-        if rank is not None and rank != '' and rank != 'Select rank':
-            data['rank']=request_data.get('rank')
-        pincode= request_data.get('pincode')
-        if pincode is not None and pincode != '':
-            data['pincode']=request_data.get('pincode')
-
-        country= request_data.get('country')
-        if country is not None and country != '' and country != 'Select Country':
-            data['country']=request_data.get('country')
-        state= request_data.get('state')
-        if state is not None and state != '' and state != 'Select State':
-            data['state']=request_data.get('state')
-        city= request_data.get('city')
-        if city is not None and city != '':
-            data['city']=request_data.get('city')
-        
-        coc= request_data.get('coc')
-        if coc is not None and coc != '':
-            data['coc']=request_data.get('coc')
-
-
-        cand = request.user.id
-
-        candidateobj = Candidate.objects.filter(id=cand,isActive=True).first()
-        if candidateobj is not None:
-            cand_ser = CandidateSerializer(candidateobj,data=data,partial=True)
-            if cand_ser.is_valid():
-                cand_ser.save()
-
-                serializer_data = cand_ser.data 
-
-                response_={
-                    "n": 1,
-                    'msg':'Candidate seafarers details updated successfully.',
-                    'data':serializer_data
-                }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-            else:
-                first_key, first_value = next(iter(cand_ser.errors.items()))
-                response_={
-                            "n": 0,
-                            "msg": first_key+' : '+ first_value[0],
-                            "data":cand_ser.errors                    
-                        }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-
-
-class GetCandidateMandatoryDocument(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        cand = request.user.id
-        candidateobj = Candidate.objects.filter(id=cand).first()
-        if candidateobj is not None:
-            cand_ser =CandidateSerializer(candidateobj)
-            
-            department_id=cand_ser.data['department']
-            if cand_ser.data['rank'] !='' and cand_ser.data['rank'] is not None and cand_ser.data['rank'] !='Select rank':
-                rank_id=cand_ser.data['rank']
-            else:
-                rank_id=''
-            qualid = cand_ser.data['highest_qualification']
-            document_ids=[]
-
-            country_id=cand_ser.data['country']
-            country_rules_ids=list(GeneralEligibilityRules.objects.filter(country_id=country_id,isActive=True).values_list('id',flat=True))
-            if rank_id !='' and rank_id is not None and rank_id !='Select rank':
-
-                find_combination_obj=GeneralEligibilityDepartmentRankCombinations.objects.filter(general_eligibility_rule_id__in=country_rules_ids,departments=department_id,ranks=rank_id,isActive=True).first()
-            
-
-                if find_combination_obj is not None:
-
-                    combination_rule_id=find_combination_obj.general_eligibility_rule_id
-                
-                    min_age_required=find_combination_obj.minimum_age
-                    age = calculate_age(cand_ser.data['dob'])
-
-                    qualification_ids=list(GeneralEligibilityEducationalQualifications.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('educational_qualification_id',flat=True))
-
-                    if age > int(min_age_required) and  int(qualid) in qualification_ids:
-                        document_ids=list(GeneralEligibilityMandatoryDocuments.objects.filter(general_eligibility_rule_id=combination_rule_id,isActive=True).values_list('document_id',flat=True))
-                        if len(document_ids) != 0:
-                            documents_required_object = Documents.objects.filter(id__in=document_ids,isActive=True,role=6)
-                        else:
-                            documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-                    else:
-                        documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-                    
-                else:
-                    documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-            else:
-                documents_required_object = Documents.objects.filter(document_name__in=['Passport','Birth Certificate'],isActive=True,role=6)
-
-
-            documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-            
-
-
-
-
-
-
-
-
-
-
-            for d in documents_required_ser.data:
-                doc_object = CandidateDocuments.objects.filter(isActive=True,user_id=cand,document_id=d['id']).first()
-                if doc_object is not None:
-                    d['uploaded_proof'] = doc_object.document_url
-                else:
-                    d['uploaded_proof'] = ""
-
-
-            proof_data = documents_required_ser.data
-
-            serializer_data = {
-                "eligibility_documents": proof_data
-            }
-
-
-
-
-            if qualid is not None and qualid !='' and qualid !='Select Qualification':
-                EducationalQualificationsobj = EducationalQualifications.objects.filter(id=int(qualid)).first()
-                educatser = EducationalQualificationsSerializer(EducationalQualificationsobj)
-                educatser_data = educatser.data
-                educatser_data.update({
-                    'uploaded_certificate' : cand_ser.data['educational_certificate'],
-                    'certificate_name' : cand_ser.data['certificate_name']
-                })
-
-
-                serializer_data["educational_documents"] = educatser_data
-
-
-            response_={
-                "n": 1,
-                'msg':'Candidate seafarers details found Successfully.',
-                'data':serializer_data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-
-
-class UploadCandidateDocuments(GenericAPIView):
-     def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        # request_data, error_response = handle_request_body(request)
-        # if error_response:
-        #     return error_response
-
-        user_ids = request.data.getlist('user_id')
-        if len(user_ids) == 1 and user_ids[0].startswith('['):
-            try:
-                user_ids = ast.literal_eval(user_ids[0])
-            except Exception as e:
-                return Response({"error": f"Invalid user_id format: {str(e)}"}, status=400)
-        else:
-            user_ids = user_ids
-      
-        doc_ids = request.data.getlist('doc_id')
-        if len(doc_ids) == 1 and doc_ids[0].startswith('['):
-            try:
-                doc_ids = list(map(int,ast.literal_eval(doc_ids[0])))
-            except Exception as e:
-                return Response({"error": f"Invalid doc_id format: {str(e)}"}, status=400)
-        else:
-            doc_ids = list(map(int, doc_ids))
-     
-        doc_names = request.data.getlist('doc_name')
-        if len(doc_names) == 1 and doc_names[0].startswith('['):
-            try:
-                doc_names = ast.literal_eval(doc_names[0])
-            except Exception as e:
-                return Response({"error": f"Invalid user_id format: {str(e)}"}, status=400)
-        else:
-            doc_names = doc_names
-
-
-        file_uploads = request.FILES.getlist('document_file_upload')
-        educational_certificate_upload = request.FILES.get('educational_certificate_upload')
-        certificate_name = request.data.get('certificate_name')
-
-
-        # Creating the list of dictionaries
-        result = [
-            {
-                'user_id': user_id,
-                'doc_id': doc_id,
-                'doc_name': doc_name,
-                'document_file_upload': file_upload,
-            }
-            for user_id, doc_id, doc_name, file_upload in zip(user_ids, doc_ids, doc_names, file_uploads)
-        ]
-
-        docsUpload = request.FILES.getlist('document_file_upload')
-        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','candidate')
-
-        
-        file_url_list = []
-        for i in result:
-            userid = i['user_id']
-            file_url=save_file(folder_path,i['document_file_upload'],request)
-            user_doc = CandidateDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_url =file_url).update(isActive=False)
-            
-            # if user_doc is None:
-            CandidateDocuments.objects.create(
-                document_id = i['doc_id'],
-                document_name = i['doc_name'],
-                user_id = i['user_id'],
-                document_url =file_url
-            )
-        cduserid = user_ids[0]
-        cdobj = Candidate.objects.filter(id=cduserid).first()
-        if educational_certificate_upload is not None:
-            cer_file_url=save_file(folder_path,educational_certificate_upload,request)
-            cdobj.certificate_name = certificate_name
-            cdobj.educational_certificate = cer_file_url
-            cdobj.save()
-
-       
-        # cdobj.candidate_status = '2'
-        # cdobj.save()
-
-
-        response_={
-            "n": 1,
-            "msg": 'Files uploaded successfully',
-            "data":[]               
-        }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-        
-
-class GetCandidateInstitutesCourseDetails(GenericAPIView):
-    authentication_classes=[CandidateJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        cand = request.user.id
-        candidateobj = Candidate.objects.filter(id=cand).first()
-        if candidateobj is not None:
-            # cand_ser =CandidateSerializer(candidateobj)
-            institutes_ids = list(Enrollments.objects.filter(isActive=True,candidate=cand,enrollments_status='2').order_by('college_id').distinct('college_id').values_list('college_id',flat=True))
-
-            institutes_obj=UserAdmin.objects.filter(id__in=institutes_ids,isActive=True)
-            institutes_ser = UserAdminSerializer(institutes_obj,many=True)
-            for institute in institutes_ser.data:
-                institute['courses'] = []
-                candidate_enrolled_courses = list(Enrollments.objects.filter(isActive=True,college_id=institute['id'],candidate=cand,enrollments_status='2').order_by('course').distinct('course').values_list('course',flat=True))
-                course_obj=Course.objects.filter(id__in=candidate_enrolled_courses,isActive=True)
-                course_ser = CourseSerializer(course_obj,many=True)
-                institute['courses']=course_ser.data
-
-            response_={
-                "n": 1,
-                'msg':'Candidate Institutes details found Successfully.',
-                'data':institutes_ser.data
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-        else:
-            response_={
-                "n": 0,
-                "msg": 'Candidate not found',
-                "data":[]                     
-            }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-
-
-class StudentLogin(CandidateLogin):
-    pass
-
-
-class StudentLogout(CandidateLogout):
-    pass
-
-
-class AddStudent(AddCandidate):
-    pass
-
-
-class StudentList(PaginationCandidateList):
-    pass
-
-
-class StudentDetails(CandidateList):
-    pass
-
-
-class UpdateStudent(UpdateCandidate):
-    pass
-
-
-class DeleteStudent(DeleteCandidate):
-    pass
-
-
-class RegisterStudent(RegisterCandidate):
-    pass
-
-
-class UpdateStudentProfile(UpdateGeneralDetails):
-    pass
-
-
-class StudentProfileDetails(GetGeneralDetails):
-    pass
 
 
 
@@ -3877,8 +2615,9 @@ class AddAdmission(GenericAPIView):
         data['local_city'] = _value('local_city')
         data['local_state'] = _value('local_state')
         data['local_pincode'] = _value('local_pincode')
+       
         if _value('academic_year_id') is None or _value('academic_year_id') =='':
-            active_academic_year=AcademicYear.objects.filter(is_current=True,isActive=True).first()
+            active_academic_year=AcademicYear.objects.filter(is_current=True,isActive=True,og_code=str(request.user.og_code)).first()
             if active_academic_year is not None:
                 data['academic_year_id'] = active_academic_year.id
             else:
@@ -3904,7 +2643,7 @@ class AddAdmission(GenericAPIView):
 
         data['department_id'] = _value('department_id')
         if _value('course_id') is not None and _value('course_id') !='':
-            active_course=Course.objects.filter(id= _value('course_id'),isActive=True).first()
+            active_course=Course.objects.filter(id= _value('course_id'),isActive=True,og_code=str(request.user.og_code)).first()
             if active_course is not None:
                 data['course_id'] = active_course.department_id
             else:
@@ -3924,7 +2663,6 @@ class AddAdmission(GenericAPIView):
 
 
         data['course_id'] = _value('course_id')
-
         data['semester_id'] = _value('semester_id')
         data['class_group_id'] = _value('class_group_id')
         data['division'] = _value('division')
@@ -4184,7 +2922,7 @@ class AdmissionList(GenericAPIView):
 
     def _list_data(self, request, request_data):
         applications = AdmissionApplication.objects.filter(
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).order_by('-createdAt')
 
         course_id = request_data.get('course_id')
@@ -4231,7 +2969,7 @@ class AdmissionList(GenericAPIView):
 
         admin_obj = UserAdmin.objects.filter(
             id=request.user.id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
 
         college_id = None
@@ -4268,7 +3006,7 @@ class AdmissionList(GenericAPIView):
 
         candidates = Candidate.objects.filter(
             candidate_query,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         )
 
         candidate_ids = [
@@ -4284,12 +3022,13 @@ class AdmissionList(GenericAPIView):
         )
 
         data = []
+        course_obj=Course.objects.filter(isActive=True,og_code=str(request.user.og_code))
         for application in applications:
             candidate_obj = None
             try:
                 candidate_obj = Candidate.objects.filter(
                     id=UUID(str(application.candidate_id)),
-                    isActive=True
+                    isActive=True,og_code=str(request.user.og_code)
                 ).first()
             except (ValueError, TypeError):
                 candidate_obj = None
@@ -4307,6 +3046,13 @@ class AdmissionList(GenericAPIView):
                 application.academic_year_id
             )
             item['course_id'] = application.course_id
+            course_name_obj=course_obj.filter(id=application.course_id).first()
+            if course_name_obj is not None:
+                item['course_name'] = course_name_obj.course_name
+            else:
+                item['course_name'] =''
+
+
             item['class_group_id'] = application.class_group_id
             item['admission_applying_for'] = (
                 application.admission_applying_for
@@ -4339,7 +3085,7 @@ class AdmissionList(GenericAPIView):
 
             education_obj = CandidateEducation.objects.filter(
                 application_id=str(application.id),
-                isActive=True
+                isActive=True,og_code=str(request.user.og_code)
             )
             item['education_details'] = (
                 CandidateEducationSerializer(
@@ -4350,7 +3096,7 @@ class AdmissionList(GenericAPIView):
 
             photo_obj = CandidatePhotoSignature.objects.filter(
                 application_id=str(application.id),
-                isActive=True
+                isActive=True,og_code=str(request.user.og_code)
             ).first()
             if photo_obj is not None:
                 item['photo_signature'] = (
@@ -4395,7 +3141,7 @@ class AdmissionDetails(GenericAPIView):
 
         application = AdmissionApplication.objects.filter(
             id=application_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
 
         if application is None:
@@ -4410,7 +3156,7 @@ class AdmissionDetails(GenericAPIView):
         try:
             candidate_obj = Candidate.objects.filter(
                 id=UUID(str(application.candidate_id)),
-                isActive=True
+                isActive=True,og_code=str(request.user.og_code)
             ).first()
         except (ValueError, TypeError):
             candidate_obj = None
@@ -4426,7 +3172,7 @@ class AdmissionDetails(GenericAPIView):
 
         education_obj = CandidateEducation.objects.filter(
             application_id=str(application.id),
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         )
         item['education_details'] = (
             CandidateEducationSerializer(
@@ -4437,7 +3183,7 @@ class AdmissionDetails(GenericAPIView):
 
         photo_obj = CandidatePhotoSignature.objects.filter(
             application_id=str(application.id),
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
         if photo_obj is not None:
             item['photo_signature'] = (
@@ -4494,7 +3240,7 @@ class UpdateAdmission(GenericAPIView):
 
         application = AdmissionApplication.objects.filter(
             id=application_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
 
         if application is None:
@@ -4509,7 +3255,7 @@ class UpdateAdmission(GenericAPIView):
         try:
             candidate = Candidate.objects.filter(
                 id=UUID(str(application.candidate_id)),
-                isActive=True
+                isActive=True,og_code=str(request.user.og_code)
             ).first()
         except (ValueError, TypeError):
             candidate = None
@@ -4601,13 +3347,13 @@ class UpdateAdmission(GenericAPIView):
                     )
                     application_update['updatedAt'] = timezone.now()
                     AdmissionApplication.objects.filter(
-                        id=application.id
+                        id=application.id,og_code=str(request.user.og_code)
                     ).update(**application_update)
 
                 if 'education_details' in request_data:
                     CandidateEducation.objects.filter(
                         application_id=str(application.id),
-                        isActive=True
+                        isActive=True,og_code=str(request.user.og_code)
                     ).update(isActive=False)
 
                     for edu in (
@@ -4641,7 +3387,7 @@ class UpdateAdmission(GenericAPIView):
                     photo_obj = (
                         CandidatePhotoSignature.objects.filter(
                             application_id=str(application.id),
-                            isActive=True
+                            isActive=True,og_code=str(request.user.og_code)
                         ).first()
                     )
 
@@ -4665,75 +3411,125 @@ class UpdateAdmission(GenericAPIView):
                             createdBy=str(request.user.id),
                         )
 
-                if (
-                    'parent_name' in request_data
-                    or 'parent_mobile' in request_data
-                    or 'parent_email' in request_data
-                ):
+                parent_fields = {
+                    'parent_name': 'first_name',
+                    'parent_email': 'email',
+                    'parent_mobile': 'mobile',
+                    'parent_occupation': 'occupation',
+                    'parent_address': 'address',
+                    'parent_annual_income': 'parent_annual_income',
+                    'parent_government_employee': 'parent_government_employee',
+                    'relationship': 'parent_relationship',
+                }
+
+                if any(key in request_data for key in parent_fields):
                     mapping = ParentStudentMapping.objects.filter(
                         student_id=str(candidate.id),
-                        is_active=True
+                        is_active=True,og_code=str(request.user.og_code),
                     ).first()
 
                     parent_obj = None
+
                     if mapping is not None:
                         parent_obj = ParentProfile.objects.filter(
                             id=mapping.parent_id,
-                            is_active=True
+                            is_active=True,og_code=str(request.user.og_code),
                         ).first()
 
+                    parent_data = {
+                        model_field: _value(request_key)
+                        for request_key, model_field in parent_fields.items()
+                        if request_key in request_data
+                    }
+
+                    # New parent requires a name.
+                    # Existing parent keeps its name if omitted.
+                    if parent_obj is None or 'parent_name' in request_data:
+                        parent_name = request_data.get('parent_name')
+                        # if (
+                        #     not isinstance(parent_name, str)
+                        #     or not parent_name.strip()
+                        # ):
+                        #     raise ValueError(
+                        #         "parent_name is required and cannot be blank."
+                        #     )
+
+                        parent_data['first_name'] = parent_name
+
+                    if (
+                        'parent_government_employee' in parent_data
+                        and not isinstance(
+                            parent_data['parent_government_employee'],
+                            bool,
+                        )
+                    ):
+                        raise ValueError(
+                            "parent_government_employee must be true or false."
+                        )
+
+                    # Keep the existing relationship when input is blank.
+                    # Use Father for a new parent when no relationship is given.
+                    relationship = parent_data.get('parent_relationship')
+
+                    if relationship is None or (
+                        isinstance(relationship, str)
+                        and not relationship.strip()
+                    ):
+                        relationship = (
+                            getattr(mapping, 'relationship', None)
+                            or getattr(parent_obj, 'parent_relationship', None)
+                            or 'Father'
+                        )
+
+                    if not isinstance(relationship, str):
+                        raise ValueError("relationship must be a string.")
+
+                    relationship = relationship.strip() or 'Father'
+
+                    if len(relationship) > 30:
+                        raise ValueError(
+                            "relationship cannot exceed 30 characters."
+                        )
+
+                    parent_data['parent_relationship'] = relationship
+
+
                     if parent_obj is not None:
-                        if 'parent_name' in request_data:
-                            parent_obj.first_name = _value(
-                                'parent_name'
-                            )
-                        if 'parent_email' in request_data:
-                            parent_obj.email = _value('parent_email')
-                        if 'parent_mobile' in request_data:
-                            parent_obj.mobile = _value(
-                                'parent_mobile'
-                            )
-                        if 'parent_occupation' in request_data:
-                            parent_obj.occupation = _value(
-                                'parent_occupation'
-                            )
-                        if 'parent_address' in request_data:
-                            parent_obj.address = _value(
-                                'parent_address'
-                            )
+                        for field, value in parent_data.items():
+                            setattr(parent_obj, field, value)
+
+                        parent_obj.updatedBy = str(request.user.id)
+                        parent_obj.updatedAt = timezone.now()
                         parent_obj.save()
+
+                        if 'relationship' in request_data:
+                            mapping.relationship = (
+                                parent_data['parent_relationship']
+                            )
+                            mapping.updatedBy = str(request.user.id)
+                            mapping.updatedAt = timezone.now()
+                            mapping.save()
+
                     else:
+                        parent_data.setdefault(
+                            'parent_relationship',
+                            'Father',
+                        )
+
                         parent_obj = ParentProfile.objects.create(
                             parent_code=(
                                 'PRT'
                                 + str(timezone.now().year)
                                 + str(randint(10000, 99999))
                             ),
-                            first_name=_value('parent_name'),
-                            email=_value('parent_email'),
-                            mobile=_value('parent_mobile'),
-                            occupation=_value('parent_occupation'),
-                            address=_value('parent_address'),
-                            parent_annual_income=_value(
-                                'parent_annual_income'
-                            ),
-                            parent_government_employee=request_data.get(
-                                'parent_government_employee',
-                                False
-                            ),
-                            parent_relationship=request_data.get(
-                                'relationship',
-                                'Father'
-                            ),
                             createdBy=str(request.user.id),
+                            **parent_data,
                         )
+
                         ParentStudentMapping.objects.create(
                             parent_id=parent_obj.id,
                             student_id=str(candidate.id),
-                            relationship=request_data.get(
-                                'relationship',
-                                'Father'
-                            ),
+                            relationship=parent_data['parent_relationship'],
                             is_primary=True,
                             createdBy=str(request.user.id),
                         )
@@ -4802,7 +3598,7 @@ class DeleteAdmission(GenericAPIView):
 
         application = AdmissionApplication.objects.filter(
             id=application_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
 
         if application is None:
@@ -4822,19 +3618,19 @@ class DeleteAdmission(GenericAPIView):
 
                 CandidateEducation.objects.filter(
                     application_id=str(application.id),
-                    isActive=True
+                    isActive=True,og_code=str(request.user.og_code)
                 ).update(isActive=False)
 
                 CandidatePhotoSignature.objects.filter(
                     application_id=str(application.id),
-                    isActive=True
+                    isActive=True,og_code=str(request.user.og_code)
                 ).update(isActive=False)
 
                 candidate = None
                 try:
                     candidate = Candidate.objects.filter(
                         id=UUID(str(application.candidate_id)),
-                        isActive=True
+                        isActive=True,og_code=str(request.user.og_code)
                     ).first()
                 except (ValueError, TypeError):
                     candidate = None
@@ -4916,14 +3712,14 @@ class GetCourseStudentList(GenericAPIView):
 
         student_ids=list(AdmissionApplication.objects.filter(academic_year_id=academic_year_id,course_id=course_id,og_code=str(request.user.og_code)).values_list('candidate_id',flat=True))
         print("ids",student_ids)
-        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,)
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,og_code=str(request.user.og_code),)
         print("student_objs",student_objs)
         serializer=CandidateSerializer(student_objs,many=True)
         students_list=serializer.data
         for student in students_list:
-            subject_ids=list(StudentSubjectAllocation.objects.filter(academic_year_id=student['academic_year_id'],student_id=student['id'],course_id=student['course_id'],semester_id=student['semester_id'],class_id=student['class_group_id'],).values_list('subject_id',flat=True))
+            subject_ids=list(StudentSubjectAllocation.objects.filter(academic_year_id=student['academic_year_id'],og_code=str(request.user.og_code),student_id=student['id'],course_id=student['course_id'],semester_id=student['semester_id'],class_id=student['class_group_id'],).values_list('subject_id',flat=True))
 
-            subject_objs=Subject.objects.filter(id__in=subject_ids,isActive=True)
+            subject_objs=Subject.objects.filter(id__in=subject_ids,isActive=True,og_code=str(request.user.og_code))
             subject_serializer=SubjectSerializer(subject_objs,many=True)
             student['subjects']=subject_serializer.data
         response_ = {

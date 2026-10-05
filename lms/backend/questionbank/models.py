@@ -21,6 +21,7 @@ class Question(TrackingModel):
     # Plain IDs for direct college filtering.
     course_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class QuestionOption(TrackingModel):
@@ -28,6 +29,7 @@ class QuestionOption(TrackingModel):
     option = models.PositiveIntegerField(null=True)
     option_answer = models.TextField(null=True)
     option_image = models.TextField(null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 
@@ -35,6 +37,7 @@ class QuestionOption(TrackingModel):
 class QuestionImages(TrackingModel):
     question_id = models.BigIntegerField(null=True, db_index=True)
     image = models.TextField(null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class QuestionLike(TrackingModel):
@@ -43,6 +46,7 @@ class QuestionLike(TrackingModel):
     is_like = models.BooleanField(default=False)
     is_dislike = models.BooleanField(default=False)
     dislike_reason = models.TextField(null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class DuplicateQuestion(TrackingModel):
@@ -52,3 +56,4 @@ class DuplicateQuestion(TrackingModel):
     subject_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     severity_level = models.CharField(max_length=50, null=True)
     type_of_question = models.CharField(max_length=50, null=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

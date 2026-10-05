@@ -92,6 +92,7 @@ class Candidate(AbstractBaseUser, TrackingModel):
     course_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     semester_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     class_group_id = models.CharField(max_length=255,null=True,blank=True,db_index=True)
+    batch = models.CharField(max_length=255,null=True,blank=True,db_index=True)
     division = models.CharField(max_length=255,null=True,blank=True)
 
     university_prn = models.CharField(max_length=100, null=True, blank=True, unique=True)
@@ -118,7 +119,7 @@ class Candidate(AbstractBaseUser, TrackingModel):
     local_city = models.CharField(max_length=255,null=True,blank=True)
     local_state = models.CharField(max_length=255,null=True,blank=True)
     local_pincode = models.CharField(max_length=20,null=True,blank=True)
-    
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
@@ -158,7 +159,7 @@ class ParentProfile(TrackingModel):
     )
 
     parent_government_employee = models.BooleanField(default=False)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class ParentStudentMapping(TrackingModel):
     parent_id = models.BigIntegerField(db_index=True)
     student_id = models.CharField(max_length=255, db_index=True)
@@ -168,14 +169,14 @@ class ParentStudentMapping(TrackingModel):
     can_view_marks = models.BooleanField(default=True)
     can_view_attendance = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class candidatelog(TrackingModel):
     candidate_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     action_takenbyid = models.CharField(max_length=255, null=True, blank=True)
     action_usertype = models.BigIntegerField(null=True, blank=True)
     action = models.CharField(max_length=255, null=True, blank=True)
     decline_reason = models.TextField(null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class CandidateToken(TrackingModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
@@ -195,7 +196,7 @@ class CandidateDocuments(TrackingModel):
     document_type = models.CharField(max_length=255,null=True,blank=True,)
     verified_by = models.CharField(max_length=255,null=True,blank=True,)
     verified_at = models.DateTimeField(null=True,blank=True,)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class candidateOtp(TrackingModel):
     candidate = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     mobile_number = models.CharField(max_length=20, null=True, blank=True)
@@ -208,9 +209,7 @@ class AdmissionApplication(TrackingModel):
     application_number = models.CharField(max_length=255,null=True,blank=True,unique=True,)
     academic_year_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
     course_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
-
     class_group_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
-
     admission_applying_for = models.CharField(max_length=255,null=True,blank=True,) 
     admission_applying_class = models.CharField(max_length=255,null=True,blank=True,)
     personal_info_status = models.CharField(max_length=50,default="Pending",)
@@ -242,14 +241,14 @@ class CandidateEducation(TrackingModel):
     percentage = models.CharField(max_length=50,null=True,blank=True,)
     cgpa = models.CharField(max_length=50,null=True,blank=True,)
     eligibility_number = models.CharField(max_length=100,null=True,blank=True,)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class CandidatePhotoSignature(TrackingModel):
     candidate_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
     application_id = models.CharField(max_length=255,null=True,blank=True,db_index=True,)
     photo_url = models.TextField(null=True,blank=True,)
     signature_url = models.TextField(null=True,blank=True,)
     status = models.CharField(max_length=50,default="Pending",)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 

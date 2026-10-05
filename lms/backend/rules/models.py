@@ -7,6 +7,7 @@ class GeneralEligibilityRules(TrackingModel):
     country_id = models.BigIntegerField(null=True, blank=True)
     country_name = models.CharField(max_length=255, null=True, blank=True)
     rule_no = models.BigIntegerField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class GeneralEligibilityDepartmentRankCombinations(TrackingModel):
@@ -14,17 +15,20 @@ class GeneralEligibilityDepartmentRankCombinations(TrackingModel):
     departments = models.BigIntegerField(null=True, blank=True)
     ranks = models.BigIntegerField(null=True, blank=True)
     minimum_age = models.PositiveIntegerField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class GeneralEligibilityEducationalQualifications(TrackingModel):
     general_eligibility_rule_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     educational_qualification_id = models.BigIntegerField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class GeneralEligibilityMandatoryDocuments(TrackingModel):
     general_eligibility_rule_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     document_id = models.BigIntegerField(null=True, blank=True)
     document_name = models.CharField(max_length=255, null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class AdmissionEligibilityRule(TrackingModel):
@@ -37,3 +41,4 @@ class AdmissionEligibilityRule(TrackingModel):
     qualification_id = models.BigIntegerField(null=True, blank=True)
     required_documents = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

@@ -316,7 +316,7 @@ class ApplyLeave(GenericAPIView):
             for assignment in payload['parsed_adjacent']:
                 LeaveAdjacentLecture.objects.create(
                     leave_application_id=str(leave_obj.id),
-                    createdBy=str(applicant.id),
+                    createdBy=str(applicant.id),og_code=str(request.user.og_code),
                     **assignment)
             item = serializer.data.copy()
             _enrich_leave_item(item)
@@ -351,7 +351,7 @@ class SaveLeave(GenericAPIView):
             for assignment in payload['parsed_adjacent']:
                 LeaveAdjacentLecture.objects.create(
                     leave_application_id=str(leave_obj.id),
-                    createdBy=str(applicant.id),
+                    createdBy=str(applicant.id),og_code=str(request.user.og_code),
                     **assignment)
             item = serializer.data.copy()
             _enrich_leave_item(item)
@@ -367,7 +367,7 @@ def _build_leave_payload(request, request_data, applicant):
     leave_type = request_data.get('leave_type')
     type_obj = None
     if leave_type not in (None, ""):
-        type_obj = LeaveType.objects.filter(leave_type_name__iexact=str(leave_type), isActive=True).first()
+        type_obj = LeaveType.objects.filter(leave_type_name__iexact=str(leave_type), isActive=True,).first()
         if type_obj is None:
             return _error_response(request, 'leave_type is not in the leave types master.'), None
         leave_type = type_obj.leave_type_name
@@ -415,6 +415,8 @@ def _build_leave_payload(request, request_data, applicant):
     hod_id = getattr(applicant, 'reporting_to', None)
     if hod_id in (None, ""):
         return _error_response(request, 'No HOD (reporting_to) configured for this user.'), None
+
+    
     hod_user = UserAdmin.objects.filter(id=hod_id, isActive=True).first()
     if hod_user is None:
         return _error_response(request, 'HOD user (reporting_to) not found.'), None
@@ -487,7 +489,7 @@ class LeaveList(GenericAPIView):
             return _error_response(request, 'logged in user not found')
 
         is_admin = _is_admin_user(applicant)
-        qs = LeaveApplication.objects.filter(isActive=True)
+        qs = LeaveApplication.objects.filter(isActive=True,og_code=str(request.user.og_code))
 
         if not is_admin:
             qs = qs.filter(applicant_id=str(applicant.id))
@@ -534,7 +536,7 @@ class LeaveDetails(GenericAPIView):
         if applicant is None:
             return _error_response(request, 'logged in user not found')
 
-        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True).first()
+        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True,og_code=str(request.user.og_code)).first()
         if leave_obj is None:
             return _error_response(request, 'Leave not found.')
 
@@ -567,7 +569,7 @@ class UpdateLeave(GenericAPIView):
         if applicant is None:
             return _error_response(request, 'logged in user not found')
 
-        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True).first()
+        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True,og_code=str(request.user.og_code)).first()
         if leave_obj is None:
             return _error_response(request, 'Leave not found.')
 
@@ -607,7 +609,7 @@ class UpdateLeave(GenericAPIView):
 
         parsed_adjacent = None
         pending_count = LeaveAdjacentLecture.objects.filter(
-            leave_application_id=str(leave_obj.id), status='PENDING', isActive=True).count()
+            leave_application_id=str(leave_obj.id), status='PENDING', isActive=True,og_code=str(request.user.og_code)).count()
         if str(leave_obj.status).upper() == 'PENDING':
             raw_assignments = request_data.get('adjacent_assignments')
             if raw_assignments in (None, ""):
@@ -633,7 +635,7 @@ class UpdateLeave(GenericAPIView):
         if serializer.is_valid():
             serializer.save()
             if parsed_adjacent is not None:
-                LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_obj.id), status='PENDING').update(isActive=False)
+                LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_obj.id), status='PENDING',og_code=str(request.user.og_code)).update(isActive=False)
                 for assignment in parsed_adjacent:
                     LeaveAdjacentLecture.objects.create(
                         leave_application_id=str(leave_obj.id),
@@ -666,7 +668,7 @@ class DeleteLeave(GenericAPIView):
         if applicant is None:
             return _error_response(request, 'logged in user not found')
 
-        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True).first()
+        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True,og_code=str(request.user.og_code)).first()
         if leave_obj is None:
             return _error_response(request, 'Leave not found.')
 
@@ -676,7 +678,7 @@ class DeleteLeave(GenericAPIView):
 
         leave_obj.isActive = False
         leave_obj.save()
-        LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_id)).update(isActive=False)
+        LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_id),og_code=str(request.user.og_code)).update(isActive=False)
         return _final_response(request, {
             "n": 1,
             'msg': 'Leave deleted successfully.',
@@ -701,7 +703,7 @@ class ReviewLeave(GenericAPIView):
         if reviewer is None:
             return _error_response(request, 'logged in user not found')
 
-        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True).first()
+        leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True,og_code=str(request.user.og_code)).first()
         if leave_obj is None:
             return _error_response(request, 'Leave not found.')
 
@@ -791,14 +793,14 @@ class LeaveTimetable(GenericAPIView):
         applied_store = {}
 
         if leave_id not in (None, ""):
-            leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True).first()
+            leave_obj = LeaveApplication.objects.filter(id=leave_id, isActive=True,og_code=str(request.user.og_code)).first()
             if leave_obj is None:
                 return _error_response(request, 'Leave not found.')
             if not _is_admin_user(user) and str(leave_obj.applicant_id) != str(user.id):
                 return _error_response(request, 'You are not allowed to view this leave.')
             faculty_id = str(leave_obj.applicant_id)
             start_date, end_date = leave_obj.start_date, leave_obj.end_date
-            for row in LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_id), isActive=True):
+            for row in LeaveAdjacentLecture.objects.filter(leave_application_id=str(leave_id), isActive=True,og_code=str(request.user.og_code)):
                 applied_store[(row.lecture_date, row.period_number)] = str(row.adjacent_faculty_id)
         else:
             if request_data.get('start_date') in (None, ""):
@@ -819,7 +821,7 @@ class LeaveTimetable(GenericAPIView):
         if faculty_id in (None, ""):
             return _error_response(request, 'Could not determine the faculty.')
 
-        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True,og_code=str(request.user.og_code)).first()
         if faculty_user is None:
             return _error_response(request, 'Faculty not found.')
 
@@ -871,7 +873,7 @@ class FacultyTimetable(GenericAPIView):
         faculty_id = request_data.get('faculty_id') or str(user.id)
         if faculty_id in (None, ""):
             return _error_response(request, 'Could not determine the faculty.')
-        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True,og_code=str(request.user.og_code)).first()
         if faculty_user is None:
             return _error_response(request, 'Faculty not found.')
 
@@ -898,7 +900,7 @@ class FacultyTimetable(GenericAPIView):
         for row in LeaveAdjacentLecture.objects.filter(
                 primary_faculty_id=str(faculty_id),
                 lecture_date__gte=start_date, lecture_date__lte=end_date,
-                status='RESCHEDULED', isActive=True):
+                status='RESCHEDULED', isActive=True,og_code=str(request.user.og_code)):
             key = (row.lecture_date, row.period_number)
             adjacent = UserAdmin.objects.filter(id=row.adjacent_faculty_id).first()
             existing = rows_map.get(key)
@@ -928,13 +930,13 @@ class FacultyTimetable(GenericAPIView):
         for entry in LectureEntry.objects.filter(
                 faculty_id=str(faculty_id),
                 lecture_date__gte=start_date, lecture_date__lte=end_date,
-                lecture_status='RESCHEDULED', isActive=True):
+                lecture_status='RESCHEDULED', isActive=True,og_code=str(request.user.og_code)):
             key = (entry.lecture_date, entry.timetable_slot_id)
             leave_match = None
             if entry.remarks:
                 leave_match = entry.remarks.split(' ')[-2] if str(entry.remarks).startswith('Substitute for leave #') else None
             period = None
-            slot_obj = TimetableSlot.objects.filter(id=entry.timetable_slot_id).first() if entry.timetable_slot_id else None
+            slot_obj = TimetableSlot.objects.filter(id=entry.timetable_slot_id,og_code=str(request.user.og_code)).first() if entry.timetable_slot_id else None
             if slot_obj is not None:
                 period = slot_obj.period_number
             row_key = (entry.lecture_date, period) if period is not None else None
@@ -1114,7 +1116,7 @@ class MarkFacultyAttendance(GenericAPIView):
         if str(faculty_id) != str(user.id) and not _is_admin_user(user):
             return _error_response(request, 'You are only allowed to mark your own attendance.')
 
-        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True,og_code=str(request.user.og_code)).first()
         if faculty_user is None:
             return _error_response(request, 'Faculty not found.')
 
@@ -1278,7 +1280,7 @@ class FacultyAttendanceSummary(GenericAPIView):
         if (end_date - start_date).days + 1 > 90:
             return _error_response(request, 'Date range is too large (maximum 90 days).')
 
-        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True).first()
+        faculty_user = UserAdmin.objects.filter(id=faculty_id, isActive=True,og_code=str(request.user.og_code)).first()
         if faculty_user is None:
             return _error_response(request, 'Faculty not found.')
 
@@ -1289,7 +1291,7 @@ class FacultyAttendanceSummary(GenericAPIView):
         while d <= end_date:
             status = _facility_day_status(faculty_id, d)['status']
             summary_counts[status] = summary_counts.get(status, 0) + 1
-            fa = FacultyAttendance.objects.filter(faculty_id=str(faculty_id), attendance_date=d, isActive=True).first()
+            fa = FacultyAttendance.objects.filter(faculty_id=str(faculty_id), attendance_date=d, isActive=True,og_code=str(request.user.og_code)).first()
             if fa is not None and fa.total_hours is not None and status in ('PRESENT', 'LATE', 'EARLY', 'LATE_EARLY'):
                 total_attended_hours_seconds += float(fa.total_hours)
                 attended_days += 1
@@ -1377,7 +1379,7 @@ class HolidayList(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        holidays = AttendanceHoliday.objects.filter(isActive=True).order_by('holiday_date')
+        holidays = AttendanceHoliday.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by('holiday_date')
         data = [{'id': h.id, 'holiday_date': h.holiday_date, 'name': h.name} for h in holidays]
         return _final_response(request, {
             "n": 1,
@@ -1399,7 +1401,7 @@ class DeleteHoliday(GenericAPIView):
             return _error_response(request, 'logged in user not found')
         if not _is_admin_user(user):
             return _error_response(request, 'Admin access required.')
-        holiday_obj = AttendanceHoliday.objects.filter(id=request_data.get('id'), isActive=True).first()
+        holiday_obj = AttendanceHoliday.objects.filter(id=request_data.get('id'), isActive=True,og_code=str(request.user.og_code)).first()
         if holiday_obj is None:
             return _error_response(request, 'Holiday not found.')
         holiday_obj.isActive = False
@@ -1457,7 +1459,7 @@ class MarkCandidateAttendance(GenericAPIView):
             validation_status=False 
 
 
-        attendance_obj=CandidateAttendance.objects.filter(attendance_date=attendance_date,schedule_id=schedule_id,candidate_id=candidate_id,course_id=course_id,college_id=college_id).first()
+        attendance_obj=CandidateAttendance.objects.filter(attendance_date=attendance_date,schedule_id=schedule_id,candidate_id=candidate_id,course_id=course_id,college_id=college_id,og_code=str(request.user.og_code)).first()
 
         checkin_time=request_data.get('checkin_time')
         checkout_time=request_data.get('checkout_time')
@@ -1574,7 +1576,7 @@ class AddLeaveType(GenericAPIView):
         leave_type_name = (request_data.get('leave_type_name') or '').strip()
         if leave_type_name == "":
             return _error_response(request, 'leave_type_name is required.')
-        if LeaveType.objects.filter(leave_type_name__iexact=leave_type_name).exists():
+        if LeaveType.objects.filter(leave_type_name__iexact=leave_type_name,og_code=str(request.user.og_code)).exists():
             return _error_response(request, 'Leave type already exists.')
 
         data = {
@@ -1806,14 +1808,14 @@ class UpdateLeaveAllotment(GenericAPIView):
         allot_id = request_data.get('id')
         if allot_id in (None, ""):
             return _error_response(request, 'id is required.')
-        allot_obj = LeaveTypeAllotment.objects.filter(id=allot_id, isActive=True).first()
+        allot_obj = LeaveTypeAllotment.objects.filter(id=allot_id, isActive=True,og_code=str(request.user.og_code)).first()
         if allot_obj is None:
             return _error_response(request, 'Leave allotment not found.')
 
         data = {}
         for field, checker in (('leave_type_id', LeaveType), ('designation_id', Designation), ('academic_year_id', AcademicYear)):
             if field in request_data and request_data.get(field) not in (None, ""):
-                if checker.objects.filter(id=request_data.get(field)).count() == 0:
+                if checker.objects.filter(id=request_data.get(field),og_code=str(request.user.og_code)).count() == 0:
                     return _error_response(request, '%s not found.' % field)
                 data[field] = request_data.get(field)
         for field in ('allowed', 'opening_balance'):
@@ -1828,7 +1830,7 @@ class UpdateLeaveAllotment(GenericAPIView):
         dup = LeaveTypeAllotment.objects.filter(
             leave_type_id=data.get('leave_type_id', allot_obj.leave_type_id),
             designation_id=data.get('designation_id', allot_obj.designation_id),
-            academic_year_id=data.get('academic_year_id', allot_obj.academic_year_id),
+            academic_year_id=data.get('academic_year_id', allot_obj.academic_year_id),og_code=str(request.user.og_code),
         ).exclude(id=allot_obj.id)
         if dup.exists():
             return _error_response(request, 'Allotment already exists for this type, designation and academic year.')
@@ -1861,7 +1863,7 @@ class DeleteLeaveAllotment(GenericAPIView):
         allot_id = request_data.get('id')
         if allot_id in (None, ""):
             return _error_response(request, 'id is required.')
-        allot_obj = LeaveTypeAllotment.objects.filter(id=allot_id, isActive=True).first()
+        allot_obj = LeaveTypeAllotment.objects.filter(id=allot_id, isActive=True,og_code=str(request.user.og_code)).first()
         if allot_obj is None:
             return _error_response(request, 'Leave allotment not found.')
         allot_obj.isActive = False
@@ -1891,30 +1893,30 @@ class MyLeaveBalance(GenericAPIView):
 
         academic_year_id = request_data.get('academic_year_id')
         if academic_year_id in (None, ""):
-            year = AcademicYear.objects.filter(is_current=True).first() or AcademicYear.objects.order_by('-id').first()
+            year = AcademicYear.objects.filter(is_current=True,og_code=str(request.user.og_code)).first() or AcademicYear.objects.order_by('-id').first()
             academic_year_id = year.id if year else None
         if academic_year_id is None:
             return _error_response(request, 'No academic year found.')
 
-        year = AcademicYear.objects.filter(id=academic_year_id).first()
+        year = AcademicYear.objects.filter(id=academic_year_id,og_code=str(request.user.og_code)).first()
         if year is None:
             return _error_response(request, 'Academic year not found.')
-        if Designation.objects.filter(id=designation_id).count() == 0:
+        if Designation.objects.filter(id=designation_id,og_code=str(request.user.og_code)).count() == 0:
             return _error_response(request, 'Designation not found.')
 
         year_start = year.start_date
         year_end = year.end_date
 
         allotments = LeaveTypeAllotment.objects.filter(
-            designation_id=designation_id, academic_year_id=academic_year_id, isActive=True)
+            designation_id=designation_id, academic_year_id=academic_year_id, isActive=True,og_code=str(request.user.og_code))
         result = []
         for allot in allotments:
-            ltype = LeaveType.objects.filter(id=allot.leave_type_id, isActive=True).first()
+            ltype = LeaveType.objects.filter(id=allot.leave_type_id, isActive=True,og_code=str(request.user.og_code)).first()
             if ltype is None:
                 continue
             applications = LeaveApplication.objects.filter(
                 applicant_id=str(applicant.id), leave_type=ltype.leave_type_name,
-                status__in=['PENDING', 'APPROVED'], isActive=True)
+                status__in=['PENDING', 'APPROVED'], isActive=True,og_code=str(request.user.og_code))
             if year_start is not None:
                 applications = applications.filter(end_date__gte=year_start)
             if year_end is not None:

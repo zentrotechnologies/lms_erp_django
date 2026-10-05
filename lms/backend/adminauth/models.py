@@ -145,6 +145,7 @@ class MainRoles(models.Model):
     name = models.CharField(max_length=100, unique=True)
     documents_required = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    
 
 
 class Country(models.Model):
@@ -235,7 +236,6 @@ class MenuDetails(TrackingModel):
     parent_id = models.IntegerField(default=0, db_index=True)
     sort_order = models.IntegerField(null=True, blank=True)
     menu_icon = models.CharField(max_length=255, null=True, blank=True)
-    og_code = models.CharField(max_length=255, null=True, blank=True)
     user_type = models.CharField(max_length=255, null=True, blank=True)
 
 
@@ -254,3 +254,4 @@ class Permissions(TrackingModel):
 class CollegeCourses(TrackingModel):
     course_id = models.IntegerField(db_index=True)
     college_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)

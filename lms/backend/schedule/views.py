@@ -22,7 +22,7 @@ from candidate.serializers import *
 
 from enrollments.models import *
 from enrollments.serializers import *
-
+from adminauth.serializers import *
 from attendance.models import *
 from attendance.serializers import *
 from datetime import date, timedelta
@@ -127,9 +127,9 @@ class AddSchedule(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
 
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -238,7 +238,7 @@ class AddSchedule(GenericAPIView):
                         "msg": 'New Schedule added successfully',
                         "data":''                     
                     }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -251,7 +251,7 @@ class AddSchedule(GenericAPIView):
                             "msg": first_key+' : '+ first_value[0],
                             "data":serializer.errors                    
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -265,9 +265,9 @@ class LectureTypeDropdown(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
@@ -276,20 +276,20 @@ class LectureTypeDropdown(GenericAPIView):
         template_id = request_data.get('template_id')
         if template_id in (None, ''):
             response_ = {"n": 0, "msg": "template_id not provided", "data": []}
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
         lecture_types = list(
-            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            TimetableSlot.objects.filter(timetable_template_id=template_id, isActive=True)
             .values_list('lecture_type', flat=True).distinct()
         )
 
         data = [{"id": i + 1, "name": lt} for i, lt in enumerate(lecture_types)]
         response_ = {"n": 1, "msg": "Lecture type list found successfully", "data": data}
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -301,9 +301,9 @@ class SubjectDropdown(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
@@ -312,19 +312,19 @@ class SubjectDropdown(GenericAPIView):
         template_id = request_data.get('template_id')
         if template_id in (None, ''):
             response_ = {"n": 0, "msg": "template_id not provided", "data": []}
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
         course_ids = list(
-            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            TimetableSlot.objects.filter(timetable_template_id=template_id, isActive=True)
             .values_list('course_id', flat=True).distinct()
         )
         if not course_ids:
             response_ = {"n": 0, "msg": "No courses found for this template", "data": []}
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -341,7 +341,7 @@ class SubjectDropdown(GenericAPIView):
         else:
             response_ = {"n": 0, "msg": "Subject not found", "data": []}
 
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -353,9 +353,9 @@ class FacultyDropdown(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
@@ -364,14 +364,14 @@ class FacultyDropdown(GenericAPIView):
         template_id = request_data.get('template_id')
         if template_id in (None, ''):
             response_ = {"n": 0, "msg": "template_id not provided", "data": []}
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
         raw_faculty_ids = list(
-            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            TimetableSlot.objects.filter(timetable_template_id=template_id, isActive=True)
             .exclude(faculty_id__isnull=True).exclude(faculty_id='')
             .values_list('faculty_id', flat=True).distinct()
         )
@@ -395,7 +395,7 @@ class FacultyDropdown(GenericAPIView):
             })
 
         response_ = {"n": 1, "msg": "Faculty list found successfully", "data": data}
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -407,9 +407,9 @@ class LocationDropdown(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
@@ -418,21 +418,21 @@ class LocationDropdown(GenericAPIView):
         template_id = request_data.get('template_id')
         if template_id in (None, ''):
             response_ = {"n": 0, "msg": "template_id not provided", "data": []}
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
         room_numbers = list(
-            TimetableSlot.objects.filter(timetable_template_id=template_id, is_active=True)
+            TimetableSlot.objects.filter(timetable_template_id=template_id, isActive=True)
             .exclude(room_number__isnull=True).exclude(room_number='')
             .values_list('room_number', flat=True).distinct()
         )
 
         data = [{"id": i + 1, "name": rn} for i, rn in enumerate(room_numbers)]
         response_ = {"n": 1, "msg": "Location list found successfully", "data": data}
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -443,9 +443,9 @@ class UpdateSchedule(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -540,7 +540,7 @@ class UpdateSchedule(GenericAPIView):
                             "msg": 'Schedule updated successfully',
                             "data":''                     
                         }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -553,7 +553,7 @@ class UpdateSchedule(GenericAPIView):
                                 "msg": first_key+' : '+ first_value[0],
                                 "data":serializer.errors                    
                             }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -566,7 +566,7 @@ class UpdateSchedule(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -580,7 +580,7 @@ class UpdateSchedule(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -592,9 +592,9 @@ class DeleteSchedule(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -627,7 +627,7 @@ class DeleteSchedule(GenericAPIView):
                             "msg": 'Schedule deleted successfully',
                             "data":''                     
                         }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -640,7 +640,7 @@ class DeleteSchedule(GenericAPIView):
                                 "msg": first_key+' : '+ first_value[0],
                                 "data":serializer.errors                    
                             }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -653,7 +653,7 @@ class DeleteSchedule(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -667,7 +667,7 @@ class DeleteSchedule(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -679,9 +679,9 @@ class GetScheduleById(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -707,7 +707,7 @@ class GetScheduleById(GenericAPIView):
                         "msg": 'Schedule found successfully',
                         "data":serializer.data                     
                     }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -720,7 +720,7 @@ class GetScheduleById(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -734,7 +734,7 @@ class GetScheduleById(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -748,9 +748,9 @@ class ScheduleFilterApi(GenericAPIView):
     pagination_class = CustomPagination
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -838,7 +838,7 @@ class ScheduleFilterApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -852,7 +852,7 @@ class ScheduleFilterApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -867,7 +867,7 @@ class ScheduleCalenderEvents(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = request.headers.get("encrypted", "")
+        encrypted_header = request.headers.get("encrypted", "")
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -926,7 +926,7 @@ class ScheduleCalenderEvents(GenericAPIView):
                 "data": events,
             }
 
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -938,7 +938,7 @@ class ScheduleCalenderEvents(GenericAPIView):
                 "msg": "No schedule events found",
                 "data": [],
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -975,9 +975,9 @@ class FilterFacultySchedulePendingRequestsListApi(GenericAPIView):
     pagination_class = CustomPagination
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1053,7 +1053,7 @@ class FilterFacultySchedulePendingRequestsListApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1067,7 +1067,7 @@ class FilterFacultySchedulePendingRequestsListApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1081,9 +1081,9 @@ class FilterFacultyScheduleApprovedRequestsListApi(GenericAPIView):
     pagination_class = CustomPagination
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1159,7 +1159,7 @@ class FilterFacultyScheduleApprovedRequestsListApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1173,7 +1173,7 @@ class FilterFacultyScheduleApprovedRequestsListApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1187,9 +1187,9 @@ class FilterFacultyScheduleDeclineRequestsListApi(GenericAPIView):
     pagination_class = CustomPagination
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1243,7 +1243,7 @@ class FilterFacultyScheduleDeclineRequestsListApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1257,7 +1257,7 @@ class FilterFacultyScheduleDeclineRequestsListApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1269,9 +1269,9 @@ class ApproveScheduleRequest(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1304,7 +1304,7 @@ class ApproveScheduleRequest(GenericAPIView):
                             "msg": 'Schedule approved successfully',
                             "data":''                     
                         }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1317,7 +1317,7 @@ class ApproveScheduleRequest(GenericAPIView):
                                 "msg": first_key+' : '+ first_value[0],
                                 "data":serializer.errors                    
                             }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1330,7 +1330,7 @@ class ApproveScheduleRequest(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -1344,7 +1344,7 @@ class ApproveScheduleRequest(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1357,9 +1357,9 @@ class DeclineScheduleRequest(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1394,7 +1394,7 @@ class DeclineScheduleRequest(GenericAPIView):
                             "msg": 'Schedule decline successfully',
                             "data":''                     
                         }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1407,7 +1407,7 @@ class DeclineScheduleRequest(GenericAPIView):
                                 "msg": first_key+' : '+ first_value[0],
                                 "data":serializer.errors                    
                             }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1420,7 +1420,7 @@ class DeclineScheduleRequest(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -1434,7 +1434,7 @@ class DeclineScheduleRequest(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1447,9 +1447,9 @@ class RescheduleRequest(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1511,7 +1511,7 @@ class RescheduleRequest(GenericAPIView):
                             "msg": 'Schedule reschedule successfully',
                             "data":''                     
                         }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1524,7 +1524,7 @@ class RescheduleRequest(GenericAPIView):
                                 "msg": first_key+' : '+ first_value[0],
                                 "data":serializer.errors                    
                             }
-                    if encryped_header == "1" :
+                    if encrypted_header == "1" :
                         data_to_serialize = convert_decimals_to_float(response_)
                         encdata = encrypt_data(json.dumps(data_to_serialize))
                         return Response(encdata,status=200)
@@ -1537,7 +1537,7 @@ class RescheduleRequest(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":[]                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -1551,7 +1551,7 @@ class RescheduleRequest(GenericAPIView):
                         "msg": msg,
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1601,9 +1601,9 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
 
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -1666,7 +1666,7 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
 
 
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1684,7 +1684,7 @@ class FacultyCurrentScheduleFilterApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1734,9 +1734,9 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
 
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         
         if error_response:
@@ -1801,7 +1801,7 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1817,7 +1817,7 @@ class FacultyUpcomingScheduleFilterApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1867,9 +1867,9 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
 
 
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         
         if error_response:
@@ -1934,7 +1934,7 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
                     "data":serializer.data                     
                 }
 
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 paigna=self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paigna)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -1950,7 +1950,7 @@ class FacultyPreviousScheduleFilterApi(GenericAPIView):
                         "msg": 'schedule not found',
                         "data":[]                     
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -1979,9 +1979,9 @@ class GetScheduleAttendance(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -2070,7 +2070,7 @@ class GetScheduleAttendance(GenericAPIView):
                             "schedule_attendance":schedule_attendance
                         }                     
                     }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -2084,7 +2084,7 @@ class GetScheduleAttendance(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":{}                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -2098,7 +2098,7 @@ class GetScheduleAttendance(GenericAPIView):
                         "msg": msg,
                         "data":{}                    
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -2109,9 +2109,9 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     def post(self,request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
@@ -2207,7 +2207,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                             "schedule_attendance":schedule_attendance
                         }                     
                     }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -2221,7 +2221,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                             "msg": 'schedule not found',
                             "data":{}                     
                         }
-                if encryped_header == "1" :
+                if encrypted_header == "1" :
                     data_to_serialize = convert_decimals_to_float(response_)
                     encdata = encrypt_data(json.dumps(data_to_serialize))
                     return Response(encdata,status=200)
@@ -2235,7 +2235,7 @@ class GetScheduleCandidatesAttendance(GenericAPIView):
                         "msg": msg,
                         "data":{}                    
                     }
-            if encryped_header == "1" :
+            if encrypted_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata,status=200)
@@ -2254,10 +2254,10 @@ class ClassListByCourse(GenericAPIView):
         return self._list_classes(request, request_data)
 
     def _list_classes(self, request, request_data):
-        encryped_header = ""
+        encrypted_header = ""
 
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         course_id = request_data.get('course_id')
 
@@ -2267,11 +2267,11 @@ class ClassListByCourse(GenericAPIView):
                 "msg": "Course id is required.",
                 "data": {}
             }
-            return self._respond(response_, encryped_header)
+            return self._respond(response_, encrypted_header)
 
         course_obj = Course.objects.filter(
             id=course_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
 
         if course_obj is None:
@@ -2280,11 +2280,11 @@ class ClassListByCourse(GenericAPIView):
                 "msg": "Course not found.",
                 "data": {}
             }
-            return self._respond(response_, encryped_header)
+            return self._respond(response_, encrypted_header)
 
         mapped_class_ids = CourseClass.objects.filter(
             course_id=course_id,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         ).values_list('class_id', flat=True)
 
         if not mapped_class_ids:
@@ -2293,11 +2293,11 @@ class ClassListByCourse(GenericAPIView):
                 "msg": "No classes found for the course.",
                 "data": []
             }
-            return self._respond(response_, encryped_header)
+            return self._respond(response_, encrypted_header)
 
         class_group_obj = ClassGroup.objects.filter(
             id__in=mapped_class_ids,
-            isActive=True
+            isActive=True,og_code=str(request.user.og_code)
         )
 
         semester_id = request_data.get(
@@ -2362,10 +2362,10 @@ class ClassListByCourse(GenericAPIView):
             "data": class_group_data
         }
 
-        return self._respond(response_, encryped_header)
+        return self._respond(response_, encrypted_header)
 
-    def _respond(self, response_, encryped_header):
-        if encryped_header == "1":
+    def _respond(self, response_, encrypted_header):
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(
                 response_
             )
@@ -2410,17 +2410,17 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
     pagination_class = CustomPagination
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
 
         academic_year_id = request_data.get('academic_year_id')
-        semester_id = request_data.get('semester_id') or request_data.get('semister_id')
-        course_id = request_data.get('course_id')
+        semester_id = request_data.get('semester_id') or request_data.get('semester_id')
+        subject_id = request_data.get('subject_id')
 
         # Validate required fields
         if not academic_year_id:
@@ -2429,7 +2429,7 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
                 "msg": "academic_year_id is required",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -2442,7 +2442,7 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
                 "msg": "semester_id is required",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -2471,14 +2471,14 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
         templates_queryset = TimetableTemplate.objects.filter(
             academic_year_id=academic_year_id,
             class_group_id__in=class_ids,
-            is_active=True
+            isActive=True,og_code=str(request.user.og_code)
         ).order_by('-createdAt')
 
         # Optional course filter: only templates that have at least one slot for this course
-        if course_id not in (None, ''):
+        if subject_id not in (None, ''):
             slot_template_ids = TimetableSlot.objects.filter(
-                course_id=course_id,
-                is_active=True
+                subject_id=subject_id,
+                isActive=True,og_code=str(request.user.og_code)
             ).values_list('timetable_template_id', flat=True)
             templates_queryset = templates_queryset.filter(id__in=slot_template_ids)
 
@@ -2522,7 +2522,7 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
                 row['timetable_template_id']: row['total']
                 for row in TimetableSlot.objects.filter(
                     timetable_template_id__in=[t.id for t in page],
-                    is_active=True
+                    isActive=True
                 ).values('timetable_template_id').annotate(total=Count('id'))
             }
 
@@ -2543,7 +2543,7 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
                 "data": serializer.data
             }
 
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 paginated_response = self.get_paginated_response(serializer.data)
                 data_to_serialize = convert_decimals_to_float(paginated_response)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -2556,7 +2556,7 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
                 "msg": "No templates found",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -2595,17 +2595,46 @@ class TemplateSlotEdit(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
+        slot_id = request_data.get('slot_id')
+        if slot_id is None or slot_id == '':
+            
+            template_id = request_data.get('template_id')
+            lecture_day = request_data.get('lecture_day')
+            lecture_no = request_data.get('lecture_no')
+            slot_obj = TimetableSlot.objects.filter(
+                timetable_template_id=template_id,
+                day_of_week=lecture_day,
+                period_number=lecture_no
+             ).first()
+        else:
+            slot_obj = TimetableSlot.objects.filter(id=slot_id).first()
 
-        template_id = request_data.get('template_id')
-        lecture_day = request_data.get('lecture_day')
-        lecture_no = request_data.get('lecture_no')
+
+        if slot_obj is None:
+            response_ = {
+                "n": 0,
+                "msg": "Lecture not found for this template",
+                "data": []
+            }
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+
+
+        template_id = slot_obj.timetable_template_id
+        lecture_day = slot_obj.day_of_week
+        lecture_no = slot_obj.period_number
 
         msg = ''
         validation_status = True
@@ -2641,7 +2670,7 @@ class TemplateSlotEdit(GenericAPIView):
                 "msg": msg,
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -2654,33 +2683,16 @@ class TemplateSlotEdit(GenericAPIView):
                 "msg": "Template not found",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             else:
                 return Response(response_, status=200)
 
-        slot_obj = TimetableSlot.objects.filter(
-            timetable_template_id=template_id,
-            day_of_week=lecture_day,
-            period_number=lecture_no
-        ).first()
 
-        if slot_obj is None:
-            response_ = {
-                "n": 0,
-                "msg": "Lecture not found for this template",
-                "data": []
-            }
-            if encryped_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-            else:
-                return Response(response_, status=200)
 
-        editable_fields = ['start_time', 'end_time', 'course_id', 'faculty_id', 'room_number', 'entry_for', 'lecture_type']
+        editable_fields = ['start_time', 'end_time', 'subject_id', 'faculty_id', 'room_number', 'entry_for', 'lecture_type']
         for field in editable_fields:
             if field in request_data and request_data[field] not in (None, ''):
                 setattr(slot_obj, field, request_data[field])
@@ -2700,7 +2712,7 @@ class TemplateSlotEdit(GenericAPIView):
                 "lecture_no": slot_obj.period_number,
                 "start_time": slot_obj.start_time,
                 "end_time": slot_obj.end_time,
-                "course_id": slot_obj.course_id,
+                "subject_id": slot_obj.subject_id,
                 "faculty_id": slot_obj.faculty_id,
                 "room_number": slot_obj.room_number,
                 "entry_for": slot_obj.entry_for,
@@ -2708,7 +2720,7 @@ class TemplateSlotEdit(GenericAPIView):
             }
         }
 
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -2716,102 +2728,65 @@ class TemplateSlotEdit(GenericAPIView):
             return Response(response_, status=200)
 
 
-class SemesterListByCourse(GenericAPIView):
-    """
-    API to list semesters of a course with timetable template counts.
 
-    POST /api/schedule/semester-list-by-course
+class TemplateSlotDetails(GenericAPIView):
 
-    Request Body:
-    {
-        "course_id": 2,        # Required
-        "academic_year_id": 1   # Optional (template count for a specific year)
-    }
-
-    Response:
-    {
-        "n": 1,
-        "msg": "Semester list found successfully",
-        "data": [
-            {
-                "id": 1,
-                "semester_name": "Semester I",
-                "semester_number": 1,
-                "course_id": 2,
-                "template_count": 2
-            }
-        ]
-    }
-    """
     authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
 
-        course_id = request_data.get('course_id')
-        academic_year_id = request_data.get('academic_year_id')
+        slot_id = request_data.get('slot_id')
+        slot_obj = TimetableSlot.objects.filter(
+            id=slot_id,isActive=True,og_code=str(request.user.og_code)
+        ).first()
 
-        if course_id in (None, ''):
+        if slot_obj is None:
             response_ = {
                 "n": 0,
-                "msg": "course_id is required",
+                "msg": "Lecture not found for this template",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             else:
                 return Response(response_, status=200)
 
-        semester_obj = Semester.objects.filter(
-            course_id=course_id,
-            isActive=True
-        ).order_by('semester_number')
-
-        semester_data = []
-        for sem in semester_obj:
-            class_ids = ClassGroup.objects.filter(
-                semester_id=sem.id,
-                isActive=True
-            ).values_list('id', flat=True)
-
-            template_qs = TimetableTemplate.objects.filter(
-                class_group_id__in=class_ids,
-                is_active=True
-            )
-            if academic_year_id not in (None, ''):
-                template_qs = template_qs.filter(
-                    academic_year_id=academic_year_id
-                )
-
-            semester_data.append({
-                "id": sem.id,
-                "semester_name": sem.semester_name,
-                "semester_number": sem.semester_number,
-                "course_id": sem.course_id,
-                "template_count": template_qs.count()
-            })
 
         response_ = {
             "n": 1,
-            "msg": "Semester list found successfully",
-            "data": semester_data
+            "msg": "Template lecture updated successfully",
+            "data": {
+                "id": slot_obj.id,
+                "template_id": slot_obj.timetable_template_id,
+                "lecture_day": slot_obj.day_of_week,
+                "lecture_no": slot_obj.period_number,
+                "start_time": slot_obj.start_time,
+                "end_time": slot_obj.end_time,
+                "subject_id": slot_obj.subject_id,
+                "faculty_id": slot_obj.faculty_id,
+                "room_number": slot_obj.room_number,
+                "entry_for": slot_obj.entry_for,
+                "lecture_type": slot_obj.lecture_type
+            }
         }
 
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
         else:
             return Response(response_, status=200)
+
 
 
 class SemesterListByCourse(GenericAPIView):
@@ -2850,15 +2825,16 @@ class SemesterListByCourse(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        encryped_header = ""
+        encrypted_header = ""
         if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
+            encrypted_header = request.headers.get('encrypted')
 
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
 
         course_id = request_data.get('course_id')
+        class_id = request_data.get('class_id')
         academic_year_id = request_data.get('academic_year_id')
 
         if course_id in (None, ''):
@@ -2867,16 +2843,29 @@ class SemesterListByCourse(GenericAPIView):
                 "msg": "course_id is required",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             else:
                 return Response(response_, status=200)
-
+        if class_id in (None, ''):
+            response_ = {
+                "n": 0,
+                "msg": "class_id is required",
+                "data": []
+            }
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+            
         course_obj = Course.objects.filter(
             id=course_id,
-            isActive=True
+            isActive=True,
+            og_code=str(request.user.og_code)
         ).first()
 
         if course_obj is None:
@@ -2885,14 +2874,29 @@ class SemesterListByCourse(GenericAPIView):
                 "msg": "Course not found.",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             else:
                 return Response(response_, status=200)
 
-        semester_count = course_obj.semester_count
+
+        class_semesters=ClassGroup.objects.filter(id=class_id,isActive=True,og_code=str(request.user.og_code)).fisrt()
+        if class_semesters is None:
+            response_ = {
+                "n": 0,
+                "msg": "Semesters not found.",
+                "data": []
+            }
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            else:
+                return Response(response_, status=200)
+
+        semester_ids = class_semesters.semester_ids
 
         class_groups = ClassGroup.objects.filter(
             id__in=CourseClass.objects.filter(
@@ -2914,7 +2918,7 @@ class SemesterListByCourse(GenericAPIView):
                 "msg": "No semesters found for the course.",
                 "data": []
             }
-            if encryped_header == "1":
+            if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
@@ -2940,7 +2944,7 @@ class SemesterListByCourse(GenericAPIView):
 
             template_qs = TimetableTemplate.objects.filter(
                 class_group_id__in=class_ids,
-                is_active=True
+                isActive=True
             )
             if academic_year_id not in (None, ''):
                 template_qs = template_qs.filter(
@@ -2961,7 +2965,7 @@ class SemesterListByCourse(GenericAPIView):
             "data": semester_data
         }
 
-        if encryped_header == "1":
+        if encrypted_header == "1":
             data_to_serialize = convert_decimals_to_float(response_)
             encdata = encrypt_data(json.dumps(data_to_serialize))
             return Response(encdata, status=200)
@@ -2991,7 +2995,7 @@ class TimetableTimeTableByFilters(GenericAPIView):
 
         template_id = request_data.get('template_id')
         academic_year_id = request_data.get('academic_year_id')
-        semester_id = request_data.get('semester_id') or request_data.get('semister_id')
+        semester_id = request_data.get('semester_id') or request_data.get('semester_id')
         class_id = request_data.get('class_id')
         course_id = request_data.get('course_id')
 
@@ -3069,7 +3073,7 @@ class TimetableTimeTableByFilters(GenericAPIView):
         course_map = {
             c.id: c
             for c in Course.objects.filter(
-                id__in={s.course_id for s in slot_list},
+                id__in={s.subject_id for s in slot_list},
                 isActive=True
             )
         }
@@ -3213,11 +3217,20 @@ class TemplateDetails(GenericAPIView):
         semester_obj = None
         if class_semester_id is not None:
             semester_obj = Semester.objects.filter(id=class_semester_id, isActive=True).first()
-        year_obj = AcademicYear.objects.filter(id=template_obj.academic_year_id, isActive=True).first()
+        year_obj = AcademicYear.objects.filter(id=template_obj.academic_year_id, isActive=True,og_code=str(request.user.og_code)).first()
+        course_obj = Course.objects.filter(id=template_obj.course_id, isActive=True,og_code=str(request.user.og_code)).first()
+
+
+
+        course_name = ""
+        if course_obj:
+            course_name = " ".join(part for part in [course_obj.course_name, course_obj.course_code] if part).strip()
+
 
         class_name = ""
         if class_group:
             class_name = " ".join(part for part in [class_group.class_name, class_group.division] if part).strip()
+
 
         slots_qs = TimetableSlot.objects.filter(timetable_template_id=template_obj.id, isActive=True).order_by('day_of_week', 'period_number')
         day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -3225,11 +3238,37 @@ class TemplateDetails(GenericAPIView):
 
         slot_list = list(slots_qs)
 
-        course_map = {
-            c.id: c
-            for c in Course.objects.filter(
-                id__in={s.course_id for s in slot_list},
-                isActive=True
+        def normalize_subject_id(value):
+            if value is None or isinstance(value, bool):
+                return None
+
+            text = str(value).strip()
+            if not text:
+                return None
+
+            try:
+                subject_id = int(text)
+            except (TypeError, ValueError):
+                return None
+
+            # Valid positive PostgreSQL bigint ID.
+            if not 0 < subject_id <= 9223372036854775807:
+                return None
+
+            return subject_id
+
+
+        subject_ids = {
+            subject_id
+            for slot in slot_list
+            if (subject_id := normalize_subject_id(slot.subject_id)) is not None
+        }
+
+        subject_map = {
+            subject.id: subject
+            for subject in Subject.objects.filter(
+                id__in=subject_ids,
+                isActive=True,
             )
         }
 
@@ -3249,7 +3288,7 @@ class TemplateDetails(GenericAPIView):
         }
 
         for slot in slot_list:
-            course_obj = course_map.get(slot.course_id)
+            subject_obj = subject_map.get(slot.subject_id)
             faculty_name = ""
             user = user_map.get(str(slot.faculty_id))
             if user is not None:
@@ -3263,8 +3302,8 @@ class TemplateDetails(GenericAPIView):
                 "period_number": slot.period_number,
                 "start_time": slot.start_time,
                 "end_time": slot.end_time,
-                "course_id": slot.course_id,
-                "course_name": course_obj.course_name if course_obj else "",
+                "subject_id": slot.subject_id,
+                "subject_name": subject_obj.subject_name if subject_obj else "",
                 "faculty_id": slot.faculty_id,
                 "faculty_name": faculty_name,
                 "entry_for": slot.entry_for,
@@ -3289,6 +3328,8 @@ class TemplateDetails(GenericAPIView):
                 "semester_name": semester_obj.semester_name if semester_obj else "",
                 "class_id": template_obj.class_group_id,
                 "class_name": class_name,
+                "course_id": template_obj.course_id,
+                "course_name": course_name,
                 "total_lectures": len(slot_list),
                 "slots": slots_data,
             }
@@ -3362,8 +3403,9 @@ class AddTemplate(GenericAPIView):
 
         template_name = request_data.get('template_name')
         academic_year_id = request_data.get('academic_year') or request_data.get('academic_year_id')
-        semester_id = request_data.get('semester') or request_data.get('semester_id') or request_data.get('semister_id')
-        subject_id = request_data.get('subject') or request_data.get('course_id')
+        semester_id = request_data.get('semester') or request_data.get('semester_id') or request_data.get('semester_id')
+        class_group_id = request_data.get('class_groupid') or request_data.get('class_group_id')
+        course_id = request_data.get('courseid') or request_data.get('course_id')
 
         msg = ""
         validation_status = True
@@ -3374,12 +3416,16 @@ class AddTemplate(GenericAPIView):
         elif academic_year_id in (None, ''):
             msg = 'academic_year is required'
             validation_status = False
+        elif course_id in (None, ''):
+            msg = 'course is required'
+            validation_status = False
+        elif class_group_id in (None, ''):
+            msg = 'class_group_id is required'
+            validation_status = False
         elif semester_id in (None, ''):
             msg = 'semester is required'
             validation_status = False
-        elif subject_id in (None, ''):
-            msg = 'subject is required'
-            validation_status = False
+
 
         if not validation_status:
             response_ = {"n": 0, "msg": msg, "data": []}
@@ -3389,7 +3435,9 @@ class AddTemplate(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
-        if not AcademicYear.objects.filter(id=academic_year_id, isActive=True).exists():
+
+        academic_obj=AcademicYear.objects.filter(id=academic_year_id, isActive=True,og_code=str(request.user.og_code)).first()
+        if not academic_obj:
             response_ = {"n": 0, "msg": "Academic year not found", "data": []}
             if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -3397,20 +3445,40 @@ class AddTemplate(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
-        subject_obj = None
-        try:
-            subject_id = int(subject_id)
-        except (TypeError, ValueError):
-            subject_id = None
-        if subject_id is not None:
-            subject_obj = Subject.objects.filter(id=subject_id, isActive=True).first() or Subject.objects.filter(id=subject_id).first()
-        if subject_obj is None:
-            response_ = {"n": 0, "msg": "Subject not found", "data": []}
+
+        course_obj=Course.objects.filter(id=course_id, isActive=True,og_code=str(request.user.og_code)).first()
+        if not course_obj:
+            response_ = {"n": 0, "msg": "Course obj not found", "data": []}
             if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
                 return Response(encdata, status=200)
             return Response(response_, status=200)
+
+
+        course_classes_obj=CourseClass.objects.filter(course_id=course_id,class_id=class_group_id, isActive=True,og_code=str(request.user.og_code)).first()
+        if not course_classes_obj:
+
+            response_ = {"n": 0, "msg": "Class not availble for this course", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+        else:
+            class_obj=ClassGroup.objects.filter(id=class_group_id,isActive=True,og_code=str(request.user.og_code)).first()
+            if class_obj is None:
+                response_ = {"n": 0, "msg": "Class obj not found", "data": []}
+                if encrypted_header == "1":
+                    data_to_serialize = convert_decimals_to_float(response_)
+                    encdata = encrypt_data(json.dumps(data_to_serialize))
+                    return Response(encdata, status=200)
+                return Response(response_, status=200)
+
+
+
+
+
 
         try:
             semester_id = int(semester_id)
@@ -3422,11 +3490,15 @@ class AddTemplate(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
+        
+
         semester_obj = Semester.objects.filter(id=semester_id, isActive=True).first()
         if semester_obj is None:
             resolved = Semester.objects.filter(semester_number=semester_id, isActive=True).first()
             if resolved is not None and resolved.id != semester_id:
                 semester_obj = resolved
+
+
         if semester_obj is None:
             response_ = {"n": 0, "msg": "Semester not found", "data": []}
             if encrypted_header == "1":
@@ -3435,7 +3507,12 @@ class AddTemplate(GenericAPIView):
                 return Response(encdata, status=200)
             return Response(response_, status=200)
 
+
+
+
+
         class_group = ClassGroup.objects.filter(
+            id=class_group_id,
             semester_ids__contains=[semester_obj.id],
             isActive=True,
         ).order_by('id').first()
@@ -3450,11 +3527,13 @@ class AddTemplate(GenericAPIView):
         existing = TimetableTemplate.objects.filter(
             academic_year_id=academic_year_id,
             class_group_id=class_group.id,
+            course_id=course_id,
+            semester_id=semester_id,
             template_name=template_name,
-            is_active=True,
+            isActive=True,og_code=str(request.user.og_code)
         ).first()
         if existing is not None:
-            response_ = {"n": 0, "msg": "A template with this name already exists for this class", "data": []}
+            response_ = {"n": 0, "msg": "A template with this name already exists for this class and semester", "data": []}
             if encrypted_header == "1":
                 data_to_serialize = convert_decimals_to_float(response_)
                 encdata = encrypt_data(json.dumps(data_to_serialize))
@@ -3462,12 +3541,12 @@ class AddTemplate(GenericAPIView):
             return Response(response_, status=200)
 
         periods_per_day = 7
-        days = [0, 1, 2, 3, 4]
+        days = [0, 1, 2, 3, 4,5]
         start_time = "09:00"
         period_duration_minutes = 60
-        year_obj = AcademicYear.objects.filter(id=academic_year_id, isActive=True).first()
-        effective_from_date = year_obj.start_date if year_obj and getattr(year_obj, 'start_date', None) else None
-        effective_to_date = year_obj.end_date if year_obj and getattr(year_obj, 'end_date', None) else None
+
+        effective_from_date = academic_obj.start_date if academic_obj and getattr(academic_obj, 'start_date', None) else None
+        effective_to_date = academic_obj.end_date if academic_obj and getattr(academic_obj, 'end_date', None) else None
         if effective_from_date is None:
             effective_from_date = date.today()
 
@@ -3479,13 +3558,16 @@ class AddTemplate(GenericAPIView):
         template_obj = TimetableTemplate.objects.create(
             academic_year_id=academic_year_id,
             class_group_id=class_group.id,
+            course_id=course_obj.id,
+            semester_id=semester_id,
             template_name=template_name,
             effective_from=effective_from_date,
             effective_to=effective_to_date,
             is_published=False,
-            is_active=True,
+            isActive=True,
             created_by=str(request.user.id) if request.user else "admin",
             createdBy=str(request.user.id) if request.user else "admin",
+            og_code=str(request.user.og_code)
         )
 
         slot_objs = []
@@ -3500,12 +3582,12 @@ class AddTemplate(GenericAPIView):
                             period_number=i + 1,
                             start_time=start_time_str,
                             end_time=end_time_str,
-                            course_id=subject_obj.id,
+                            subject_id="",
                             faculty_id="",
                             room_number="",
                             entry_for="lecture",
                             lecture_type="THEORY",
-                            is_active=True,
+                            isActive=True,
                         )
                     )
 
@@ -3517,7 +3599,7 @@ class AddTemplate(GenericAPIView):
             "period_number": slot.period_number,
             "start_time": slot.start_time,
             "end_time": slot.end_time,
-            "course_id": slot.course_id,
+            "subject_id": slot.subject_id,
         } for slot in slot_objs]
 
         response_ = {
@@ -3531,8 +3613,8 @@ class AddTemplate(GenericAPIView):
                 "semester_name": semester_obj.semester_name,
                 "class_group_id": template_obj.class_group_id,
                 "class_name": f"{class_group.class_name} {class_group.division or ''}".strip(),
-                "course_id": subject_obj.id,
-                "course_name": subject_obj.subject_name if getattr(subject_obj, 'subject_name', None) else (subject_obj.name if getattr(subject_obj, 'name', None) else ""),
+                "course_id": course_id,
+                "course_name": "",
                 "effective_from": template_obj.effective_from.isoformat() if template_obj.effective_from else None,
                 "effective_to": template_obj.effective_to.isoformat() if template_obj.effective_to else None,
                 "slots_count": len(slot_objs),
@@ -3549,6 +3631,129 @@ class AddTemplate(GenericAPIView):
 
 
 
+class AvailableFacultyListByTimeSlotSubject(GenericAPIView):
+    
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+
+        # if request.user
+
+
+        template_id = request_data.get('templateid') or request_data.get('template_id')
+        if template_id is None or template_id =='':
+            msg = 'template id not found'
+            validation_status = False
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+        
+        subject_id = request_data.get('subjectid') or request_data.get('subject_id')
+        start_time =  request_data.get('start_time')
+        end_time =  request_data.get('end_time')
+        print("template_id",template_id)
+
+        template_obj=TimetableTemplate.objects.filter(id=template_id,isActive=True,og_code=str(request.user.og_code)).first()
+        if template_obj is None:
+            msg = 'template not found'
+            validation_status = False
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        semester_id = template_obj.semester_id
+        class_group_id = template_obj.class_group_id
+        course_id =template_obj.course_id
+        academic_year_id =template_obj.academic_year_id
+
+        msg = ""
+        validation_status = True
+
+        if subject_id in (None, ''):
+            msg = 'subject_id is required'
+            validation_status = False
+        elif start_time in (None, ''):
+            msg = 'start_time is required'
+            validation_status = False
+        elif end_time in (None, ''):
+            msg = 'end_time is required'
+            validation_status = False
+        elif class_group_id in (None, ''):
+            msg = 'class_group_id is required'
+            validation_status = False
+        elif semester_id in (None, ''):
+            msg = 'semester is required'
+            validation_status = False
+        elif course_id in (None, ''):
+            msg = 'course is required'
+            validation_status = False
+        elif academic_year_id in (None, ''):
+            msg = 'academic_year_id is required'
+            validation_status = False
+        if not validation_status:
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+
+
+        faculty_ids=list(FacultyCourseAllocation.objects.filter(academic_year_id=academic_year_id,isActive=True,og_code=str(request.user.og_code),course_id=course_id,subject_id=subject_id).values_list('faculty_id',flat=True))
+        print("faculty_ids",faculty_ids)
+
+        faculty_objs=UserAdmin.objects.filter(id__in=faculty_ids,isActive=True,og_code=str(request.user.og_code))
+
+        facultyser = UserAdminSerializer(faculty_objs,many=True)
+        for i in facultyser.data:
+            country_object = Country.objects.filter(id=i['country']).first()
+            if country_object is not None:
+                i['country_name'] = country_object.name
+            else:
+                i['country_name'] = ""
+
+
+            department_object = Department.objects.filter(id=i['department_id']).first()
+            if department_object is not None:
+                i['department_name'] = department_object.department_name
+            else:
+                i['department_name'] = ""
+
+
+            if i['specialization'] != "" and i['specialization'] is not None:
+                i['specialization'] = json.loads(i['specialization'])
+
+            if i['name'] == '' or i['name'] is None:
+                i['name']=i['first_name']+' '+i['last_name']
+
+
+        response_={
+                    "n": 1,
+                    "msg": 'Faculty list found successfully',
+                    "data":facultyser.data                        
+                }
+        if encrypted_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
 
 
 

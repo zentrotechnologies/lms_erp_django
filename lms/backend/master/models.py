@@ -10,11 +10,15 @@ class Category(TrackingModel):
     category_name = models.CharField(max_length=255, null=True, blank=True)
     tags = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
+
+
 class Sub_Category(TrackingModel):
     category_id = models.IntegerField(null=True, blank=True, db_index=True)
     sub_name = models.CharField(max_length=255)
     tags = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 class College(TrackingModel):
     college_code = models.CharField(max_length=50, unique=True)
     college_name = models.CharField(max_length=255)
@@ -24,12 +28,13 @@ class College(TrackingModel):
     phone = models.CharField(max_length=20, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
     
 class AcademicYear(TrackingModel):
     academic_year_name = models.CharField(
         max_length=50,
-        unique=True,
+       
         null=True,
         blank=True,
     )
@@ -39,6 +44,7 @@ class AcademicYear(TrackingModel):
     admission_end_date = models.DateField(null=True, blank=True)
     is_current = models.BooleanField(default=False, db_index=True)
     status = models.BooleanField(default=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
     def __str__(self):
         return self.academic_year_name or ""
@@ -57,7 +63,7 @@ class Semester(TrackingModel):
     semester_number = models.PositiveSmallIntegerField()
     semester_name = models.CharField(max_length=100)
     status = models.BooleanField(default=True)
-
+    
 
 class ClassGroup(TrackingModel):
     # course_id = models.BigIntegerField(db_index=True)

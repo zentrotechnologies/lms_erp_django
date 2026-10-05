@@ -14,6 +14,7 @@ class CandidateAttendance(TrackingModel):
     checkout_time = models.CharField(max_length=255, null=True, blank=True)
     present = models.BooleanField(default=True)
     absent = models.BooleanField(default=False)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class LectureAttendanceSession(TrackingModel):
@@ -30,6 +31,7 @@ class LectureAttendanceSession(TrackingModel):
     is_locked = models.BooleanField(default=False)
     locked_by = models.CharField(max_length=255, null=True, blank=True)
     locked_at = models.DateTimeField(null=True, blank=True)
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 class LectureAttendanceDetail(TrackingModel):
@@ -39,7 +41,7 @@ class LectureAttendanceDetail(TrackingModel):
     marked_by = models.CharField(max_length=255)
     marked_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
 
@@ -53,7 +55,7 @@ class FacultyAttendance(TrackingModel):
     is_early = models.BooleanField(default=False)
     day_status = models.CharField(max_length=20, default='PRESENT', db_index=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         unique_together = ('faculty_id', 'attendance_date')
 
@@ -61,7 +63,7 @@ class FacultyAttendance(TrackingModel):
 class AttendanceHoliday(TrackingModel):
     holiday_date = models.DateField(unique=True, db_index=True)
     name = models.CharField(max_length=150)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         db_table = 'attendance_holiday'
         ordering = ('holiday_date',)
@@ -90,7 +92,7 @@ class LeaveApplication(TrackingModel):
     reviewed_by = models.CharField(max_length=255, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_remarks = models.TextField(null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
 
 class LeaveAdjacentLecture(TrackingModel):
     leave_application_id = models.CharField(max_length=255, db_index=True)
@@ -101,7 +103,7 @@ class LeaveAdjacentLecture(TrackingModel):
     primary_faculty_id = models.CharField(max_length=255, db_index=True)
     adjacent_faculty_id = models.CharField(max_length=255, db_index=True)
     status = models.CharField(max_length=20, default='PENDING')
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         db_table = 'attendance_leave_adjacent_lecture'
 
@@ -110,7 +112,7 @@ class LeaveType(TrackingModel):
     leave_type_name = models.CharField(max_length=255, unique=True, db_index=True)
     units = models.CharField(max_length=50, default="Days")
     description = models.TextField(null=True, blank=True)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         db_table = 'attendance_leave_type'
 
@@ -121,7 +123,7 @@ class LeaveTypeAllotment(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
     allowed = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     opening_balance = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-
+    og_code = models.CharField(max_length=150, null=True, blank=True)
     class Meta:
         db_table = 'attendance_leave_type_allotment'
         unique_together = ('leave_type_id', 'designation_id', 'academic_year_id')

@@ -86,7 +86,7 @@ class AddCourse(GenericAPIView):
         if classlist !=[]:
             for c in classlist:
                 if c['class_id'] != '':
-                    class_obj=ClassGroup.objects.filter(id=c['class_id'],isActive=True).first()
+                    class_obj=ClassGroup.objects.filter(id=c['class_id'],isActive=True,og_code=str(request.user.og_code)).first()
                     if class_obj is not None:
                         semister_count+=len(class_obj.semester_ids)
                     else:
@@ -99,7 +99,7 @@ class AddCourse(GenericAPIView):
         data['semester_count'] = semister_count
         data['semester_per_year'] = 2
 
-        coursecode_object = Course.objects.filter(isActive=True,course_code=data['course_code']).first()
+        coursecode_object = Course.objects.filter(isActive=True,course_code=data['course_code'],og_code=str(request.user.og_code)).first()
         print("coursecode_object",coursecode_object)
         if coursecode_object is not None:
             response_={
@@ -122,17 +122,17 @@ class AddCourse(GenericAPIView):
             if subjectslist != []:
                 for m in subjectslist:
                     if m['subject_id'] != '':
-                        subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],isActive=True,semester_no=m['semester_no']).first()
+                        subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],isActive=True,semester_no=m['semester_no'],og_code=str(request.user.og_code)).first()
                         if subjectexist is None:
-                            CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'])
+                            CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'],og_code=str(request.user.og_code))
 
 
             if classlist !=[]:
                 for c in classlist:
                     if c['class_id'] != '':
-                        classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id'],isActive=True).first()
+                        classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id'],isActive=True,og_code=str(request.user.og_code)).first()
                         if classexist is None:
-                            CourseClass.objects.create(course_id=courseid,class_id=c['class_id'])
+                            CourseClass.objects.create(course_id=courseid,class_id=c['class_id'],og_code=str(request.user.og_code))
 
 
             response_={
@@ -182,6 +182,9 @@ class CollegeCourseFilterList(GenericAPIView):
             filter_kwargs['isActive'] = True
         if course_status is not None and course_status != '':
             filter_kwargs['course_status__iexact'] = course_status
+
+
+
         courselistobj = Course.objects.filter(**filter_kwargs).order_by('-createdAt')
 
         if courselistobj.exists():
@@ -194,7 +197,7 @@ class CollegeCourseFilterList(GenericAPIView):
             }
             user_map = {
                 str(u.id): u
-                for u in UserAdmin.objects.filter(id__in=creator_ids, isActive=True)
+                for u in UserAdmin.objects.filter(id__in=creator_ids, isActive=True,og_code=str(request.user.og_code))
             }
 
             for s in serializer.data:
@@ -297,7 +300,7 @@ class DeactivateCourse(GenericAPIView):
 
         course_id=request_data.get('courseid')
         if course_id is not None or course_id !='':
-            course_idobj = Course.objects.filter(id=course_id).first()
+            course_idobj = Course.objects.filter(id=course_id,og_code=str(request.user.og_code)).first()
             if course_idobj is not None:
                 if _is_course_active(course_idobj.course_status):
                     course_idobj.course_status = 'Inactive'
@@ -367,7 +370,7 @@ class ActivateCourse(GenericAPIView):
 
         course_id=request_data.get('courseid')
         if course_id is not None or course_id !='':
-            course_idobj = Course.objects.filter(id=course_id).first()
+            course_idobj = Course.objects.filter(id=course_id,og_code=str(request.user.og_code)).first()
             if course_idobj is not None:
                 if not _is_course_active(course_idobj.course_status):
                     course_idobj.course_status = 'Active'
@@ -472,7 +475,7 @@ class UpdateCourse(GenericAPIView):
         if classlist !=[]:
             for c in classlist:
                 if c['class_id'] != '':
-                    class_obj=ClassGroup.objects.filter(id=c['class_id'],isActive=True).first()
+                    class_obj=ClassGroup.objects.filter(id=c['class_id'],isActive=True,og_code=str(request.user.og_code)).first()
                     if class_obj is not None:
                         semister_count+=len(class_obj.semester_ids)
                     else:
@@ -485,9 +488,9 @@ class UpdateCourse(GenericAPIView):
         data['semester_count'] = semister_count
         data['semester_per_year'] = 2
 
-        courseobj = Course.objects.filter(id=courseid,isActive=True,).first()
+        courseobj = Course.objects.filter(id=courseid,isActive=True,og_code=str(request.user.og_code),).first()
         if courseobj is not None:
-            coursecode_object = Course.objects.filter(isActive=True,course_code=data['course_code']).exclude(id=int(courseid)).order_by('id')
+            coursecode_object = Course.objects.filter(isActive=True,course_code=data['course_code'],og_code=str(request.user.og_code)).exclude(id=int(courseid)).order_by('id')
             if coursecode_object.exists():
                 response_={
                             "n": 0,
@@ -505,26 +508,26 @@ class UpdateCourse(GenericAPIView):
             if serializer.is_valid():
                 serializer.save()
                 courseid = serializer.data['id']
-                CourseSubjects.objects.filter(course_id=courseid,isActive=True).update(isActive=False)
+                CourseSubjects.objects.filter(course_id=courseid,isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
                 if subjectslist != []:
                     for m in subjectslist:
                         if m['subject_id'] != '':
                             subjectexist = CourseSubjects.objects.filter(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no']).first()
                             if subjectexist is None:
-                                CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'])
+                                CourseSubjects.objects.create(course_id=courseid,subject_id=m['subject_id'],semester_no=m['semester_no'],og_code=str(request.user.og_code))
                             else:
                                 subjectexist.isActive=True
                                 subjectexist.save()
 
 
-                CourseClass.objects.filter(course_id=courseid,isActive=True).update(isActive=False)
+                CourseClass.objects.filter(course_id=courseid,isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
                 if classlist !=[]:
                     for c in classlist:
                         if c['class_id'] != '':
-                            classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id']).first()
+                            classexist = CourseClass.objects.filter(course_id=courseid,class_id=c['class_id'],og_code=str(request.user.og_code)).first()
                             if classexist is None:
                                 print("1")
-                                CourseClass.objects.create(course_id=courseid,class_id=c['class_id'])
+                                CourseClass.objects.create(course_id=courseid,class_id=c['class_id'],og_code=str(request.user.og_code))
                             else:
                                 print("2",classexist)
 
@@ -589,7 +592,7 @@ class DeleteCourse(GenericAPIView):
         }
         courseid = request_data.get('courseid')
 
-        courseobj = Course.objects.filter(isActive=True,id=courseid).first()
+        courseobj = Course.objects.filter(isActive=True,id=courseid,og_code=str(request.user.og_code)).first()
         if courseobj is not None:
 
 
@@ -598,7 +601,7 @@ class DeleteCourse(GenericAPIView):
             if serializer.is_valid():
                 serializer.save()
                 courseid = serializer.data['id']
-                CourseSubjects.objects.filter(course_id=courseid,isActive=True).update(isActive=False)
+                CourseSubjects.objects.filter(course_id=courseid,isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
 
 
 
@@ -660,8 +663,8 @@ class getCoursedetails(GenericAPIView):
                 serializer = CourseSerializer(courseobj)
                 serializer_data = serializer.data
 
-                subject_ids = list(CourseSubjects.objects.filter(course_id=courseid,isActive=True).values_list('subject_id',flat=True))
-                subject_obj=Subject.objects.filter(id__in=subject_ids,isActive=True)
+                subject_ids = list(CourseSubjects.objects.filter(course_id=courseid,isActive=True,og_code=str(request.user.og_code)).values_list('subject_id',flat=True))
+                subject_obj=Subject.objects.filter(id__in=subject_ids,isActive=True,og_code=str(request.user.og_code))
                 if subject_obj.exists():
                     subjectser = SubjectSerializer(subject_obj,many=True)
                     serializer_data.update({
@@ -673,10 +676,9 @@ class getCoursedetails(GenericAPIView):
                     })
 
 
-                class_ids = list(CourseClass.objects.filter(course_id=courseid,isActive=True).values_list('class_id',flat=True))
+                class_ids = list(CourseClass.objects.filter(course_id=courseid,isActive=True,og_code=str(request.user.og_code)).values_list('class_id',flat=True))
                 print("class_ids",class_ids,courseid)
-                class_obj=ClassGroup.objects.filter(id__in=class_ids,isActive=True)
-                print("class_obj",class_obj)
+                class_obj=ClassGroup.objects.filter(id__in=class_ids,isActive=True,og_code=str(request.user.og_code))
                 if class_obj.exists():
                     classser = ClassGroupSerializer(class_obj,many=True)
                     print("classser.data",classser.data)
@@ -837,9 +839,8 @@ class AddSubject(GenericAPIView):
 
         subject_object = Subject.objects.filter(
             isActive=True,
-            
-            subject_code=data["subject_code"],
-            og_code=data['og_code'],
+            subject_code=data["subject_code"]
+            ,og_code=str(request.user.og_code)
             
         ).first()
         if subject_object is not None:
@@ -982,7 +983,7 @@ class UpdateSubject(GenericAPIView):
                 "data": [],
             })
 
-        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True,og_code=str(request.user.og_code)).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -1035,7 +1036,7 @@ class DeleteSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True,og_code=str(request.user.og_code)).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -1084,7 +1085,7 @@ class GetSubjectdetails(GenericAPIView):
                 "data": [],
             })
 
-        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True,og_code=str(request.user.og_code)).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -1114,7 +1115,7 @@ class DeactivateSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True,og_code=str(request.user.og_code)).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -1153,7 +1154,7 @@ class ActivateSubject(GenericAPIView):
             return error_response
 
         subjectid = request_data.get("subjectid") or request_data.get("subject_id")
-        subjectobj = Subject.objects.filter(id=subjectid,isActive=True).first()
+        subjectobj = Subject.objects.filter(id=subjectid,isActive=True,og_code=str(request.user.og_code)).first()
         if subjectobj is None:
             return _subject_response(encryped_header, {
                 "n": 0,
@@ -1198,10 +1199,10 @@ class AddCourseMaterial(GenericAPIView):
         linkInput = request.POST.get('linkInput')
         userid = str(request.user.id)
         if courseid is not None and courseid != '':
-            courseobj = Course.objects.filter(id=courseid,isActive=True).first()
+            courseobj = Course.objects.filter(id=courseid,isActive=True,og_code=str(request.user.og_code)).first()
             if courseobj is not None:
                 coursename = courseobj.course_name
-                mobj = CourseMaterial.objects.filter(material_label=filematerialname,course_id=courseid,language=language).first()
+                mobj = CourseMaterial.objects.filter(material_label=filematerialname,course_id=courseid,language=language,og_code=str(request.user.og_code)).first()
                 if mobj is None:
                     course_folder_name = sanitize_filename(coursename)
                     folder_path = os.path.join(settings.MEDIA_ROOT,'media','Study Material',course_folder_name)
@@ -1217,7 +1218,7 @@ class AddCourseMaterial(GenericAPIView):
                         file_url=save_file(folder_path,fileInput,request)
                     else:
                         file_url = ''
-                    CourseMaterial.objects.create(course_id=courseid,module_id=module_id,material_type=filetype,material_link=linkInput,material_file=file_url,language=language,material_label=filematerialname,createdBy = userid)
+                    CourseMaterial.objects.create(course_id=courseid,module_id=module_id,material_type=filetype,material_link=linkInput,material_file=file_url,language=language,material_label=filematerialname,createdBy = userid,og_code=str(request.user.og_code))
 
                     response_={
                             "n": 1,
@@ -1299,7 +1300,7 @@ class GetCourseClases(GenericAPIView):
                 return Response(response_,status=200)
 
 
-        courseobj = Course.objects.filter(id=course_id,isActive=True).first()
+        courseobj = Course.objects.filter(id=course_id,isActive=True,og_code=str(request.user.og_code)).first()
         if courseobj is None:
             response_={
                             "n": 0,
@@ -1314,7 +1315,7 @@ class GetCourseClases(GenericAPIView):
                 return Response(response_,status=200)
 
 
-        class_ids=list(CourseClass.objects.filter(course_id=course_id,isActive=True).values_list('class_id',flat=True))
+        class_ids=list(CourseClass.objects.filter(course_id=course_id,isActive=True,og_code=str(request.user.og_code)).values_list('class_id',flat=True))
         class_objs=ClassGroup.objects.filter(id__in=class_ids,isActive=True,og_code=str(request.user.og_code))
         serializer=ClassGroupSerializer(class_objs,many=True)
 
@@ -1358,7 +1359,7 @@ class GetClassSemesters(GenericAPIView):
                 return Response(response_,status=200)
 
 
-        classobj = ClassGroup.objects.filter(id=class_id,isActive=True).first()
+        classobj = ClassGroup.objects.filter(id=class_id,isActive=True,og_code=str(request.user.og_code)).first()
         if classobj is None:
             response_={
                             "n": 0,
@@ -1372,8 +1373,8 @@ class GetClassSemesters(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-
-        semester_objs=Semester.objects.filter(id__in=classobj.semester_ids,isActive=True,)
+        print("classobj.semester_ids",classobj.semester_ids)
+        semester_objs=Semester.objects.filter(id__in=classobj.semester_ids,isActive=True)
         print("semester_objs",semester_objs)
         serializer=SemesterSerializer(semester_objs,many=True)
 
@@ -1417,7 +1418,7 @@ class GetCourseSemesters(GenericAPIView):
                 return Response(response_,status=200)
 
 
-        courseobj = Course.objects.filter(id=course_id,isActive=True).first()
+        courseobj = Course.objects.filter(id=course_id,isActive=True,og_code=str(request.user.og_code)).first()
         if courseobj is None:
             response_={
                             "n": 0,
@@ -1507,7 +1508,7 @@ class SubjectListByCourseAndSemester(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-        courseobj = Course.objects.filter(id=course_id,isActive=True).first()
+        courseobj = Course.objects.filter(id=course_id,isActive=True,og_code=str(request.user.og_code)).first()
         if courseobj is None:
             response_={
                             "n": 0,
@@ -1537,7 +1538,7 @@ class SubjectListByCourseAndSemester(GenericAPIView):
 
 
 
-        subject_ids=list(CourseSubjects.objects.filter(course_id=course_id,semester_no=semester_id,isActive=True).values_list('subject_id',flat=True))
+        subject_ids=list(CourseSubjects.objects.filter(course_id=course_id,semester_no=semester_id,isActive=True,og_code=str(request.user.og_code)).values_list('subject_id',flat=True))
         subjects_objs=Subject.objects.filter(id__in=subject_ids,isActive=True)
         serializer=SubjectSerializer(subjects_objs,many=True)
 
@@ -1669,10 +1670,10 @@ class AllocateSubjectToStudent(GenericAPIView):
         subject_ids = [subject_id for subject_id in subject_ids if subject_id not in (None, '')]
         student_ids = [student_id for student_id in student_ids if student_id not in (None, '')]
 
-        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id)
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id,og_code=str(request.user.og_code))
         serializer=CandidateSerializer(student_objs,many=True)
         for student in serializer.data:
-            StudentSubjectAllocation.objects.filter(course_id=course_id,class_id=class_id,academic_year_id=academic_year_id,semester_id=semester_id,student_id=student['id'],isActive=True).update(isActive=False)
+            StudentSubjectAllocation.objects.filter(course_id=course_id,class_id=class_id,academic_year_id=academic_year_id,semester_id=semester_id,student_id=student['id'],isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
             for subject_id in subject_ids:
                 StudentSubjectAllocation.objects.update_or_create(
                     course_id=course_id,
@@ -1681,7 +1682,7 @@ class AllocateSubjectToStudent(GenericAPIView):
                     semester_id=semester_id,
                     student_id=student['id'],
                     subject_id=subject_id,
-                    defaults={"isActive": True},
+                    defaults={"isActive": True},og_code=str(request.user.og_code),
                 )
 
 
@@ -1883,7 +1884,7 @@ class BulkUploadLessonPlan(GenericAPIView):
 
                 LessonPlanUnit.objects.filter(
                     lesson_plan_id=lesson_plan.id,
-                    isActive=True,
+                    isActive=True,og_code=str(request.user.og_code),
                 ).update(isActive=False, updatedBy=str(request.user.id))
 
                 for sequence_number, unit in enumerate(unit_rows, start=1):
@@ -1900,7 +1901,7 @@ class BulkUploadLessonPlan(GenericAPIView):
                         co_mapping=unit["co_mapping"],
                         remarks=unit["remarks"],
                         sequence_number=sequence_number,
-                        createdBy=str(request.user.id),
+                        createdBy=str(request.user.id),og_code=str(request.user.og_code),
                     )
                     unit_count += 1
 
@@ -1985,7 +1986,7 @@ class LessonPlanFilterList(GenericAPIView):
         if error_response:
             return error_response
 
-        lesson_plan_objs = LessonPlan.objects.filter(isActive=True).order_by("-createdAt")
+        lesson_plan_objs = LessonPlan.objects.filter(isActive=True,og_code=str(request.user.og_code)).order_by("-createdAt")
 
         academic_year_id = request_data.get("academic_year_id")
         course_id = request_data.get("course_id")
@@ -2153,7 +2154,7 @@ class GetLessonPlanDetails(GenericAPIView):
 
         lesson_plan_obj = LessonPlan.objects.filter(
             id=lesson_plan_id,
-            isActive=True,
+            isActive=True,og_code=str(request.user.og_code),
         ).first()
 
         if lesson_plan_obj is None:
@@ -2281,7 +2282,7 @@ class DeleteLessonPlan(GenericAPIView):
 
         lesson_plan_obj = LessonPlan.objects.filter(
             id=lesson_plan_id,
-            isActive=True,
+            isActive=True,og_code=str(request.user.og_code),
         ).first()
 
         if lesson_plan_obj is None:
@@ -2298,12 +2299,12 @@ class DeleteLessonPlan(GenericAPIView):
 
             LessonPlanUnit.objects.filter(
                 lesson_plan_id=lesson_plan_obj.id,
-                isActive=True,
+                isActive=True,og_code=str(request.user.og_code),
             ).update(isActive=False, updatedBy=str(request.user.id))
 
             LessonPlanExecution.objects.filter(
                 lesson_plan_id=lesson_plan_obj.id,
-                isActive=True,
+                isActive=True,og_code=str(request.user.og_code),
             ).update(isActive=False, updatedBy=str(request.user.id))
 
         return self._respond(encryped_header, {
@@ -2362,7 +2363,7 @@ class GetDepartmentStaffList(GenericAPIView):
 
 
 
-            department_object = Department.objects.filter(id=i['department_id']).first()
+            department_object = Department.objects.filter(id=i['department_id'],og_code=str(request.user.og_code)).first()
             if department_object is not None:
                 i['department_name'] = department_object.department_name
             else:
@@ -2478,7 +2479,7 @@ class AllocateSubjectsToFaculty(GenericAPIView):
 
         faculty_objs=UserAdmin.objects.filter(id=faculty_id,isActive=True).first()
         if faculty_objs is not None:
-            FacultyCourseAllocation.objects.filter(course_id=course_id,academic_year_id=academic_year_id,faculty_id=faculty_objs.id,isActive=True).update(isActive=False)
+            FacultyCourseAllocation.objects.filter(course_id=course_id,academic_year_id=academic_year_id,faculty_id=faculty_objs.id,isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
             for subject_id in subject_ids:
                 print("subject_id",subject_id)
                 FacultyCourseAllocation.objects.update_or_create(
@@ -2487,6 +2488,7 @@ class AllocateSubjectsToFaculty(GenericAPIView):
                     faculty_id=faculty_objs.id,
                     subject_id=subject_id,
                     defaults={"isActive": True},
+                    og_code=str(request.user.og_code)
                 )
 
 
@@ -2595,9 +2597,9 @@ class GetAllocatedSubjectsOfFaculty(GenericAPIView):
                     course_id=course_id,
                     academic_year_id=academic_year_id,
                     faculty_id=faculty_objs.id,
-                    isActive= True,
+                    isActive= True,og_code=str(request.user.og_code),
                 ).values_list('subject_id',flat=True))
-            subject_objs=Subject.objects.filter(id__in=subjects_ids,isActive=True)
+            subject_objs=Subject.objects.filter(id__in=subjects_ids,isActive=True,og_code=str(request.user.og_code))
             subject_serializer=SubjectSerializer(subject_objs,many=True)
 
 

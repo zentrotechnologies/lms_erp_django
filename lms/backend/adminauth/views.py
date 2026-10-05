@@ -66,7 +66,6 @@ def apply_college_faculty_fields(data, request_data, default_sub_role=None):
     return data
 
 #super admin
-
 class AddAdmin(GenericAPIView):
     def post(self,request): 
         data = {}
@@ -117,6 +116,10 @@ class AddAdmin(GenericAPIView):
             return Response(response_,status=200)
             
 
+
+# ==============================================================================================================
+# Authentication
+# ==============================================================================================================
 class UserLogin(GenericAPIView):
     def post(self,request):
         encryped_header = ""
@@ -261,7 +264,6 @@ class UserLogin(GenericAPIView):
                 else:
                     return Response(response_,status=200)
                  
-
 class UserLogout(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -316,6 +318,11 @@ class UserLogout(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
+
+
+# ==============================================================================================================
+# Organization 
+# ==============================================================================================================
 #Organisation
 
 def OrganisationUniqueCode(ogname):
@@ -434,6 +441,12 @@ class AddOrganisation(GenericAPIView):
             else:
                 return Response(response_,status=200)
             
+
+
+
+# ==============================================================================================================
+# College
+# ==============================================================================================================
 class AddCollege(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -519,9 +532,9 @@ class AddCollege(GenericAPIView):
             courses=request_data.get('courses')
             if courses is not None and courses != '':
                 for course in courses:
-                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],isActive=True).first()
+                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],isActive=True,og_code=str(request.user.og_code)).first()
                     if already_exist_obj is None:
-                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True)
+                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True,og_code=str(request.user.og_code),)
 
             menu_user_type = "3"
             role_obj=UsereRole.objects.create(name='Admin',member_type=3,og_code=data['og_code'],member_of=serializer.data['id'])
@@ -534,21 +547,6 @@ class AddCollege(GenericAPIView):
                         role_id =  data['role_id'],
                         menu_id = i['id']
                     )
-                
-
-
-            authority_list = request_data.get('authority_list')
-            if authority_list != []:
-                for i in authority_list:
-                    Authority.objects.create(
-                        createdBy = str(request.user.id),
-                        user_id =  serializer.data['id'],
-                        authority_name = i['authority_name'],
-                        authority_number = i['authority_number'],
-                        authority_email = i['authority_email'],
-                        authority_designation = i['authority_designation'],
-                    )
-
 
             response_={
                         "n": 1,
@@ -574,12 +572,9 @@ class AddCollege(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-
 class UpdateCollege(GenericAPIView):
-    
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
-
     def post(self,request): 
         
         encryped_header = ""
@@ -671,28 +666,17 @@ class UpdateCollege(GenericAPIView):
             serializer.save()
             courses=request_data.get('courses')
             if courses is not None:
-                CollegeCourses.objects.filter(college_id=serializer.data['id'],).update(isActive=False)
+                CollegeCourses.objects.filter(college_id=serializer.data['id'],og_code=str(request.user.og_code)).update(isActive=False)
                 for course in courses:
-                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],).first()
+                    already_exist_obj=CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],og_code=str(request.user.og_code),).first()
                     if already_exist_obj is None:
-                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True)
+                        CollegeCourses.objects.create(course_id=course,college_id=serializer.data['id'],isActive=True,og_code=str(request.user.og_code))
                     else:
-                        CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],).update(isActive=True)
+                        CollegeCourses.objects.filter(course_id=course,college_id=serializer.data['id'],og_code=str(request.user.og_code)).update(isActive=True)
 
 
 
 
-            if authority_list != [] and authority_list is not None:
-                Authority.objects.filter(user_id=serializer.data['id']).update(isActive=False)
-                for i in authority_list:
-                    Authority.objects.create(
-                        createdBy = str(request.user.id),
-                        user_id =  serializer.data['id'],
-                        authority_name = i['authority_name'],
-                        authority_number = i['authority_number'],
-                        authority_email = i['authority_email'],
-                        authority_designation = i['authority_designation'],
-                    )
             response_={
                         "n": 1,
                         "msg": 'College updated successfully',
@@ -717,7 +701,6 @@ class UpdateCollege(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-            
 class DeleteCollege(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -796,90 +779,6 @@ class DeleteCollege(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-     
-
-class DeleteDocument(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        updated_of_user_id =request_data.get('document_id')
-        if updated_of_user_id is None or updated_of_user_id == "":
-            response_={
-                        "n": 0,                    
-                        "msg": 'Document id is required',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-        user_object = UserDocuments.objects.filter(id=updated_of_user_id,isActive=True).first()
-        if user_object is None:
-            response_={
-                        "n": 0,                    
-                        "msg": 'Document center not Found',
-                        "data":[],                  
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-        data = {}
-
- 
-
-        data['updatedBy'] = str(request.user.id)
-        data['updatedAt'] = timezone.now()
-        data['isActive'] = False
-        
-        
-        serializer = UserDocumentSerializer(user_object,data=data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response_={
-                        "n": 1,
-                        "msg": 'Document deleted successfully',
-                        "data":serializer.data                        
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        else:
-            print("error",serializer.errors)
-            response_={
-                        "n": 0,
-                        "msg": 'Document center not deleted',
-                        "data":[]                     
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-     
-
-
-
 class CollegeList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -911,231 +810,6 @@ class CollegeList(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
-
-
-class AllCollegeList(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        og_code = str(request.user.og_code)
-            
-        useradminobject = UserAdmin.objects.filter(isActive=True,user_type__in=[3,4],og_code=og_code).order_by('-createdAt')
-        user_admin_ser = UserAdminSerializer(useradminobject,many=True)
-        for i in user_admin_ser.data:
-            country_object = Country.objects.filter(id=i['country']).first()
-            if country_object is not None:
-                i['country_name'] = country_object.name
-            else:
-                i['country_name'] = ""
-        
-        response_={
-                    "n": 1,
-                    "msg": 'College fetched successfully',
-                    "data":user_admin_ser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-
-class OrgAllCollegeList(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        og_code = str(request.user.og_code)
-            
-        college_objs=UserAdmin.objects.filter(isActive=True,og_code=og_code,)
-        college_objs=college_objs.filter(Q(user_type=3,is_parent_college=True,is_member=False,)|Q(user_type=4,is_member=False,))
-        
-        user_admin_ser = UserAdminSerializer(college_objs,many=True)
-        for i in user_admin_ser.data:
-            country_object = Country.objects.filter(id=i['country']).first()
-            if country_object is not None:
-                i['country_name'] = country_object.name
-            else:
-                i['country_name'] = ""
-        
-        response_={
-                    "n": 1,
-                    "msg": 'College fetched successfully',
-                    "data":user_admin_ser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-
-
-class ParentAndSubCollegeList(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-
-        og_code = str(request.user.og_code)
-        parent_college_id=request_data.get('parent_college_id')
-
-        useradminobject = UserAdmin.objects.filter(Q(id=parent_college_id,isActive=True,user_type__in=[3],is_parent_college=True,og_code=og_code)|Q(parent_college=parent_college_id,isActive=True,user_type__in=[4],is_parent_college=False,og_code=og_code,is_member=False)).order_by('-createdAt')
-
-
-        course_ids=request_data.get('course_ids')
-        if course_ids is not None and course_ids !='':
-            traning_center_ids=list(CollegeCourses.objects.filter(course_id__in=course_ids,isActive=True).values_list('college_id',flat=True))
-            useradminobject=useradminobject.filter(id__in=traning_center_ids)
-        useradminobject=useradminobject.order_by('id').distinct('id')
-
-        user_admin_ser = UserAdminSerializer(useradminobject,many=True)
-        for i in user_admin_ser.data:
-            country_object = Country.objects.filter(id=i['country']).first()
-            if country_object is not None:
-                i['country_name'] = country_object.name
-            else:
-                i['country_name'] = ""
-        
-        response_={
-                    "n": 1,
-                    "msg": 'College fetched successfully',
-                    "data":user_admin_ser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-
-
-
-
-class UserDetails(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-        user_id = request_data.get('id')
-        if user_id is None or user_id == "":
-            response_={
-                    "n": 0,
-                    "msg": 'User not found',
-                    "data":[]                        
-                }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-        user_object = UserAdmin.objects.filter(id=user_id).first()
-        if user_object is None:
-            response_={
-                    "n": 0,
-                    "msg": 'User not found',
-                    "data":[]                        
-                }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
-            
-        serializer = UserAdminSerializer(user_object)
-        serializer_data = serializer.data
-        user_doc_object = UserDocuments.objects.filter(isActive=True,user_id=user_id)
-   
-        user_doc_ser = UserDocumentSerializer(user_doc_object,many=True)
-        authority_object = Authority.objects.filter(isActive=True,user_id=user_id)
-        authority_ser = AuthoritySerializer(authority_object,many=True)
-       
-        documents_required_object = Documents.objects.filter(isActive=True,role=serializer.data['user_type'])
-        documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-        
-        for d in documents_required_ser.data:
-            doc_object = UserDocuments.objects.filter(isActive=True,user_id=user_id,document_id=d['id']).first()
-            if doc_object is not None:
-                d['uploaded_proof'] = doc_object.document_url
-            else:
-                d['uploaded_proof'] = ""
-            
-        country_name = ""
-        state_name = ""
-        if serializer.data['country'] is not None and serializer.data['country'] != "":
-            country_object = Country.objects.filter(id=serializer.data['country']).first()
-            if country_object is not None:
-                country_name = country_object.name
-            else:
-                country_name = ""
-        else:
-            country_name = ""
-        if serializer.data['state'] is not None and serializer.data['state'] != "":
-            state_object = State.objects.filter(id=serializer.data['state']).first()
-            if state_object is not None:
-                state_name = state_object.name
-            else:
-                state_name = ""
-        else:
-            state_name = ""
-
-        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id).values_list('course_id',flat=True))
-
-        
-        serializer_data.update({
-            "document_data":user_doc_ser.data,
-            "authority_data":authority_ser.data,
-            "proof_data":documents_required_ser.data,
-            "state_name":state_name,
-            "country_name":country_name,
-            "course_ids":course_ids,
-        })
-        response_={
-                    "n": 1,
-                    "msg": 'User data fetched successfully',
-                    "data":serializer_data                       
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-
 class CollegeDetails(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1184,14 +858,9 @@ class CollegeDetails(GenericAPIView):
         user_doc_object = UserDocuments.objects.filter(isActive=True,user_id=user_id)
         user_doc_ser = UserDocumentSerializer(user_doc_object,many=True)
         
-        authority_object = Authority.objects.filter(isActive=True,user_id=user_id)
-        authority_ser = AuthoritySerializer(authority_object,many=True)
 
         documents_required_object = Documents.objects.filter(isActive=True,role=serializer.data['user_type'])
         documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
-
-        branch_required_object = Branch.objects.filter(isActive=True,college=serializer.data['id'])
-        branch_required_ser = CustomBranchSerializer(branch_required_object,many=True)
 
 
         for d in documents_required_ser.data:
@@ -1220,17 +889,15 @@ class CollegeDetails(GenericAPIView):
         else:
             state_name = ""
 
-        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id).values_list('course_id',flat=True))
+        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id,og_code=str(request.user.og_code)).values_list('course_id',flat=True))
         
         
         serializer_data.update({
             "document_data":user_doc_ser.data,
-            "authority_data":authority_ser.data,
             "proof_data":documents_required_ser.data,
             "state_name":state_name,
             "country_name":country_name,
             "course_ids":course_ids,
-            "branches":branch_required_ser.data
         })
         response_={
                     "n": 1,
@@ -1245,130 +912,14 @@ class CollegeDetails(GenericAPIView):
             return Response(response_,status=200)
 
 
-class UploadUserDocument(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-        combined_array = []
-        user_id = request_data.get('user_id')
-        doc_ids = request_data.getlist('doc_id')
-        doc_names = request_data.getlist('doc_name')
-        
-        docsUpload = request.FILES.getlist('docsUpload')
-        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','SubCollege')
 
-        file_url_list = []
-        if docsUpload != []:
-            for i in docsUpload:
-                file_url=save_file(folder_path,i,request)
-                file_url_list.append(file_url)
-                
-            for i in range(len(doc_ids)):
-                file_url = file_url_list[i] if i < len(file_url_list) else None
-                combined_array.append({
-                    'document_id': doc_ids[i],
-                    'document_name': doc_names[i],
-                    'user_id': user_id,
-                    'uploaded_file': file_url
-                })
-                data = {}
-                user_doc = UserDocuments.objects.filter(isActive=True,user_id = user_id,document_url =file_url).update(isActive=True)
-                
-                # if user_doc is None:
-                UserDocuments.objects.create(
-                    document_id = doc_ids[i],
-                    document_name = doc_names[i],
-                    user_id = user_id,
-                    document_url =file_url
-                )
-       
-        
-        response_={
-                    "n": 1,
-                    "msg": 'Files uploaded successfully',
-                    "data":[]               
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-        
-class UploadUserDocumentFormData(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self,request): 
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-        user_ids = request.data.getlist('user_id')
-        doc_ids = request.data.getlist('doc_id')
-        doc_names = request.data.getlist('doc_name')
-        file_uploads = request.FILES.getlist('document_file_upload')
 
-        # Creating the list of dictionaries
-        result = [
-            {
-                'user_id': user_id,
-                'doc_id': doc_id,
-                'doc_name': doc_name,
-                'document_file_upload': file_upload,
-            }
-            for user_id, doc_id, doc_name, file_upload in zip(user_ids, doc_ids, doc_names, file_uploads)
-        ]
-            
-    
-        docsUpload = request.FILES.getlist('document_file_upload')
-        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','Faculty')
 
-        file_url_list = []
-        for i in result:
-     
-            file_url=save_file(folder_path,i['document_file_upload'],request)
-            user_doc = UserDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_url =file_url).update(isActive=True)
-            
-            # if user_doc is None:
-            UserDocuments.objects.create(
-                document_id = i['doc_id'],
-                document_name = i['doc_name'],
-                user_id = i['user_id'],
-                document_url =file_url
-            )
-
-        
-        
-        response_={
-                    "n": 1,
-                    "msg": 'Files uploaded successfully',
-                    "data":[]               
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-
+# ==============================================================================================================
+# Location
+# ==============================================================================================================
 class SearchCities(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1419,7 +970,6 @@ class SearchCities(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
-
 class SearchStates(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1464,8 +1014,6 @@ class SearchStates(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
-
-
 class SearchCountry(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -1507,60 +1055,9 @@ class SearchCountry(GenericAPIView):
             return Response(response_,status=200)
        
 
-class AddCountryEligibility(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def post(self,request):
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-            
-        request_data, error_response = handle_request_body(request)
-        if error_response:
-            return error_response
-        
-
-        countryname_obj=Country.objects.filter(id=request_data['country']).first()
-
-        if countryname_obj is not None:
-            data={}
-            data['is_eligibile']=True
-            serializer=CountrySerializer(countryname_obj,data=data,partial=True)
-            if serializer.is_valid():
-                serializer.save()
-            
-                response_={
-                            "n": 1,
-                            "msg": 'Country marked as eligibile',
-                            "data": serializer.data                        
-                        }
-            else:
-                response_={
-                            "n":0,
-                            "msg": 'Country not marked as eligibile',
-                            "data": serializer.errors                        
-                        }
-        else:
-            response_={
-                            "n":0,
-                            "msg": 'Country not found',
-                            "data": {}                        
-                        }
-            
-
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-            
-
-
-
+# ==============================================================================================================
+# Faculty
+# ==============================================================================================================
 class AddFaculty(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1666,7 +1163,6 @@ class AddFaculty(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-
 class FacultyList(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1770,35 +1266,6 @@ class FacultyList(GenericAPIView):
             else:
                 return Response(response_,status=200)
 
-class userList(GenericAPIView):
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    def get(self,request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-        og_code = str(request.user.og_code)
-        userobj = UserAdmin.objects.filter(isActive=True,og_code=og_code,).order_by('-id')
-        userser = UserAdminSerializer(userobj,many=True)
-        for i in userser.data:
-            country_object = Country.objects.filter(id=i['country']).first()
-            if country_object is not None:
-                i['country_name'] = country_object.name
-            else:
-                i['country_name'] = ""
-            
-        response_={
-                    "n": 1,
-                    "msg": 'user list found successfully',
-                    "data":userser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-        
 class UpdateFaculty(GenericAPIView):
     authentication_classes=[UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
@@ -1995,41 +1462,9 @@ class DeleteFaculty(GenericAPIView):
         
         
 
-
-
-
-        
-        
-class CheckAndDecyptData(GenericAPIView):
-
-    def post(self,request):
-
-        data = request.data.get('data')
-        
-        if data is not None and data != "":
-            decrypt_to_data = json.loads(decrypt_data(data))
-            return Response(decrypt_to_data,status=200)
-        else:
-            response_={
-                    'status':'failed',
-                    'msg':'Please provid data to decrypt',
-                    'data':[]
-                                
-                }
-            return Response(response_,status=200)
-        
-class GetPublicKey(GenericAPIView):
-    
-    def get(self,request):
-        with open('public_key.pem', 'rb') as pub_file:
-            public_key = pub_file.read().decode()
-        response_={
-                'n':1,
-                'msg':'Public key fetched',
-                'data':public_key                            
-            }
-        return Response(response_,status=200)
-    
+# ==============================================================================================================
+# Roles & Permissions
+# ==============================================================================================================
 class MainRoleList(GenericAPIView):
     
     authentication_classes=[UserAdminJWTAuthentication]
@@ -2056,36 +1491,6 @@ class MainRoleList(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
-        
-
-class MainRoleDocumentList(GenericAPIView):
-    
-    authentication_classes=[UserAdminJWTAuthentication]
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    def get(self,request):
-        
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
-
-        main_role_object = MainRoles.objects.filter(documents_required=True)
-        ser = MainRolesSerializer(main_role_object,many=True) 
-
-        response_={
-                    "n": 1,
-                    "msg": 'Data fetched successfully',
-                    "data":ser.data                        
-                }
-        if encryped_header == "1" :
-            data_to_serialize = convert_decimals_to_float(response_)
-            encdata = encrypt_data(json.dumps(data_to_serialize))
-            return Response(encdata,status=200)
-        else:
-            return Response(response_,status=200)
-        
-        
-            
 class MenuDetailList(GenericAPIView):
     def get(self,request):
         user_type = request.GET.get('user_type')
@@ -2097,9 +1502,6 @@ class MenuDetailList(GenericAPIView):
             'data':serializer.data
         }
         return Response(response_,status=200)
-
-# 
-
 class AddPermission(GenericAPIView):
     def post(self,request):
         data={}
@@ -2139,8 +1541,6 @@ class AddPermission(GenericAPIView):
                 'data':{}
             }
             return Response(response_,status=200)
-                
-            
 class GetPermission(GenericAPIView):
     def post(self,request):
         data = {}
@@ -2167,7 +1567,6 @@ class GetPermission(GenericAPIView):
                 'data':{}
             }
             return Response(response_,status=200)
-        
 class GetUserTypePermission(GenericAPIView):
     def post(self,request):
         data = {}
@@ -2192,6 +1591,10 @@ class GetUserTypePermission(GenericAPIView):
             return Response(response_,status=200)
         
 
+
+# ==============================================================================================================
+# User Docs
+# ==============================================================================================================
 class DeleteUserDocuments(GenericAPIView):
     
     def post(self,request):
@@ -2223,11 +1626,13 @@ class DeleteUserDocuments(GenericAPIView):
                     'data':{}
                 }
             return Response(response_,status=200)
-                
-
-class GetCollegeCourses(GenericAPIView):
+class UploadUserDocument(GenericAPIView):
     
-    def post(self,request):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self,request): 
+        
         encryped_header = ""
         if 'encrypted' in request.headers.keys():
             encryped_header = request.headers.get('encrypted')
@@ -2235,45 +1640,211 @@ class GetCollegeCourses(GenericAPIView):
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
-        college_id = request_data.get('college_id')
-        if college_id is None or college_id == "" or college_id == "None":
-            college_id = str(request.user.id)
+        
+        combined_array = []
+        user_id = request_data.get('user_id')
+        doc_ids = request_data.getlist('doc_id')
+        doc_names = request_data.getlist('doc_name')
+        
+        docsUpload = request.FILES.getlist('docsUpload')
+        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','SubCollege')
 
-        if college_id is not None and college_id != "" and college_id != "None":
-
-
-            course_ids = list(CollegeCourses.objects.filter(college_id=college_id,isActive=True).values_list('course_id',flat=True))
-            course_objs=Course.objects.filter(id__in=course_ids,isActive=True,course_status='Approved')
-            if course_objs.exists():
-                serializer=CourseSerializer(course_objs,many=True)
-                response_={
+        file_url_list = []
+        if docsUpload != []:
+            for i in docsUpload:
+                file_url=save_file(folder_path,i,request)
+                file_url_list.append(file_url)
+                
+            for i in range(len(doc_ids)):
+                file_url = file_url_list[i] if i < len(file_url_list) else None
+                combined_array.append({
+                    'document_id': doc_ids[i],
+                    'document_name': doc_names[i],
+                    'user_id': user_id,
+                    'uploaded_file': file_url
+                })
+                data = {}
+                user_doc = UserDocuments.objects.filter(isActive=True,user_id = user_id,document_url =file_url).update(isActive=True)
+                
+                # if user_doc is None:
+                UserDocuments.objects.create(
+                    document_id = doc_ids[i],
+                    document_name = doc_names[i],
+                    user_id = user_id,
+                    document_url =file_url
+                )
+       
+        
+        response_={
                     "n": 1,
-                    'msg':'Courses found Successfully.',
-                    'data':serializer.data
+                    "msg": 'Files uploaded successfully',
+                    "data":[]               
                 }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-            else:
-                response_={
-                    "n": 0,
-                    'msg':'coueses  not found.',
-                    'data':{}
-                }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
         else:
+            return Response(response_,status=200)
+class UploadUserDocumentFormData(GenericAPIView):
+    
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self,request): 
+        
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+        user_ids = request.data.getlist('user_id')
+        doc_ids = request.data.getlist('doc_id')
+        doc_names = request.data.getlist('doc_name')
+        file_uploads = request.FILES.getlist('document_file_upload')
+
+        # Creating the list of dictionaries
+        result = [
+            {
+                'user_id': user_id,
+                'doc_id': doc_id,
+                'doc_name': doc_name,
+                'document_file_upload': file_upload,
+            }
+            for user_id, doc_id, doc_name, file_upload in zip(user_ids, doc_ids, doc_names, file_uploads)
+        ]
+            
+    
+        docsUpload = request.FILES.getlist('document_file_upload')
+        folder_path = os.path.join(settings.MEDIA_ROOT,'media','Documents','Faculty')
+
+        file_url_list = []
+        for i in result:
+     
+            file_url=save_file(folder_path,i['document_file_upload'],request)
+            user_doc = UserDocuments.objects.filter(isActive=True,user_id = i['user_id'],document_url =file_url).update(isActive=True)
+            
+            # if user_doc is None:
+            UserDocuments.objects.create(
+                document_id = i['doc_id'],
+                document_name = i['doc_name'],
+                user_id = i['user_id'],
+                document_url =file_url
+            )
+
+        
+        
+        response_={
+                    "n": 1,
+                    "msg": 'Files uploaded successfully',
+                    "data":[]               
+                }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+class DeleteDocument(GenericAPIView):
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+    def post(self,request): 
+        
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        updated_of_user_id =request_data.get('document_id')
+        if updated_of_user_id is None or updated_of_user_id == "":
+            response_={
+                        "n": 0,                    
+                        "msg": 'Document id is required',
+                        "data":[],                  
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+            
+        user_object = UserDocuments.objects.filter(id=updated_of_user_id,isActive=True).first()
+        if user_object is None:
+            response_={
+                        "n": 0,                    
+                        "msg": 'Document center not Found',
+                        "data":[],                  
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+            
+        data = {}
+
+ 
+
+        data['updatedBy'] = str(request.user.id)
+        data['updatedAt'] = timezone.now()
+        data['isActive'] = False
+        
+        
+        serializer = UserDocumentSerializer(user_object,data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            response_={
+                        "n": 1,
+                        "msg": 'Document deleted successfully',
+                        "data":serializer.data                        
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        else:
+            print("error",serializer.errors)
+            response_={
+                        "n": 0,
+                        "msg": 'Document center not deleted',
+                        "data":[]                     
+                    }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+class UserDetails(GenericAPIView):
+    
+    authentication_classes=[UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self,request): 
+        
+        encryped_header = ""
+        if 'encrypted' in request.headers.keys():
+            encryped_header = request.headers.get('encrypted')
+            
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        
+        user_id = request_data.get('id')
+        if user_id is None or user_id == "":
             response_={
                     "n": 0,
-                    'msg':'College id not provided.',
-                    'data':{}
+                    "msg": 'User not found',
+                    "data":[]                        
                 }
             if encryped_header == "1" :
                 data_to_serialize = convert_decimals_to_float(response_)
@@ -2281,4 +1852,115 @@ class GetCollegeCourses(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
-                
+        user_object = UserAdmin.objects.filter(id=user_id).first()
+        if user_object is None:
+            response_={
+                    "n": 0,
+                    "msg": 'User not found',
+                    "data":[]                        
+                }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+            
+        serializer = UserAdminSerializer(user_object)
+        serializer_data = serializer.data
+        user_doc_object = UserDocuments.objects.filter(isActive=True,user_id=user_id)
+   
+        user_doc_ser = UserDocumentSerializer(user_doc_object,many=True)
+
+        documents_required_object = Documents.objects.filter(isActive=True,role=serializer.data['user_type'])
+        documents_required_ser = DocumentsSerializer(documents_required_object,many=True)
+        
+        for d in documents_required_ser.data:
+            doc_object = UserDocuments.objects.filter(isActive=True,user_id=user_id,document_id=d['id']).first()
+            if doc_object is not None:
+                d['uploaded_proof'] = doc_object.document_url
+            else:
+                d['uploaded_proof'] = ""
+            
+        country_name = ""
+        state_name = ""
+        if serializer.data['country'] is not None and serializer.data['country'] != "":
+            country_object = Country.objects.filter(id=serializer.data['country']).first()
+            if country_object is not None:
+                country_name = country_object.name
+            else:
+                country_name = ""
+        else:
+            country_name = ""
+        if serializer.data['state'] is not None and serializer.data['state'] != "":
+            state_object = State.objects.filter(id=serializer.data['state']).first()
+            if state_object is not None:
+                state_name = state_object.name
+            else:
+                state_name = ""
+        else:
+            state_name = ""
+
+        course_ids = list(CollegeCourses.objects.filter(isActive=True,college_id=user_id).values_list('course_id',flat=True))
+
+        
+        serializer_data.update({
+            "document_data":user_doc_ser.data,
+            "proof_data":documents_required_ser.data,
+            "state_name":state_name,
+            "country_name":country_name,
+            "course_ids":course_ids,
+        })
+        response_={
+                    "n": 1,
+                    "msg": 'User data fetched successfully',
+                    "data":serializer_data                       
+                }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+
+
+
+
+
+# ==============================================================================================================
+# Unknown
+# ==============================================================================================================
+        
+class CheckAndDecyptData(GenericAPIView):
+
+    def post(self,request):
+
+        data = request.data.get('data')
+        
+        if data is not None and data != "":
+            decrypt_to_data = json.loads(decrypt_data(data))
+            return Response(decrypt_to_data,status=200)
+        else:
+            response_={
+                    'status':'failed',
+                    'msg':'Please provid data to decrypt',
+                    'data':[]
+                                
+                }
+            return Response(response_,status=200)
+        
+class GetPublicKey(GenericAPIView):
+    
+    def get(self,request):
+        with open('public_key.pem', 'rb') as pub_file:
+            public_key = pub_file.read().decode()
+        response_={
+                'n':1,
+                'msg':'Public key fetched',
+                'data':public_key                            
+            }
+        return Response(response_,status=200)
+
+

@@ -15,7 +15,9 @@ urlpatterns = [
     path('timetable-template-list',v.TimetableTemplateListByYearSemester.as_view(),name='timetable-template-list'),
     path('timetable-by-filters',v.TimetableTimeTableByFilters.as_view(),name='timetable-by-filters'),
     path('semester-list-by-course',v.SemesterListByCourse.as_view(),name='semester-list-by-course'),
-    path('template-edit',v.TemplateSlotEdit.as_view(),name='template-edit'),
+    path('slot-edit',v.TemplateSlotEdit.as_view(),name='template-edit'),
+    path('slot-details',v.TemplateSlotDetails.as_view(),name='template-details'),
+
     path('template-details',v.TemplateDetails.as_view(),name='template-details'),
     path('add-template',v.AddTemplate.as_view(),name='add-template'),
 
@@ -43,6 +45,10 @@ urlpatterns = [
     path('subject-dropdown',v.SubjectDropdown.as_view(),name='subject-dropdown'),
     path('faculty-dropdown',v.FacultyDropdown.as_view(),name='faculty-dropdown'),
     path('location-dropdown',v.LocationDropdown.as_view(),name='location-dropdown'),
+
+
+
+    path('available-faculty-by-subjects',v.AvailableFacultyListByTimeSlotSubject.as_view(),name='available-faculty-by-subjects'),
 
 
 ]
