@@ -29,7 +29,6 @@ class ScheduleCourseMapping(TrackingModel):
 class ScheduleCollegeMapping(TrackingModel):
     schedule_id = models.BigIntegerField(db_index=True)
     college_id = models.CharField(max_length=255, db_index=True)
-
     og_code = models.CharField(max_length=150, null=True, blank=True)
 
 
@@ -72,15 +71,19 @@ class TimetableSlot(TrackingModel):
 
 class LectureEntry(TrackingModel):
     academic_year_id = models.BigIntegerField(db_index=True)
-    class_group_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
+    class_id = models.BigIntegerField(db_index=True)
+    semester_id = models.BigIntegerField(db_index=True)
     faculty_id = models.CharField(max_length=255, db_index=True)
+    
     timetable_slot_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     lecture_date = models.DateField(db_index=True)
+    
     start_time =models.CharField(max_length=250, null=True, blank=True)
     end_time =models.CharField(max_length=250, null=True, blank=True)
-    topic = models.CharField(max_length=500)
+    
     teaching_method = models.CharField(max_length=150, null=True, blank=True)
+    
     lecture_status = models.CharField(max_length=30, default="SCHEDULED", db_index=True)
     remarks = models.TextField(null=True, blank=True)
     created_by = models.CharField(max_length=255)

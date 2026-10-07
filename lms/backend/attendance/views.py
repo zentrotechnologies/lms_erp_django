@@ -35,8 +35,8 @@ def _encrypted_header(request):
 
 
 def _final_response(request, response_):
-    encryped_header = _encrypted_header(request)
-    if encryped_header == "1":
+    encrypted_header = _encrypted_header(request)
+    if encrypted_header == "1":
         data_to_serialize = convert_decimals_to_float(response_)
         encdata = encrypt_data(json.dumps(data_to_serialize))
         return Response(encdata, status=200)
@@ -1415,128 +1415,216 @@ class DeleteHoliday(GenericAPIView):
         })
 
 
+import json
+
+from django.db import transaction
+from django.utils import timezone
+from rest_framework import permissions, serializers
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
+
+
+class CandidateAttendanceMarkInputSerializer(serializers.Serializer):
+    timetable_slot_id = serializers.IntegerField(min_value=1)
+    candidate_id = serializers.CharField(max_length=255)
+    attendance_date = serializers.DateField(
+        input_formats=["%Y-%m-%d"]
+    )
+    attendance_status = serializers.ChoiceField(
+        choices=["PRESENT", "ABSENT"]
+    )
+    remarks = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+
+
 class MarkCandidateAttendance(GenericAPIView):
-    authentication_classes=[UserAdminJWTAuthentication]
+    authentication_classes = [UserAdminJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
+    def _respond(self, request, n, msg, data=None):
+        response_data = {
+            "n": n,
+            "msg": msg,
+            "data": [] if data is None else data,
+        }
+
+        if request.headers.get("encrypted") == "1":
+            response_data = convert_decimals_to_float(response_data)
+            return Response(
+                encrypt_data(json.dumps(response_data)),
+                status=200,
+            )
+
+        return Response(response_data, status=200)
+
     def post(self, request):
-        encryped_header = ""
-        if 'encrypted' in request.headers.keys():
-            encryped_header = request.headers.get('encrypted')
         request_data, error_response = handle_request_body(request)
         if error_response:
             return error_response
-        
-        
-        msg=''
-        validation_status=True
-        candidate_id=request_data.get('candidate_id')
-        if candidate_id is None or candidate_id =='':
-            msg="Please provide candidate id "
-            validation_status=False 
-            
-        schedule_id=request_data.get('schedule_id')
-        if schedule_id is None or schedule_id =='':
-            msg="Please provide schedule id "
-            validation_status=False 
 
-        course_id=request_data.get('course_id')
-        if course_id is None or course_id =='':
-            msg="Please provide course id "
-            validation_status=False 
+        attendance_status = request_data.get("attendance_status")
 
+        # Support the existing "absent" request parameter.
+        if attendance_status in (None, ""):
+            raw_absent = request_data.get("absent")
 
-        college_id=request_data.get('college_id')
-        if college_id is None or college_id =='':
-            msg="Please provide college id "
-            validation_status=False 
+            if isinstance(raw_absent, bool):
+                attendance_status = (
+                    "ABSENT" if raw_absent else "PRESENT"
+                )
+            elif isinstance(raw_absent, str):
+                normalized = raw_absent.strip().lower()
 
-        faculty_id=str(request.user.id)
+                if normalized in ("absent", "true", "1"):
+                    attendance_status = "ABSENT"
+                elif normalized in ("present", "false", "0"):
+                    attendance_status = "PRESENT"
 
-        attendance_date=request_data.get('attendance_date')
-        if attendance_date is None or attendance_date =='':
-            msg="Please provide attendance date "
-            validation_status=False 
+        if isinstance(attendance_status, str):
+            attendance_status = attendance_status.strip().upper()
 
+        input_serializer = CandidateAttendanceMarkInputSerializer(
+            data={
+                "timetable_slot_id": request_data.get(
+                    "timetable_slot_id"
+                ),
+                "candidate_id": (
+                    request_data.get("candidate_id")
+                    or request_data.get("student_id")
+                ),
+                "attendance_date": request_data.get(
+                    "attendance_date"
+                ),
+                "attendance_status": attendance_status,
+                "remarks": request_data.get("remarks"),
+            }
+        )
 
-        attendance_obj=CandidateAttendance.objects.filter(attendance_date=attendance_date,schedule_id=schedule_id,candidate_id=candidate_id,course_id=course_id,college_id=college_id,og_code=str(request.user.og_code)).first()
+        if not input_serializer.is_valid():
+            return self._respond(
+                request,
+                0,
+                "Validation failed.",
+                input_serializer.errors,
+            )
 
-        checkin_time=request_data.get('checkin_time')
-        checkout_time=request_data.get('checkout_time')
-        absent=request_data.get('absent')
-        if absent.lower() in ['True','TRUE','true']:
-            absent=True
-            present=False
-        else:
-            absent=False
-            present=True
-            if attendance_obj.absent == False:
+        values = input_serializer.validated_data
+        faculty_id = str(request.user.id)
+        og_code = str(request.user.og_code)
+        attendance_date = values["attendance_date"]
+        candidate_id = values["candidate_id"]
 
-                if (checkin_time is None or checkin_time == '') and (checkout_time is None or checkout_time == ''):
-                    msg = "Please provide check-in time or check-out time"
-                    validation_status = False
+        try:
+            with transaction.atomic():
+                slot = TimetableSlot.objects.filter(
+                    id=values["timetable_slot_id"],
+                    isActive=True,
+                    og_code=og_code,
+                ).first()
 
+                if slot is None:
+                    raise ValueError("Timetable slot not found.")
 
-        if validation_status:
-            data={}
-            data['checkin_time']=checkin_time
-            data['checkout_time']=checkout_time
-            data['attendance_date']=attendance_date
-            data['absent']=absent
-            data['present']=present
-            data['faculty_id']=faculty_id
-            data['college_id']=college_id
-            data['course_id']=course_id
-            data['schedule_id']=schedule_id
-            data['candidate_id']=candidate_id
-            data['isActive']=True
+                if str(slot.faculty_id) != faculty_id:
+                    raise ValueError(
+                        "This lecture is not assigned to you."
+                    )
 
-            if attendance_obj is not None:
-                serializer=CandidateAttendanceSerializer(attendance_obj,data=data,partial=True)
-            else:
-                serializer=CandidateAttendanceSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                response_={
-                        "n": 1,
-                        "msg": 'Attendance marked successfully',
-                        "data":''                     
-                    }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-            else:
-                first_key, first_value = next(iter(serializer.errors.items()))
-                response_={
-                            "n": 0,
-                            "msg": first_key+' : '+ first_value[0],
-                            "data":serializer.errors                    
-                        }
-                if encryped_header == "1" :
-                    data_to_serialize = convert_decimals_to_float(response_)
-                    encdata = encrypt_data(json.dumps(data_to_serialize))
-                    return Response(encdata,status=200)
-                else:
-                    return Response(response_,status=200)
-                
-        
-        else:
-            response_={
-                        "n": 0,
-                        "msg": msg,
-                        "data":[]                     
-                    }
-            if encryped_header == "1" :
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata,status=200)
-            else:
-                return Response(response_,status=200)
+                # Lock the lecture to coordinate attendance marking.
+                lecture = (
+                    LectureEntry.objects.select_for_update()
+                    .filter(
+                        timetable_slot_id=slot.id,
+                        lecture_date=attendance_date,
+                        faculty_id=faculty_id,
+                        isActive=True,
+                        og_code=og_code,
+                    )
+                    .first()
+                )
 
+                if lecture is None:
+                    raise ValueError(
+                        "Save the lecture entry before marking attendance."
+                    )
 
+                attendance = (
+                    CandidateAttendance.objects.select_for_update()
+                    .filter(
+                        candidate_id=candidate_id,
+                        timetable_slot_id=str(slot.id),
+                        academic_year_id=str(lecture.academic_year_id),
+                        course_id=str(lecture.course_id),
+                        class_id=str(lecture.class_id),
+                        semester_id=str(lecture.semester_id),
+                        faculty_id=faculty_id,
+                        attendance_date=attendance_date,
+                        isActive=True,
+                        og_code=og_code,
+                    )
+                    .first()
+                )
+
+                if attendance is None:
+                    raise ValueError(
+                        "Student attendance was not initialized "
+                        "for this lecture."
+                    )
+
+                previous_status = (
+                    "ABSENT" if attendance.absent else "PRESENT"
+                )
+                new_status = values["attendance_status"]
+                now = timezone.now()
+
+                attendance.absent = new_status == "ABSENT"
+                attendance.updatedBy = faculty_id
+                attendance.updatedAt = now
+                attendance.save(update_fields=[
+                    "absent",
+                    "updatedBy",
+                    "updatedAt",
+                ])
+
+                # Append a new log for every successful marking action.
+                # Do not update an existing log.
+                log = LectureAttendanceDetail.objects.create(
+                    attendance_session_id=attendance.id,
+                    student_id=attendance.candidate_id,
+                    attendance_status=new_status,
+                    marked_by=faculty_id,
+                    remarks=values.get("remarks"),
+                    isActive=True,
+                    og_code=og_code,
+                    createdBy=faculty_id,
+                )
+
+                result = {
+                    "attendance_id": attendance.id,
+                    "lecture_entry_id": lecture.id,
+                    "candidate_id": attendance.candidate_id,
+                    "timetable_slot_id": attendance.timetable_slot_id,
+                    "attendance_date": attendance_date.isoformat(),
+                    "previous_status": previous_status,
+                    "attendance_status": new_status,
+                    "absent": attendance.absent,
+                    "log_id": log.id,
+                    "marked_at": log.marked_at.isoformat(),
+                }
+
+        except ValueError as exc:
+            return self._respond(request, 0, str(exc))
+
+        return self._respond(
+            request,
+            1,
+            "Attendance marked successfully.",
+            result,
+        )
 def _require_admin(request, message='You are not allowed to perform this action.'):
     applicant = _requesting_admin(request)
     if applicant is None:

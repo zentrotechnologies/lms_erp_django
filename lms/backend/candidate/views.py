@@ -2617,7 +2617,7 @@ class AddAdmission(GenericAPIView):
         data['local_pincode'] = _value('local_pincode')
        
         if _value('academic_year_id') is None or _value('academic_year_id') =='':
-            active_academic_year=AcademicYear.objects.filter(is_current=True,isActive=True,og_code=str(request.user.og_code)).first()
+            active_academic_year=AcademicYear.objects.filter(isActive=True,og_code=str(request.user.og_code)).first()
             if active_academic_year is not None:
                 data['academic_year_id'] = active_academic_year.id
             else:
@@ -2682,6 +2682,7 @@ class AddAdmission(GenericAPIView):
         data['mentor_faculty_id'] = _value('mentor_faculty_id')
         data['source'] = 'ADMISSION'
         data['createdBy'] = str(request.user.id)
+        data['og_code']=str(request.user.og_code)
 
         default_password = _value('password')
         if (
@@ -2786,6 +2787,7 @@ class AddAdmission(GenericAPIView):
                             'eligibility_number'
                         ),
                         createdBy=str(request.user.id),
+                        og_code=str(request.user.og_code)
                     )
 
                 photo_url = _value('photo_url')
@@ -2803,7 +2805,7 @@ class AddAdmission(GenericAPIView):
                 parent_name = _value('parent_name')
                 parent_mobile = _value('parent_mobile')
                 if parent_name or parent_mobile:
-                    parent_obj = ParentProfile.objects.create(
+                    parent_obj = Parent.objects.create(
                         parent_code=(
                             'PRT'
                             + str(timezone.now().year)
@@ -2811,9 +2813,9 @@ class AddAdmission(GenericAPIView):
                         ),
                         first_name=parent_name,
                         email=_value('parent_email'),
-                        mobile=parent_mobile,
+                        mobilenumber=parent_mobile,
                         occupation=_value('parent_occupation'),
-                        address=_value('parent_address'),
+                        address_line_one=_value('parent_address'),
                         parent_annual_income=_value(
                             'parent_annual_income'
                         ),
@@ -2826,6 +2828,7 @@ class AddAdmission(GenericAPIView):
                             'Father'
                         ),
                         createdBy=str(request.user.id),
+                        og_code=str(request.user.og_code)
                     )
                     ParentStudentMapping.objects.create(
                         parent_id=parent_obj.id,
@@ -2836,6 +2839,7 @@ class AddAdmission(GenericAPIView):
                         ),
                         is_primary=True,
                         createdBy=str(request.user.id),
+                        og_code=str(request.user.og_code)
                     )
 
                 response_data = serializer.data
@@ -2932,27 +2936,28 @@ class AdmissionList(GenericAPIView):
         student_status = request_data.get('student_status')
         submission_status = request_data.get('submission_status')
         search = request_data.get('search')
+        print("1",applications.count())
 
         if course_id not in (None, ""):
             applications = applications.filter(
                 course_id=course_id
             )
-
+        print("2",applications.count())
         if academic_year_id not in (None, ""):
             applications = applications.filter(
                 academic_year_id=academic_year_id
             )
-
+        print("3",applications.count())
         if class_group_id not in (None, ""):
             applications = applications.filter(
                 class_group_id=class_group_id
             )
-
+        print("4",applications.count())
         if submission_status not in (None, ""):
             applications = applications.filter(
                 submission_status=submission_status
             )
-
+        print("5",applications.count())
         candidate_uuid_list = []
         for candidate_id_value in applications.values_list(
             'candidate_id',
@@ -2964,14 +2969,14 @@ class AdmissionList(GenericAPIView):
                 )
             except (ValueError, TypeError):
                 continue
-
+        print("6",applications.count())
         candidate_query = Q(id__in=candidate_uuid_list)
 
         admin_obj = UserAdmin.objects.filter(
             id=request.user.id,
             isActive=True,og_code=str(request.user.og_code)
         ).first()
-
+        print("7",applications.count())
         college_id = None
         if (
             admin_obj is not None
@@ -2988,12 +2993,12 @@ class AdmissionList(GenericAPIView):
             candidate_query = candidate_query & Q(
                 student_status=student_status
             )
-
+        print("8",applications.count())
         if admission_status not in (None, ""):
             candidate_query = candidate_query & Q(
                 admission_status=admission_status
             )
-
+        print("9",applications.count())
         if search not in (None, ""):
             candidate_query = candidate_query & (
                 Q(first_name__icontains=search)
@@ -3003,26 +3008,28 @@ class AdmissionList(GenericAPIView):
                 | Q(admission_number__icontains=search)
                 | Q(roll_number__icontains=search)
             )
-
+        print("10",applications.count())
         candidates = Candidate.objects.filter(
             candidate_query,
             isActive=True,og_code=str(request.user.og_code)
         )
-
+        print("11",applications.count())
         candidate_ids = [
             str(candidate_id)
             for candidate_id in candidates.values_list(
                 'id',
                 flat=True
             )
-        ]
+        ]   
+        print("12",applications.count())
 
         applications = applications.filter(
             candidate_id__in=candidate_ids
         )
-
+        print("13",applications.count())
         data = []
         course_obj=Course.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        academic_year_obj=AcademicYear.objects.filter(isActive=True,og_code=str(request.user.og_code))
         for application in applications:
             candidate_obj = None
             try:
@@ -3042,9 +3049,17 @@ class AdmissionList(GenericAPIView):
             item['application_number'] = (
                 application.application_number
             )
+            
             item['academic_year_id'] = (
                 application.academic_year_id
             )
+            academic_obj=academic_year_obj.filter(id=application.academic_year_id).first()
+            if academic_obj is not None:
+                item['academic_year_name'] = (academic_obj.academic_year_name)
+            else:
+                item['academic_year_name'] = ''
+
+
             item['course_id'] = application.course_id
             course_name_obj=course_obj.filter(id=application.course_id).first()
             if course_name_obj is not None:
@@ -3193,6 +3208,28 @@ class AdmissionDetails(GenericAPIView):
             )
         else:
             item['photo_signature'] = {}
+
+
+        #parent details
+        parent_obj=ParentStudentMapping.objects.filter(student_id=str(application.candidate_id),isActive=True).first()
+        print("parent_obj",parent_obj.parent_id)
+
+        if parent_obj is not None:
+            parent_d_obj=Parent.objects.filter(id=str(parent_obj.parent_id),isActive=True).first()
+            if parent_d_obj is not None:
+                ser=ParentSerializer(parent_d_obj)
+                item['parent_data']=ser.data
+            else:
+                item['parent_data']={
+                        "parent_name":"",
+                        "parent_email":"",
+                        "parent_mobile":"",
+                        "parent_occupation":"",
+                        "parent_address":"",
+                        "relationship":""
+                }
+
+
 
         response_ = {
             "n": 1,
@@ -3425,15 +3462,14 @@ class UpdateAdmission(GenericAPIView):
                 if any(key in request_data for key in parent_fields):
                     mapping = ParentStudentMapping.objects.filter(
                         student_id=str(candidate.id),
-                        is_active=True,og_code=str(request.user.og_code),
+                        isActive=True,og_code=str(request.user.og_code),
                     ).first()
-
                     parent_obj = None
 
                     if mapping is not None:
-                        parent_obj = ParentProfile.objects.filter(
-                            id=mapping.parent_id,
-                            is_active=True,og_code=str(request.user.og_code),
+                        parent_obj = Parent.objects.filter(
+                            id=str(mapping.parent_id),
+                            isActive=True,og_code=str(request.user.og_code),
                         ).first()
 
                     parent_data = {
@@ -3516,7 +3552,7 @@ class UpdateAdmission(GenericAPIView):
                             'Father',
                         )
 
-                        parent_obj = ParentProfile.objects.create(
+                        parent_obj = Parent.objects.create(
                             parent_code=(
                                 'PRT'
                                 + str(timezone.now().year)
@@ -3527,9 +3563,9 @@ class UpdateAdmission(GenericAPIView):
                         )
 
                         ParentStudentMapping.objects.create(
-                            parent_id=parent_obj.id,
+                            parent_id=str(parent_obj.id),
                             student_id=str(candidate.id),
-                            relationship=parent_data['parent_relationship'],
+                            relationship = parent_data['parent_relationship'],
                             is_primary=True,
                             createdBy=str(request.user.id),
                         )

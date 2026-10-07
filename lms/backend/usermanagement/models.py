@@ -56,7 +56,9 @@ class ParentManager(UserManager):
 
 
 class Parent(AbstractBaseUser, TrackingModel):
+    parent_code = models.CharField(max_length=100, unique=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
     profile_pic = models.TextField(null=True, blank=True)
     parent_code = models.CharField(max_length=100, null=True, blank=True, unique=True)
     first_name = models.CharField(max_length=255, null=True, blank=True)
@@ -81,6 +83,12 @@ class Parent(AbstractBaseUser, TrackingModel):
     student_ids = models.JSONField(default=list, blank=True)
     source = models.CharField(max_length=50, null=True, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
+    parent_annual_income = models.CharField(
+            max_length=255,
+            null=True,
+            blank=True,
+        )
+    parent_government_employee = models.BooleanField(default=False)
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

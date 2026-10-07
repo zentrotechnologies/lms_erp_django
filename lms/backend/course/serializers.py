@@ -13,7 +13,10 @@ class CourseMaterialSerializer(serializers.ModelSerializer):
         model = CourseMaterial
         fields ="__all__"
 
-
+class LessonPlanUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonPlanUnit
+        fields ="__all__"
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:

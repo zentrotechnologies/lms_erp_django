@@ -18,6 +18,8 @@ urlpatterns = [
     path('slot-edit',v.TemplateSlotEdit.as_view(),name='template-edit'),
     path('slot-details',v.TemplateSlotDetails.as_view(),name='template-details'),
 
+
+    path('template-delete',v.TemplateDelete.as_view(),name='template-delete'),
     path('template-details',v.TemplateDetails.as_view(),name='template-details'),
     path('add-template',v.AddTemplate.as_view(),name='add-template'),
 
@@ -49,6 +51,9 @@ urlpatterns = [
 
 
     path('available-faculty-by-subjects',v.AvailableFacultyListByTimeSlotSubject.as_view(),name='available-faculty-by-subjects'),
+    path('get-faculty-lectures-for-the-day',v.GetFacultyLecturesForTheDay.as_view(),name='get-faculty-lectures-for-the-day'),
 
+    path('save-new-lecture-entry',v.SaveNewLectureEntry.as_view(),name='save-new-lecture-entry'),
+    path('get-students-list-for-the-lecture',v.GetStidentsListForTheLecture.as_view(),name='get-students-list-for-the-lecture'),
 
 ]

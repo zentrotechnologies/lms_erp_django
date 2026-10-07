@@ -5948,11 +5948,11 @@ class AcademicYearList(GenericAPIView):
 
         academic_year_obj = AcademicYear.objects.filter(
             isActive=True,og_code=str(request.user.og_code)
-).order_by(
+        ).order_by(
             '-is_current',
             '-start_date',
             '-id'
-)
+        )
 
         status = request.GET.get('status')
         is_current = request.GET.get('is_current')

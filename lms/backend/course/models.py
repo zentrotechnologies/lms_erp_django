@@ -126,8 +126,14 @@ class FacultyCourseAllocation(TrackingModel):
 
 
 class LessonPlan(TrackingModel):
+    STATUS_CHOICES = (
+                ("PENDING", "PENDING"),
+                ("INCOMPLETE", "INCOMPLETE"),
+                ("COMPLETE", "COMPLETE"),
+            )
     academic_year_id = models.BigIntegerField(db_index=True)
     course_id = models.BigIntegerField(db_index=True)
+    class_id = models.BigIntegerField(db_index=True)
     semester_id = models.BigIntegerField(db_index=True)
     subject_id = models.BigIntegerField(db_index=True)
 
@@ -141,20 +147,27 @@ class LessonPlan(TrackingModel):
     references = models.TextField(null=True, blank=True)
 
     total_planned_lectures = models.PositiveIntegerField(default=0)
-    status = models.CharField(max_length=30, default="DRAFT", db_index=True)
+    status = models.CharField(max_length=30, default="PENDING",choices=STATUS_CHOICES, db_index=True)
 
     approved_at = models.DateTimeField(null=True, blank=True)
     approval_remarks = models.TextField(null=True, blank=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
-class LessonPlanUnit(TrackingModel):
-    lesson_plan_id = models.BigIntegerField(db_index=True)
 
+
+
+
+class LessonPlanUnit(TrackingModel):
+    STATUS_CHOICES = (
+            ("PENDING", "PENDING"),
+            ("INCOMPLETE", "INCOMPLETE"),
+            ("COMPLETE", "COMPLETE"),
+        )
+    lesson_plan_id = models.BigIntegerField(db_index=True)
     unit_number = models.PositiveIntegerField()
     unit_title = models.CharField(max_length=255)
     topics = models.TextField()
-
     planned_lectures = models.PositiveIntegerField(default=0)
-    completed_lectures = models.DecimalField(max_digits=5,decimal_places=1,default=0)
+    completed_lectures = models.DecimalField(max_digits=5,decimal_places=1,default=0)#total actual lecture required to complete this unit
 
     planned_start_date = models.DateField(null=True, blank=True)
     planned_end_date = models.DateField(null=True, blank=True)
@@ -162,14 +175,19 @@ class LessonPlanUnit(TrackingModel):
     reference = models.TextField(null=True, blank=True)
     teaching_method = models.TextField(null=True, blank=True)
     co_mapping = models.CharField(max_length=255, null=True, blank=True)
+    
     remarks = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=30, default="PENDING",choices=STATUS_CHOICES, db_index=True)
 
     sequence_number = models.PositiveIntegerField(default=1)
     og_code = models.CharField(max_length=150, null=True, blank=True)
+
+
+
 class LessonPlanExecution(TrackingModel):
     lesson_plan_id = models.BigIntegerField(db_index=True)
     lesson_plan_unit_id = models.BigIntegerField(db_index=True)
-    attendance_session_id = models.BigIntegerField(null=True,blank=True,db_index=True)
+    lecture_entry_id = models.BigIntegerField(null=True,blank=True,db_index=True) #LectureEntry
 
     executed_on = models.DateField(db_index=True)
     lecture_count = models.DecimalField(max_digits=4,decimal_places=1,default=1)

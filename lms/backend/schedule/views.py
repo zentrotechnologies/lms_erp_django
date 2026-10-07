@@ -1,5 +1,5 @@
 import uuid
-
+from django.db import transaction
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
@@ -2421,60 +2421,25 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
         academic_year_id = request_data.get('academic_year_id')
         semester_id = request_data.get('semester_id') or request_data.get('semester_id')
         subject_id = request_data.get('subject_id')
+        class_group_id = request_data.get('class_group_id')
+        course_id = request_data.get('course_id')
 
-        # Validate required fields
-        if not academic_year_id:
-            response_ = {
-                "n": 0,
-                "msg": "academic_year_id is required",
-                "data": []
-            }
-            if encrypted_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-            else:
-                return Response(response_, status=200)
-
-        if not semester_id:
-            response_ = {
-                "n": 0,
-                "msg": "semester_id is required",
-                "data": []
-            }
-            if encrypted_header == "1":
-                data_to_serialize = convert_decimals_to_float(response_)
-                encdata = encrypt_data(json.dumps(data_to_serialize))
-                return Response(encdata, status=200)
-            else:
-                return Response(response_, status=200)
-
-        # Filter timetable templates by year and semester (class group -> semester)
-        class_qs = ClassGroup.objects.filter(
-            semester_ids__contains=[int(semester_id)],
-            isActive=True
-        )
-        if not class_qs.exists():
-            # Fallback: interpret the value as semester_number (e.g. 1 -> first semester)
-            try:
-                resolved_sem = Semester.objects.filter(semester_number=int(semester_id), isActive=True).first()
-                if resolved_sem is not None and int(semester_id) != resolved_sem.id:
-                    class_qs = ClassGroup.objects.filter(
-                        semester_ids__contains=[resolved_sem.id],
-                        isActive=True
-                    )
-            except (TypeError, ValueError):
-                pass
-
-        class_ids = class_qs.values_list('id', flat=True)
 
         templates_queryset = TimetableTemplate.objects.filter(
-            academic_year_id=academic_year_id,
-            class_group_id__in=class_ids,
-            isActive=True,og_code=str(request.user.og_code)
-        ).order_by('-createdAt')
+                    isActive=True,og_code=str(request.user.og_code)
+                ).order_by('-createdAt')
 
-        # Optional course filter: only templates that have at least one slot for this course
+        
+        if class_group_id is not None and class_group_id !='':
+            templates_queryset=templates_queryset.filter(class_group_id=class_group_id)
+        if course_id is not None and course_id !='':
+            templates_queryset=templates_queryset.filter(course_id=course_id)
+        if semester_id is not None and semester_id !='':
+            templates_queryset=templates_queryset.filter(semester_id=semester_id)
+        if academic_year_id is not None and academic_year_id !='':
+            templates_queryset=templates_queryset.filter(academic_year_id=academic_year_id)
+
+
         if subject_id not in (None, ''):
             slot_template_ids = TimetableSlot.objects.filter(
                 subject_id=subject_id,
@@ -2484,7 +2449,6 @@ class TimetableTemplateListByYearSemester(GenericAPIView):
 
         if templates_queryset.exists():
             page = self.paginate_queryset(templates_queryset)
-
             class_group_map = {
                 cg.id: cg
                 for cg in ClassGroup.objects.filter(
@@ -3341,6 +3305,60 @@ class TemplateDetails(GenericAPIView):
             return Response(encdata, status=200)
         return Response(response_, status=200)
 
+class TemplateDelete(GenericAPIView):
+    """Backward-compatible template detail API using actual DB fields."""
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        template_id = request_data.get('template_id')
+        if template_id in (None, ''):
+            response_ = {"n": 0, "msg": "template_id is required", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        template_obj = TimetableTemplate.objects.filter(id=template_id, isActive=True).first()
+        if template_obj is None:
+            response_ = {"n": 0, "msg": "Template not found", "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+        template_obj.isActive=False
+        template_obj.save()
+
+        slots_qs = TimetableSlot.objects.filter(timetable_template_id=template_obj.id, isActive=True).order_by('day_of_week', 'period_number').update(isActive=False)
+
+        response_ = {
+            "n": 1,
+            "msg": "Template deleted successfully",
+            "data": {
+                "template_id": template_obj.id,
+                "template_name": template_obj.template_name,
+                "academic_year_id": template_obj.academic_year_id,
+                "class_id": template_obj.class_group_id,
+                "course_id": template_obj.course_id,
+            }
+        }
+
+        if encrypted_header == "1":
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata, status=200)
+        return Response(response_, status=200)
+
 
 def parse_period_time(value):
     """Parse a time string (24h 'HH:MM' or 12h 'hh:mm AM/PM') into datetime.time."""
@@ -3588,6 +3606,7 @@ class AddTemplate(GenericAPIView):
                             entry_for="lecture",
                             lecture_type="THEORY",
                             isActive=True,
+                            og_code=str(request.user.og_code)
                         )
                     )
 
@@ -3754,6 +3773,627 @@ class AvailableFacultyListByTimeSlotSubject(GenericAPIView):
             return Response(encdata,status=200)
         else:
             return Response(response_,status=200)
+
+
+class GetFacultyLecturesForTheDay(GenericAPIView):
+    
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        
+
+        date = request_data.get('date_str') or request_data.get('date')
+        academic_year_id =  request_data.get('academic_year_id')
+        course_id =  request_data.get('course_id')
+        class_id =  request_data.get('class_id')
+        semester_id =  request_data.get('semester_id')
+        subject_id = request_data.get('subjectid') or request_data.get('subject_id')
+
+
+
+        msg = ""
+        validation_status = True
+
+        if date in (None, ''):
+            msg = 'date is required'
+            validation_status = False
+        elif academic_year_id in (None, ''):
+            msg = 'academic_year_id is required'
+            validation_status = False
+        elif course_id in (None, ''):
+            msg = 'course_id is required'
+            validation_status = False
+        elif class_id in (None, ''):
+            msg = 'class_id is required'
+            validation_status = False
+        elif semester_id in (None, ''):
+            msg = 'semester is required'
+            validation_status = False
+        elif subject_id in (None, ''):
+            msg = 'subject_id is required'
+            validation_status = False
+        
+
+
+        if not validation_status:
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        template_ids=list(TimetableTemplate.objects.filter(course_id=course_id,class_group_id=class_id,semester_id=semester_id,academic_year_id=academic_year_id,isActive=True,og_code=str(request.user.og_code),effective_from__lte=date,effective_to__gte=date).values_list('id',flat=True))
+
+        print("template_ids",template_ids,str(request.user.id),str(request.user.og_code))
+        slot_objs=TimetableSlot.objects.filter(timetable_template_id__in=template_ids,subject_id=subject_id,isActive=True,og_code=str(request.user.og_code),faculty_id=str(request.user.id))
+        print("slot_objs",slot_objs.count())
+
+        slot_serializer = TimetableSlotSerializer(slot_objs,many=True)
+        subject_query = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        # subject_query = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        # subject_query = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        
+        for i in slot_serializer.data:
+            subject_obj=subject_query.filter(id=i['subject_id'],isActive=True).first()
+            if subject_obj is not None:
+                i['subject_name'] = subject_obj.subject_name
+            else:
+                i['subject_name'] = ""
+
+
+
+
+
+        response_={
+                    "n": 1,
+                    "msg": 'Faculty Lecture list found successfully',
+                    "data":slot_serializer.data                        
+                }
+        if encrypted_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+class SaveNewLectureEntry(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def _respond(self, request, n, msg, data=None):
+        payload = {
+            "n": n,
+            "msg": msg,
+            "data": [] if data is None else data,
+        }
+
+        if request.headers.get("encrypted") == "1":
+            payload = convert_decimals_to_float(payload)
+            return Response(
+                encrypt_data(json.dumps(payload)),
+                status=200,
+            )
+
+        return Response(payload, status=200)
+
+    def post(self, request):
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        raw_units = request_data.get("lesson_plan_units")
+
+        if isinstance(raw_units, str):
+            try:
+                raw_units = json.loads(raw_units)
+            except (TypeError, ValueError):
+                return self._respond(
+                    request, 0,
+                    "lesson_plan_units must contain valid JSON.",
+                )
+
+        # Support existing frontend field names.
+        if isinstance(raw_units, list):
+            raw_units = [
+                {
+                    **unit,
+                    "status": unit.get("status") or unit.get("staus"),
+                }
+                if isinstance(unit, dict) else unit
+                for unit in raw_units
+            ]
+
+        input_serializer = LectureEntryInputSerializer(data={
+            "lecture_date": (
+                request_data.get("lecture_date")
+                or request_data.get("date")
+            ),
+            "academic_year_id": request_data.get("academic_year_id"),
+            "course_id": request_data.get("course_id"),
+            "class_id": request_data.get("class_id"),
+            "semester_id": request_data.get("semester_id"),
+            "subject_id": (
+                request_data.get("subject_id")
+                or request_data.get("subjectid")
+            ),
+            "timetable_slot_id": (
+                request_data.get("timetable_slot_id")
+                or request_data.get("timetable_lecture_id")
+            ),
+            "lesson_plan_units": raw_units,
+            "teaching_method": request_data.get("teaching_method") or "",
+            "remarks": request_data.get("remarks"),
+        })
+
+        if not input_serializer.is_valid():
+            return self._respond(
+                request, 0, "Validation failed.",
+                input_serializer.errors,
+            )
+
+        values = input_serializer.validated_data
+        lecture_date = values["lecture_date"]
+        units_input = values["lesson_plan_units"]
+        faculty_id = str(request.user.id)
+        og_code = str(request.user.og_code)
+
+        scope = {
+            "academic_year_id": values["academic_year_id"],
+            "course_id": values["course_id"],
+            "class_id": values["class_id"],
+            "semester_id": values["semester_id"],
+        }
+
+        try:
+            with transaction.atomic():
+                # Serialize saves for the same slot, including duplicates.
+                print("timetable_slot_id",values["timetable_slot_id"])
+                print("subject_id",str(values["subject_id"]))
+                print("faculty_id",faculty_id)
+                slot = (
+                    TimetableSlot.objects.select_for_update()
+                    .filter(
+                        id=values["timetable_slot_id"],
+                        faculty_id=faculty_id,
+                        subject_id=str(values["subject_id"]),
+                        isActive=True,
+                        og_code=og_code,
+                    )
+                    .first()
+                )
+
+                if slot is None:
+                    raise ValueError(
+                        "Timetable lecture not found for this faculty "
+                        "and subject."
+                    )
+
+                template = TimetableTemplate.objects.filter(
+                    id=slot.timetable_template_id,
+                    academic_year_id=values["academic_year_id"],
+                    course_id=values["course_id"],
+                    class_group_id=values["class_id"],
+                    semester_id=values["semester_id"],
+                    isActive=True,
+                    og_code=og_code,
+                ).first()
+
+                if template is None:
+                    raise ValueError(
+                        "Timetable does not match the selected "
+                        "academic year, course, class, and semester."
+                    )
+
+                # day_of_week: Monday=0, Sunday=6.
+                print("slot.day_of_week",slot.day_of_week)
+                print("lecture_date.weekday()",lecture_date.weekday())
+                # if slot.day_of_week != lecture_date.weekday():
+                #     raise ValueError(
+                #         "Lecture date does not match the timetable day."
+                #     )
+
+                if (
+                    template.effective_from
+                    and lecture_date < template.effective_from
+                ) or (
+                    template.effective_to
+                    and lecture_date > template.effective_to
+                ):
+                    raise ValueError(
+                        "Lecture date is outside the timetable validity."
+                    )
+
+                if LectureEntry.objects.filter(
+                    timetable_slot_id=slot.id,
+                    lecture_date=lecture_date,
+                    isActive=True,
+                    og_code=og_code,
+                ).exists():
+                    raise ValueError("Lecture entry is already marked.")
+
+                # Lock parent plans in a fixed order so progress updates
+                # for different slots cannot overwrite one another.
+                plans = list(
+                    LessonPlan.objects.select_for_update()
+                    .filter(
+                        **scope,
+                        subject_id=values["subject_id"],
+                        prepared_by=faculty_id,
+                        isActive=True,
+                        og_code=og_code,
+                    )
+                    .order_by("id")
+                )
+                plan_map = {plan.id: plan for plan in plans}
+
+                unit_ids = [item["unit_id"] for item in units_input]
+
+                unit_map = {
+                    unit.id: unit
+                    for unit in (
+                        LessonPlanUnit.objects.select_for_update()
+                        .filter(
+                            id__in=unit_ids,
+                            lesson_plan_id__in=plan_map,
+                            isActive=True,
+                            og_code=og_code,
+                        )
+                        .order_by("id")
+                    )
+                }
+
+                # Validate every unit before creating any records.
+                for item in units_input:
+                    unit = unit_map.get(item["unit_id"])
+
+                    if unit is None:
+                        raise ValueError(
+                            f"Unit {item['unit_id']} does not belong "
+                            "to your selected lesson plan."
+                        )
+
+                    if unit.status == "COMPLETE":
+                        raise ValueError(
+                            f"Unit {unit.id} is already complete."
+                        )
+
+                    if (
+                        unit.planned_start_date
+                        and unit.planned_start_date > lecture_date
+                    ):
+                        raise ValueError(
+                            f"Unit {unit.id} starts after the lecture date."
+                        )
+
+                    new_count = (
+                        unit.completed_lectures
+                        + item["lecture_count"]
+                    )
+                    if new_count > Decimal("9999.9"):
+                        raise ValueError(
+                            f"Lecture count exceeds the limit for unit "
+                            f"{unit.id}."
+                        )
+
+                lecture = LectureEntry.objects.create(
+                    **scope,
+                    faculty_id=faculty_id,
+                    timetable_slot_id=slot.id,
+                    lecture_date=lecture_date,
+                    start_time=slot.start_time,
+                    end_time=slot.end_time,
+                    teaching_method=values["teaching_method"],
+                    lecture_status="COMPLETED",
+                    remarks=values.get("remarks"),
+                    created_by=faculty_id,
+                    createdBy=faculty_id,
+                    isActive=True,
+                    og_code=og_code,
+                )
+
+
+                allocated_student_ids = (
+                    StudentSubjectAllocation.objects.filter(
+                        academic_year_id=values["academic_year_id"],
+                        course_id=values["course_id"],
+                        class_id=values["class_id"],
+                        semester_id=values["semester_id"],
+                        subject_id=values["subject_id"],
+                        isActive=True,
+                        og_code=og_code,
+                    )
+                    .exclude(student_id__isnull=True)
+                    .exclude(student_id="")
+                    .values_list("student_id", flat=True)
+                    .distinct()
+                )
+
+                # Only include active candidates from this organization.
+                student_ids = Candidate.objects.filter(
+                    id__in=allocated_student_ids,
+                    isActive=True,
+                    og_code=og_code,
+                ).values_list("id", flat=True)
+
+                attendance_records = [
+                    CandidateAttendance(
+                        candidate_id=str(student_id),
+                        timetable_slot_id=str(lecture.timetable_slot_id),
+                        academic_year_id=str(lecture.academic_year_id),
+                        course_id=str(lecture.course_id),
+                        class_id=str(lecture.class_id),
+                        semester_id=str(lecture.semester_id),
+                        subject_id=str(values["subject_id"]),
+                        faculty_id=faculty_id,
+                        attendance_date=lecture.lecture_date,
+                        absent=True,
+                        isActive=True,
+                        og_code=og_code,
+                        createdBy=faculty_id,
+                    )
+                    for student_id in student_ids
+                ]
+
+                CandidateAttendance.objects.bulk_create(attendance_records)
+
+
+
+
+                execution_data = []
+                affected_plan_ids = set()
+                now = timezone.now()
+
+                for item in units_input:
+                    unit = unit_map[item["unit_id"]]
+                    credit = item["lecture_count"]
+
+                    unit.completed_lectures += credit
+                    unit.status = item["status"]
+                    unit.updatedAt = now
+                    unit.updatedBy = faculty_id
+                    unit.save(update_fields=[
+                        "completed_lectures",
+                        "status",
+                        "updatedAt",
+                        "updatedBy",
+                    ])
+
+                    execution = LessonPlanExecution.objects.create(
+                        lesson_plan_id=unit.lesson_plan_id,
+                        lesson_plan_unit_id=unit.id,
+                        lecture_entry_id=lecture.id,
+                        executed_on=lecture_date,
+                        lecture_count=credit,
+                        topics_covered=(
+                            item.get("topics_covered") or unit.topics
+                        ),
+                        remarks=item.get("remarks"),
+                        completed_by=faculty_id,
+                        createdBy=faculty_id,
+                        isActive=True,
+                        og_code=og_code,
+                    )
+
+                    affected_plan_ids.add(unit.lesson_plan_id)
+                    execution_data.append({
+                        "execution_id": execution.id,
+                        "unit_id": unit.id,
+                        "status": unit.status,
+                        "lecture_count": str(credit),
+                        "completed_lectures": str(
+                            unit.completed_lectures
+                        ),
+                    })
+
+                plan_data = []
+
+                for plan_id in sorted(affected_plan_ids):
+                    plan = plan_map[plan_id]
+                    statuses = list(
+                        LessonPlanUnit.objects.filter(
+                            lesson_plan_id=plan_id,
+                            isActive=True,
+                            og_code=og_code,
+                        ).values_list("status", flat=True)
+                    )
+
+                    if statuses and all(
+                        status == "COMPLETE" for status in statuses
+                    ):
+                        plan.status = "COMPLETE"
+                    elif any(
+                        status in ("INCOMPLETE", "COMPLETE")
+                        for status in statuses
+                    ):
+                        plan.status = "INCOMPLETE"
+                    else:
+                        plan.status = "PENDING"
+
+                    plan.updatedAt = now
+                    plan.updatedBy = faculty_id
+                    plan.save(update_fields=[
+                        "status", "updatedAt", "updatedBy"
+                    ])
+
+                    plan_data.append({
+                        "lesson_plan_id": plan.id,
+                        "status": plan.status,
+                    })
+
+        except ValueError as exc:
+            # The atomic block rolls back all changes on this exception.
+            return self._respond(request, 0, str(exc))
+
+        return self._respond(
+            request,
+            1,
+            "New lecture entry marked successfully.",
+            {
+                "lecture_entry_id": lecture.id,
+                "lecture_date": lecture.lecture_date.isoformat(),
+                "timetable_slot_id": lecture.timetable_slot_id,
+                "lecture_status": lecture.lecture_status,
+                "units": execution_data,
+                "lesson_plans": plan_data,
+            },
+        )
+
+class GetStidentsListForTheLecture(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+
+        # if request.user
+        timetable_slot_id = request_data.get('timetable_slot_id')
+
+        if timetable_slot_id is None or timetable_slot_id =='':
+            msg = 'template slot id not found'
+            validation_status = False
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        timetable_slot_obj=TimetableSlot.objects.filter(id=timetable_slot_id,isActive=True,og_code=str(request.user.og_code)).first()
+        if timetable_slot_obj is None:
+            msg = 'timetable_slot not found'
+            validation_status = False
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+
+
+
+        timetable_obj=TimetableTemplate.objects.filter(id=timetable_slot_obj.timetable_template_id,isActive=True,og_code=str(request.user.og_code)).first()
+        if timetable_obj is None:
+            msg = 'timetable template not found'
+            validation_status = False
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+
+        lecture_date = request_data.get('lecture_date')
+        academic_year_id = timetable_obj.academic_year_id
+        course_id = timetable_obj.course_id
+        class_id =  timetable_obj.class_group_id
+        semester_id =  timetable_obj.semester_id
+        subject_id = timetable_slot_obj.subject_id
+        faculty_id = timetable_slot_obj.faculty_id
+
+        msg = ""
+        validation_status = True
+        if faculty_id in (None, ''):
+            msg = 'This lecture is not assign to anyone'
+            validation_status = False
+        elif faculty_id != str(request.user.id):
+            msg = 'This lecture is not assign to you'
+            validation_status = False
+        elif subject_id in (None, ''):
+            msg = 'Subject is not assign to this lecture slot'
+            validation_status = False
+        elif lecture_date in (None, ''):
+            msg = 'Lecture_date is required'
+            validation_status = False
+        elif timetable_slot_id in (None, ''):
+            msg = 'Timetable_slot_id is required'
+            validation_status = False
+        elif class_id in (None, ''):
+            msg = 'Class id is required'
+            validation_status = False
+        elif semester_id in (None, ''):
+            msg = 'Semester is required'
+            validation_status = False
+        elif course_id in (None, ''):
+            msg = 'Course is required'
+            validation_status = False
+        elif academic_year_id in (None, ''):
+            msg = 'Academic_year_id is required'
+            validation_status = False
+        if not validation_status:
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+
+
+        lecture_entry=LectureEntry.objects.filter(lecture_date=lecture_date,academic_year_id=academic_year_id,course_id=course_id,class_id=class_id,semester_id=semester_id,faculty_id=str(request.user.id),timetable_slot_id=timetable_slot_id,og_code=str(request.user.og_code),isActive=True).first()
+        if lecture_entry is None:
+            response_ = {"n": 0, "msg": 'Please mark lecture entry first', "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+        
+        student_ids=list(StudentSubjectAllocation.objects.filter(course_id=course_id,class_id=class_id,academic_year_id=academic_year_id,isActive=True,og_code=str(request.user.og_code),subject_id=subject_id,semester_id=semester_id,).values_list('student_id',flat=True))
+        print("student_ids",student_ids)
+
+        candidate_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,og_code=str(request.user.og_code))
+        candidateser = CandidateSerializer(candidate_objs,many=True)
+        # for s in candidateser.data:
+
+
+
+
+        response_={
+                    "n": 1,
+                    "msg": 'candidate list found successfully',
+                    "data":candidateser.data                        
+                }
+        if encrypted_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

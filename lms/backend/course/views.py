@@ -13,6 +13,7 @@ from enrollments.serializers import *
 from .serializers import *
 from master.serializers import *
 from lms.settings import *
+from django.db.models import Case, When, Value, IntegerField, F
 
 
 def _is_course_active(status):
@@ -22,7 +23,6 @@ from adminauth.jwt import *
 from helpers.validations import *
 from rest_framework import permissions
 from django.db import transaction
-from django.db.models import Q
 from adminauth.views import save_file,sanitize_filename
 from adminauth.common import convertcreationdate
 from candidate.jwt import CandidateJWTAuthentication
@@ -1555,6 +1555,97 @@ class SubjectListByCourseAndSemester(GenericAPIView):
             return Response(response_,status=200)
 
 
+class GetFacultySubjectsByAcademicYearCourseClassSemester(GenericAPIView):
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encryped_header = ""
+        if "encrypted" in request.headers.keys():
+            encryped_header = request.headers.get("encrypted")
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+        academic_year_id = request_data.get("academic_year_id")
+        if academic_year_id is None or academic_year_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'academic year id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+            
+        course_id = request_data.get("course_id")
+        if course_id is None or course_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'course id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        class_id = request_data.get("class_id")
+        if class_id is None or class_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'class id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+        semester_id = request_data.get("semester_id")
+        if semester_id is None or semester_id =='':
+            response_={
+                            "n": 0,
+                            "msg": 'semester id not found',
+                            "data":[]
+                        }
+            if encryped_header == "1" :
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata,status=200)
+            else:
+                return Response(response_,status=200)
+
+
+
+
+
+
+        course_subject_ids=list(CourseSubjects.objects.filter(course_id=course_id,semester_no=semester_id,isActive=True,og_code=str(request.user.og_code)).values_list('subject_id',flat=True))
+
+        faculty_subject_ids=list(FacultyCourseAllocation.objects.filter(faculty_id=str(request.user.id),course_id=course_id,academic_year_id=academic_year_id,isActive=True,subject_id__in=course_subject_ids,og_code=str(request.user.og_code)).values_list('subject_id',flat=True))
+
+        subjects_objs=Subject.objects.filter(id__in=faculty_subject_ids,isActive=True)
+        serializer=SubjectSerializer(subjects_objs,many=True)
+
+        response_={
+                    "n": 1,
+                    "msg": 'Subjects founds Successfully',
+                    "data":serializer.data
+                    }
+        if encryped_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
 
 class AllocateSubjectToStudent(GenericAPIView):
     authentication_classes = [UserAdminJWTAuthentication]
@@ -1670,7 +1761,8 @@ class AllocateSubjectToStudent(GenericAPIView):
         subject_ids = [subject_id for subject_id in subject_ids if subject_id not in (None, '')]
         student_ids = [student_id for student_id in student_ids if student_id not in (None, '')]
 
-        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,semester_id=semester_id,og_code=str(request.user.og_code))
+        student_objs=Candidate.objects.filter(id__in=student_ids,isActive=True,og_code=str(request.user.og_code))
+        print("student_objs",student_objs)
         serializer=CandidateSerializer(student_objs,many=True)
         for student in serializer.data:
             StudentSubjectAllocation.objects.filter(course_id=course_id,class_id=class_id,academic_year_id=academic_year_id,semester_id=semester_id,student_id=student['id'],isActive=True,og_code=str(request.user.og_code)).update(isActive=False)
@@ -1727,6 +1819,7 @@ class BulkUploadLessonPlan(GenericAPIView):
 
         academic_year_id = request.data.get("academic_year_id")
         course_id = request.data.get("course_id")
+        class_id = request.data.get("class_id")
         semester_id = request.data.get("semester_id")
         subject_id = request.data.get("subject_id")
         excel_file = request.FILES.get("excel_file")
@@ -1734,6 +1827,7 @@ class BulkUploadLessonPlan(GenericAPIView):
         required_fields = {
             "academic_year_id": academic_year_id,
             "course_id": course_id,
+            "class_id": class_id,
             "semester_id": semester_id,
             "subject_id": subject_id,
         }
@@ -1827,10 +1921,12 @@ class BulkUploadLessonPlan(GenericAPIView):
                 "unit_title": unit_title,
                 "topics": topics,
                 "planned_lectures": planned_lectures,
+
                 "planned_start_date": planned_start_date,
                 "planned_end_date": planned_end_date,
-                "teaching_method": self._clean(row.get("Teaching Method")),
                 "reference": self._clean(row.get("Reference")),
+
+                "teaching_method": self._clean(row.get("Teaching Method")),
                 "co_mapping": self._clean(row.get("CO Mapping")),
                 "remarks": self._clean(row.get("Remarks")),
             })
@@ -1865,6 +1961,7 @@ class BulkUploadLessonPlan(GenericAPIView):
                 lesson_plan, created = LessonPlan.objects.update_or_create(
                     academic_year_id=academic_year_id,
                     course_id=course_id,
+                    class_id=class_id,
                     semester_id=semester_id,
                     subject_id=subject_id,
                     title=title,
@@ -1874,6 +1971,7 @@ class BulkUploadLessonPlan(GenericAPIView):
                         "status": "DRAFT",
                         "createdBy": str(request.user.id),
                         "isActive": True,
+                        "og_code":str(request.user.og_code),
                     },
                 )
 
@@ -1901,7 +1999,8 @@ class BulkUploadLessonPlan(GenericAPIView):
                         co_mapping=unit["co_mapping"],
                         remarks=unit["remarks"],
                         sequence_number=sequence_number,
-                        createdBy=str(request.user.id),og_code=str(request.user.og_code),
+                        createdBy=str(request.user.id),
+                        og_code=str(request.user.og_code),
                     )
                     unit_count += 1
 
@@ -2631,5 +2730,201 @@ class GetAllocatedSubjectsOfFaculty(GenericAPIView):
                 return Response(encdata,status=200)
             else:
                 return Response(response_,status=200)
+
+class GetLessonPlanUnitsForTheDay(GenericAPIView):
+    
+    authentication_classes = [UserAdminJWTAuthentication]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        encrypted_header = ""
+        if 'encrypted' in request.headers.keys():
+            encrypted_header = request.headers.get('encrypted')
+
+        request_data, error_response = handle_request_body(request)
+        if error_response:
+            return error_response
+
+        
+
+        date = request_data.get('date_str') or request_data.get('date')
+        academic_year_id =  request_data.get('academic_year_id')
+        course_id =  request_data.get('course_id')
+        class_id =  request_data.get('class_id')
+        semester_id =  request_data.get('semester_id')
+        subject_id = request_data.get('subjectid') or request_data.get('subject_id')
+
+
+
+        msg = ""
+        validation_status = True
+
+        if date in (None, ''):
+            msg = 'date is required'
+            validation_status = False
+        elif academic_year_id in (None, ''):
+            msg = 'academic_year_id is required'
+            validation_status = False
+        elif course_id in (None, ''):
+            msg = 'course_id is required'
+            validation_status = False
+        elif class_id in (None, ''):
+            msg = 'class_id is required'
+            validation_status = False
+        elif semester_id in (None, ''):
+            msg = 'semester is required'
+            validation_status = False
+        elif subject_id in (None, ''):
+            msg = 'subject_id is required'
+            validation_status = False
+        
+
+
+        if not validation_status:
+            response_ = {"n": 0, "msg": msg, "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+
+        lesson_plan_obj=LessonPlan.objects.filter(prepared_by=str(request.user.id),academic_year_id=academic_year_id,course_id=course_id,semester_id=semester_id,subject_id=subject_id,isActive=True,og_code=str(request.user.og_code),)
+        if lesson_plan_obj.count() == 0:
+            response_ = {"n": 0, "msg": 'Lesson Plan not found', "data": []}
+            if encrypted_header == "1":
+                data_to_serialize = convert_decimals_to_float(response_)
+                encdata = encrypt_data(json.dumps(data_to_serialize))
+                return Response(encdata, status=200)
+            return Response(response_, status=200)
+
+        
+        # units_objs=LessonPlanUnit.objects.filter(lesson_plan_id__in=list(lesson_plan_obj.values_list('id',flat=True)),isActive=True,og_code=str(request.user.og_code),planned_start_date__lte=date).order_by('unit_number')
+
+        units_objs = (
+            LessonPlanUnit.objects.filter(
+                lesson_plan_id__in=lesson_plan_obj.values_list('id', flat=True),
+                isActive=True,
+                og_code=str(request.user.og_code),
+                planned_start_date__lte=date,
+            )
+            .annotate(
+                status_order=Case(
+                    When(status="INCOMPLETE", then=Value(0)),
+                    When(status="PENDING", then=Value(1)),
+                    When(status="COMPLETE", then=Value(2)),
+                    default=Value(3),
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by(
+                'status_order',
+                'unit_number',
+                'sequence_number',
+                F('planned_start_date').asc(nulls_last=True),
+                'id',
+            )
+        )
+
+
+
+        serializer = LessonPlanUnitSerializer(units_objs,many=True)
+        
+        lesson_query = LessonPlan.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        academic_year_query = AcademicYear.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        course_query = Course.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        class_query = ClassGroup.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        semester_query = Semester.objects.filter(isActive=True,)
+        subject_query = Subject.objects.filter(isActive=True,og_code=str(request.user.og_code))
+        
+        for i in serializer.data:
+            lesson_obj=lesson_query.filter(id=i['lesson_plan_id']).first()
+            if lesson_obj is not None:
+                i['academic_year_id']=lesson_obj.academic_year_id
+                i['course_id']=lesson_obj.course_id
+                i['class_id']=lesson_obj.class_id
+                i['semester_id']=lesson_obj.semester_id
+                i['subject_id']=lesson_obj.subject_id
+
+                academic_obj=academic_year_query.filter(id=i['academic_year_id']).first()
+                if academic_obj is not None:
+                    i['academic_year_name']=academic_obj.academic_year_name
+                else:
+                    i['academic_year_name']=''
+
+
+                course_obj=course_query.filter(id=i['course_id']).first()
+                if course_obj is not None:
+                    i['course_name']=course_obj.course_name
+                else:
+                    i['course_name']=''
+                class_obj=class_query.filter(id=i['class_id']).first()
+                if class_obj is not None:
+                    i['class_name']=class_obj.class_name
+                else:
+                    i['class_name']=''
+
+                semester_obj=semester_query.filter(id=i['semester_id']).first()
+                if semester_obj is not None:
+                    i['semester_name']=semester_obj.semester_name
+                else:
+                    i['semester_name']=''
+
+                subject_obj=subject_query.filter(id=i['subject_id']).first()
+                if subject_obj is not None:
+                    i['subject_name']=subject_obj.subject_name
+                else:
+                    i['subject_name']=''
+
+                i['prepared_by']= str(request.user.id)
+                i['prepared_by_name']= str(request.user.name)
+                i['title']= lesson_obj.title
+                i['teaching_methodology'] = lesson_obj.teaching_methodology
+                i['objectives'] = lesson_obj.objectives
+                i['references'] = lesson_obj.references
+            else:
+                i['academic_year_id']=''
+                i['academic_year_name']=''
+                i['course_id']=''
+                i['course_name']=''
+                i['class_id']=''
+                i['class_name']=''
+                i['semester_id']=''
+                i['semester_name']=''
+                i['prepared_by']= str(request.user.id)
+                i['prepared_by_name']= str(request.user.name)
+                i['subject_id']=''
+                i['subject_name']=''
+                i['title']= ''
+                i['teaching_methodology'] = ''
+                i['objectives'] =''
+                i['references'] = ''
+
+
+
+
+        response_={
+                    "n": 1,
+                    "msg": 'Faculty Lesson plan units list found successfully',
+                    "data":serializer.data                        
+                }
+        if encrypted_header == "1" :
+            data_to_serialize = convert_decimals_to_float(response_)
+            encdata = encrypt_data(json.dumps(data_to_serialize))
+            return Response(encdata,status=200)
+        else:
+            return Response(response_,status=200)
+
+
+
+
+
+
+
+
+
+
+
+
 
 

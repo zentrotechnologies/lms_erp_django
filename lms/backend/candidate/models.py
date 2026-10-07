@@ -134,34 +134,11 @@ class Candidate(AbstractBaseUser, TrackingModel):
             algorithm="HS256",
         )
 
-class ParentProfile(TrackingModel):
-    parent_code = models.CharField(max_length=100, unique=True)
-    first_name = models.CharField(max_length=255)
-    middle_name = models.CharField(max_length=255, null=True, blank=True)
-    last_name = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True, db_index=True)
-    mobile = models.CharField(max_length=20, null=True, blank=True, db_index=True)
-    occupation = models.CharField(max_length=255, null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    parent_relationship = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-    )
 
 
 
-    parent_annual_income = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-    )
-
-    parent_government_employee = models.BooleanField(default=False)
-    og_code = models.CharField(max_length=150, null=True, blank=True)
 class ParentStudentMapping(TrackingModel):
-    parent_id = models.BigIntegerField(db_index=True)
+    parent_id = models.CharField(max_length=255, db_index=True)
     student_id = models.CharField(max_length=255, db_index=True)
     relationship = models.CharField(max_length=30)
     is_primary = models.BooleanField(default=False)
@@ -170,6 +147,7 @@ class ParentStudentMapping(TrackingModel):
     can_view_attendance = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     og_code = models.CharField(max_length=150, null=True, blank=True)
+
 class candidatelog(TrackingModel):
     candidate_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     action_takenbyid = models.CharField(max_length=255, null=True, blank=True)

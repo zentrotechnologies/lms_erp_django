@@ -4,7 +4,7 @@ from datetime import datetime, time
 from master.models import Branch, ClassGroup, Semester
 from course.models import *
 from adminauth.models import UserAdmin
-
+from decimal import Decimal
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
@@ -178,9 +178,9 @@ class TimetableTemplateListSerializer(serializers.ModelSerializer):
 
     def get_semester(self, obj):
         """Get semester name from ClassGroup -> Semester"""
-        class_group = self.context.get('class_group_map', {}).get(obj.class_group_id)
-        if class_group and class_group.semester_ids:
-            semester = self.context.get('semester_map', {}).get(int(class_group.semester_ids[0]))
+        
+        if obj.semester_id is not None  and obj.semester_id!='':
+            semester = Semester.objects.filter(id=obj.semester_id).first()
             if semester:
                 return semester.semester_name
         return ""
@@ -205,3 +205,98 @@ class TimetableTemplateListSerializer(serializers.ModelSerializer):
     def get_total_lectures(self, obj):
         """Count total lecture slots for this template"""
         return self.context.get('slot_count_map', {}).get(obj.id, 0)
+
+
+
+class TimetableSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimetableSlot
+        fields ="__all__"
+
+
+
+
+
+class LectureUnitInputSerializer(serializers.Serializer):
+    unit_id = serializers.IntegerField(min_value=1)
+    status = serializers.ChoiceField(
+        choices=["INCOMPLETE", "COMPLETE"]
+    )
+    lecture_count = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        min_value=Decimal("0.1"),
+        max_value=Decimal("1.0"),
+        required=False,
+    )
+    topics_covered = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    remarks = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True
+    )
+
+
+class LectureEntryInputSerializer(serializers.Serializer):
+    lecture_date = serializers.DateField(input_formats=["%Y-%m-%d"])
+    academic_year_id = serializers.IntegerField(min_value=1)
+    course_id = serializers.IntegerField(min_value=1)
+    class_id = serializers.IntegerField(min_value=1)
+    semester_id = serializers.IntegerField(min_value=1)
+    subject_id = serializers.IntegerField(min_value=1)
+    timetable_slot_id = serializers.IntegerField(min_value=1)
+
+    lesson_plan_units = LectureUnitInputSerializer(
+        many=True, allow_empty=False
+    )
+    teaching_method = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    remarks = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True
+    )
+
+    def validate_lesson_plan_units(self, units):
+        unit_ids = [unit["unit_id"] for unit in units]
+
+        if len(unit_ids) != len(set(unit_ids)):
+            raise serializers.ValidationError(
+                "Duplicate unit_id values are not allowed."
+            )
+
+        supplied_counts = [
+            "lecture_count" in unit for unit in units
+        ]
+
+        if any(supplied_counts) and not all(supplied_counts):
+            raise serializers.ValidationError(
+                "Provide lecture_count for every unit or omit it for all."
+            )
+
+        if all(supplied_counts):
+            total = sum(
+                (unit["lecture_count"] for unit in units),
+                Decimal("0.0"),
+            )
+            if total != Decimal("1.0"):
+                raise serializers.ValidationError(
+                    "Total lecture_count must equal 1.0."
+                )
+        else:
+            # Both models store only one decimal place.
+            if len(units) > 10:
+                raise serializers.ValidationError(
+                    "A lecture can cover at most 10 units."
+                )
+
+            # Distribute 10 tenths without losing credit to rounding.
+            # Example: 3 units receive 0.4, 0.3, 0.3.
+            tenths, remainder = divmod(10, len(units))
+
+            for index, unit in enumerate(units):
+                unit["lecture_count"] = (
+                    Decimal(tenths + (1 if index < remainder else 0))
+                    / Decimal("10")
+                )
+
+        return units
