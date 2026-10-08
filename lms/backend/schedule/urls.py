@@ -55,5 +55,5 @@ urlpatterns = [
 
     path('save-new-lecture-entry',v.SaveNewLectureEntry.as_view(),name='save-new-lecture-entry'),
     path('get-students-list-for-the-lecture',v.GetStidentsListForTheLecture.as_view(),name='get-students-list-for-the-lecture'),
-
+    path("executed-lecture-entry-list",v.ExecutedLectureEntryList.as_view(),name="executed-lecture-entry-list",),
 ]
